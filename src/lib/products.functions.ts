@@ -62,7 +62,7 @@ export const createProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => productSchema.parse(d))
   .handler(async ({ data, context }) => {
-    const slug = await uniqueSlug(context.supabase, data.slug || "");
+    const slug = await uniqueSlug(context.supabase, data.slug);
     const { data: row, error } = await context.supabase
       .from("products")
       .insert({
