@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Logo } from "@/components/SiteHeader";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
@@ -13,12 +13,36 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+// Credenciais mock para teste (substituir por auth real ao ligar Lovable Cloud)
+const MOCK_EMAIL = "semanaferdinand6@gmail.com";
+const MOCK_PASSWORD = "Didier10";
+
 function AuthPage() {
   return <AuthLayout />;
 }
 
 export function AuthLayout() {
   const [mode, setMode] = useState<"login" | "signup">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (mode === "login") {
+      if (email.trim().toLowerCase() === MOCK_EMAIL && password === MOCK_PASSWORD) {
+        try { localStorage.setItem("redox_demo_user", email); } catch {}
+        navigate({ to: "/dashboard" });
+      } else {
+        setError("Email ou senha incorretos.");
+      }
+    } else {
+      try { localStorage.setItem("redox_demo_user", email || "demo@redoxpay.site"); } catch {}
+      navigate({ to: "/dashboard" });
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -70,18 +94,38 @@ export function AuthLayout() {
               <div className="h-px flex-1 bg-white/10" />
             </div>
 
-            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-4" onSubmit={handleSubmit}>
               {mode === "signup" && (
                 <Field label="Nome">
                   <input type="text" placeholder="O seu nome" className="input" />
                 </Field>
               )}
               <Field label="Email">
-                <input type="email" placeholder="voce@exemplo.com" className="input" />
+                <input
+                  type="email"
+                  placeholder="voce@exemplo.com"
+                  className="input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                />
               </Field>
               <Field label="Senha" trailing={mode === "login" ? <a href="#" className="text-xs text-primary hover:underline">Esqueci</a> : undefined}>
-                <input type="password" placeholder="••••••••" className="input" />
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  className="input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                />
               </Field>
+
+              {error && (
+                <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                  {error}
+                </p>
+              )}
 
               <button
                 type="submit"
