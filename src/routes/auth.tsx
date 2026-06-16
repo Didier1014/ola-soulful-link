@@ -103,23 +103,8 @@ function AuthPage() {
     }
   }
 
-  async function handleGoogle() {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: window.location.origin + "/dashboard" },
-      });
-      if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-        return;
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro com Google");
-      setLoading(false);
-    }
-  }
+
+
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background text-foreground relative overflow-hidden">
@@ -168,8 +153,8 @@ function AuthPage() {
           {mode === "login" && (
             <form onSubmit={handleLogin} className="space-y-5">
               <Header title="Entrar" subtitle="Acesse o seu painel Redox Pay" />
-              <GoogleBtn onClick={handleGoogle} disabled={loading} />
-              <Divider />
+
+
               <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={160} placeholder="voce@exemplo.com" /></Field>
               <Field label="Senha" right={<button type="button" onClick={() => setMode("forgot")} className="text-xs text-primary-glow hover:text-primary-foreground">Esqueci</button>}>
                 <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={72} placeholder="••••••••" />
@@ -185,8 +170,6 @@ function AuthPage() {
           {mode === "signup" && (
             <form onSubmit={handleSignup} className="space-y-4">
               <Header title="Criar conta" subtitle="Comece a receber em minutos" />
-              <GoogleBtn onClick={handleGoogle} disabled={loading} />
-              <Divider />
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Nome completo"><Input value={fullName} onChange={(e) => setFullName(e.target.value)} required maxLength={120} /></Field>
                 <Field label="WhatsApp"><Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} required maxLength={20} placeholder="+258 84..." /></Field>

@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import ShaderBackground from "@/components/ui/shader-background";
 import {
   ShieldCheck, Zap, Smartphone, Code2, Repeat, QrCode, Link2, BarChart3,
   Lock, Fingerprint, KeyRound, CheckCircle2, Star, ArrowRight, MessageCircle,
@@ -24,7 +23,7 @@ const WHATSAPP = "https://wa.me/258840000000";
 function Landing() {
   return (
     <div className="min-h-screen text-foreground overflow-x-hidden">
-      <ShaderBackground />
+
       {/* Ambient glow */}
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute -top-40 left-1/4 h-[520px] w-[520px] rounded-full bg-primary/25 blur-[160px]" />

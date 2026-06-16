@@ -9,7 +9,7 @@ import { NotificationBell } from "@/components/notification-bell";
 import { FloatingSaleNotification } from "@/components/floating-sale-notification";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import ShaderBackground from "@/components/ui/shader-background";
+
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -55,7 +55,7 @@ function AuthedShell() {
 
   return (
     <div className="min-h-screen text-foreground relative overflow-x-hidden">
-      <ShaderBackground />
+
       {/* Ambient glow */}
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute -top-40 -left-32 h-[420px] w-[420px] rounded-full bg-primary/20 blur-[140px]" />
