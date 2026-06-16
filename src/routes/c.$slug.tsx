@@ -190,7 +190,7 @@ function CheckoutPage() {
         .spinner-red{width:40px;height:40px;border:3px solid rgba(255,51,51,0.2);border-top-color:#ff3333;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto}
       `}</style>
 
-      {modal && (
+      {modal && (modal.status === "processing" || modal.status === "failed") && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: "rgba(15,23,42,0.6)", backdropFilter: "blur(8px)", animation: "fadeIn 0.2s ease" }}
           onClick={() => modal.status !== "processing" && setModal(null)}>
@@ -207,17 +207,6 @@ function CheckoutPage() {
                 <h2 className="text-xl font-bold text-gray-900">A processar pagamento</h2>
                 <p className="text-sm text-gray-400">Aguardando confirmação do pagamento...</p>
               </div>
-            ) : modal.status === "pending" ? (
-              <div className="relative space-y-4">
-                <Smartphone className="h-14 w-14 mx-auto" style={{ color: methodColor }} />
-                <h2 className="text-xl font-bold text-gray-900">Confirme no seu telefone</h2>
-                <p className="text-sm text-gray-400">
-                  Enviámos um pedido de pagamento para <strong>{form.customer_phone}</strong>.<br />
-                  Abra o seu M-Pesa/e-Mola e introduza o PIN para confirmar.
-                </p>
-                {modal.id && <p className="text-xs text-gray-300 pt-2">Ref: {modal.id}</p>}
-                <Button className="w-full mt-4 rounded-xl" variant="outline" onClick={() => setModal(null)}>Fechar</Button>
-              </div>
             ) : (
               <div className="relative space-y-4">
                 <AlertTriangle className="h-14 w-14 text-red-400 mx-auto" />
@@ -229,6 +218,7 @@ function CheckoutPage() {
           </div>
         </div>
       )}
+
 
       <div className="sticky top-0 z-40 w-full py-2.5 px-4 flex items-center justify-center gap-2.5 text-sm font-medium"
         style={{ background: "linear-gradient(135deg, #8b0000, #a00000)", color: "#fff", boxShadow: "0 2px 16px rgba(139,0,0,0.3)" }}>
