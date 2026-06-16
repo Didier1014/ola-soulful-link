@@ -5,6 +5,7 @@ import { z } from "zod";
 const webhookSchema = z.object({
   event: z.string(),
   txid: z.string(),
+  partner_transaction_id: z.string().optional(),
   status: z.string(),
   valor_bruto: z.number().optional(),
   valor_liquido: z.number().optional(),
@@ -54,7 +55,7 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
           const result = await supabaseAdmin
             .from("transactions")
             .select("*")
-            .eq("external_ref", payload.txid)
+            .eq("external_ref", payload.txid || payload.partner_transaction_id)
             .maybeSingle();
           tx = result.data;
         }
@@ -85,7 +86,7 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
 
         if (next !== tx.status) {
           const updates: Record<string, unknown> = { status: next };
-          if (!tx.external_ref) updates.external_ref = payload.txid;
+          if (!tx.external_ref) updates.external_ref = payload.txid || payload.partner_transaction_id;
 
           if (next === "paid") {
             const amount = Number(tx.amount_mzn) || 0;
@@ -93,9 +94,15 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
             const rlxCost = Math.round((amount * 0.10 + 10) * 100) / 100;
             const sellerNet = Math.round((amount - sellerFee) * 100) / 100;
             updates.net_mzn = sellerNet;
-            updates.rlx_fee = rlxCost;
 
-            await supabaseAdmin.from("transactions").update(updates).eq("id", tx.id);
+            const { data: changed } = await supabaseAdmin
+              .from("transactions")
+              .update(updates)
+              .eq("id", tx.id)
+              .eq("status", "pending")
+              .select("id")
+              .maybeSingle();
+            if (!changed) return new Response("ok");
 
             const { data: prof } = await supabaseAdmin
               .from("profiles").select("balance_mzn").eq("id", tx.user_id).maybeSingle();

@@ -54,7 +54,7 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
         } catch {
           return new Response("Invalid payload", { status: 400 });
         }
-        const externalRef = String(payload.txid || payload.transaction_id || payload.reference || payload.ref || payload.id || "");
+        const externalRef = String(payload.txid || payload.transaction_id || payload.partner_transaction_id || payload.reference || payload.ref || payload.id || "");
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
