@@ -109,7 +109,7 @@ function CheckoutPage() {
         if (result.status === "paid") {
           cleanup();
           toast.success("Pagamento confirmado!");
-          window.location.href = `/obrigado?tx_id=${modal.id}&slug=${slug}`;
+          setModal({ status: "paid", id: modal.id, delivery_url: result.delivery_url ?? null });
         } else if (result.status === "failed") {
           cleanup();
           setModal({ status: "failed", id: modal.id });
