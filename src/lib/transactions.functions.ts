@@ -128,6 +128,8 @@ export const createCheckout = createServerFn({ method: "POST" })
       } catch (e) {
         console.log("[RLX] error", e);
         gatewayMessage = e instanceof Error ? e.message : "Falha ao contactar o gateway";
+        await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
+        return { id: tx.id, status: "failed", amount, fee: seller_fee, net: seller_net, message: gatewayMessage };
       }
 
     } else if (!token) {
