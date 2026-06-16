@@ -49,14 +49,10 @@ async function processWebhook(request: Request) {
         let payload: z.infer<typeof webhookSchema>;
         try {
           const body = await parseWebhookBody(request);
+          console.log("[RLX webhook] ←", JSON.stringify(body).slice(0, 400));
           payload = webhookSchema.parse(body);
-        } catch {
-          return new Response("Invalid payload", { status: 400 });
-        }
-        try {
-          const body = await parseWebhookBody(request);
-          payload = webhookSchema.parse(body);
-        } catch {
+        } catch (e) {
+          console.log("[RLX webhook] parse error", e);
           return new Response("Invalid payload", { status: 400 });
         }
         const externalRef = String(payload.txid || payload.transaction_id || payload.partner_transaction_id || payload.reference || payload.ref || payload.id || "");
