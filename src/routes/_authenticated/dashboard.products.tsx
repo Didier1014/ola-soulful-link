@@ -21,7 +21,7 @@ import {
   TrendingUp, Users, Repeat, Bot,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/products")({
   component: ProductsPage,
