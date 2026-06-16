@@ -45,9 +45,12 @@ function TxPage() {
 
   return (
     <div className="space-y-4">
-      <div className="px-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Transações</h1>
-        <p className="text-sm text-muted-foreground">{data.length} no total</p>
+      <div className="px-1 flex items-center justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Transações</h1>
+          <p className="text-sm text-muted-foreground">{data.length} no total {isFetching && <span className="ml-1 opacity-60">· atualizando…</span>}</p>
+        </div>
+        <button onClick={()=>refetch()} className="text-xs px-3 py-1.5 rounded-lg border border-border bg-card">Atualizar</button>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1">
