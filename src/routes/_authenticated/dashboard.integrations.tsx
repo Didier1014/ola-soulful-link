@@ -96,6 +96,38 @@ function IntegrationsPage() {
     else toast.error("Permissão negada");
   }
 
+  async function testNotification() {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      toast.error("Notificações não suportadas neste browser"); return;
+    }
+    let perm = Notification.permission;
+    if (perm === "default") perm = await Notification.requestPermission();
+    if (perm !== "granted") { toast.error("Permissão de notificações negada"); return; }
+
+    const title = b.push_custom.title || "💰 Nova venda aprovada!";
+    const currency = b.push_custom.currency || "MZN";
+    const valor = currency === "BRL" ? "R$ 100,00" : currency === "USD" ? "US$ 100.00" : currency === "EUR" ? "€ 100,00" : "100 MT";
+    const body = (b.push_custom.body || "{valor} — {cliente}")
+      .replaceAll("{valor}", valor)
+      .replaceAll("{cliente}", "Cliente Teste")
+      .replaceAll("{produto}", "Produto Teste");
+
+    try {
+      if ("serviceWorker" in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) {
+          await reg.showNotification(title, { body, icon: "/favicon.ico", badge: "/favicon.ico", tag: "test-notif" });
+          toast.success("Notificação de teste enviada");
+          return;
+        }
+      }
+      new Notification(title, { body, icon: "/favicon.ico" });
+      toast.success("Notificação de teste enviada");
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao enviar notificação");
+    }
+  }
+
   return (
     <div className="space-y-4 pb-24">
       <div className="px-1">
@@ -114,7 +146,10 @@ function IntegrationsPage() {
             <p className="text-sm text-muted-foreground">Receba alertas de vendas no navegador ou no telemóvel (PWA)</p>
           </div>
         </div>
-        <Button variant="outline" onClick={activatePush}><Bell className="h-4 w-4 mr-1" /> Ativar notificações</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={activatePush}><Bell className="h-4 w-4 mr-1" /> Ativar notificações</Button>
+          <Button variant="outline" onClick={testNotification}><Send className="h-4 w-4 mr-1" /> Notificação teste</Button>
+        </div>
       </Card>
 
       {/* 2) Personalizar push */}
