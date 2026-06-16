@@ -153,8 +153,8 @@ function AuthPage() {
           {mode === "login" && (
             <form onSubmit={handleLogin} className="space-y-5">
               <Header title="Entrar" subtitle="Acesse o seu painel Redox Pay" />
-              <GoogleBtn onClick={handleGoogle} disabled={loading} />
-              <Divider />
+
+
               <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={160} placeholder="voce@exemplo.com" /></Field>
               <Field label="Senha" right={<button type="button" onClick={() => setMode("forgot")} className="text-xs text-primary-glow hover:text-primary-foreground">Esqueci</button>}>
                 <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={72} placeholder="••••••••" />
