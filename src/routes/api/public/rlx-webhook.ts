@@ -290,7 +290,13 @@ async function processWebhook(request: Request) {
           }
         }
         return new Response("ok");
-      },
+}
+
+export const Route = createFileRoute("/api/public/rlx-webhook")({
+  server: {
+    handlers: {
+      GET: ({ request }) => processWebhook(request),
+      POST: ({ request }) => processWebhook(request),
     },
   },
 });
