@@ -37,7 +37,7 @@ const navItems = [
   { to: "/dashboard/sms", label: "SMS", icon: MessageSquare, exact: false },
   { to: "/dashboard/withdrawals", label: "Saques", icon: Wallet, exact: false },
   { to: "/dashboard/reports", label: "Relatórios", icon: BarChart3, exact: false },
-  { to: "/dashboard/api", label: "API", icon: Code2, exact: false },
+  
   { to: "/dashboard/integrations", label: "Integrações", icon: Plug, exact: false },
   { to: "/dashboard/profile", label: "Meu perfil", icon: User, exact: false },
   { to: "/dashboard/admin", label: "Admin", icon: Shield, exact: false },
