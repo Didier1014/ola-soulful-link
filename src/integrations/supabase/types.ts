@@ -58,25 +58,37 @@ export type Database = {
           created_at: string
           id: string
           integration_key: string
+          mozesms: Json
+          push_custom: Json
+          pushcut: Json
           settings: Json
           updated_at: string
           user_id: string
+          utmify: Json
         }
         Insert: {
           created_at?: string
           id?: string
           integration_key: string
+          mozesms?: Json
+          push_custom?: Json
+          pushcut?: Json
           settings?: Json
           updated_at?: string
           user_id: string
+          utmify?: Json
         }
         Update: {
           created_at?: string
           id?: string
           integration_key?: string
+          mozesms?: Json
+          push_custom?: Json
+          pushcut?: Json
           settings?: Json
           updated_at?: string
           user_id?: string
+          utmify?: Json
         }
         Relationships: []
       }
@@ -158,51 +170,72 @@ export type Database = {
       products: {
         Row: {
           active: boolean
+          config: Json
           cover_url: string | null
           created_at: string
           delivery_url: string | null
           description: string | null
+          digital_file_path: string | null
+          discount_no_balance: number
           id: string
           lawtracker_id: string | null
           name: string
           pixel_id: string | null
           price_mzn: number
+          product_type: string
           slug: string
+          sms_sender_id: string | null
+          sms_template: string | null
           support_phone: string | null
+          thank_you_url: string | null
           updated_at: string
           user_id: string
           utimify_id: string | null
         }
         Insert: {
           active?: boolean
+          config?: Json
           cover_url?: string | null
           created_at?: string
           delivery_url?: string | null
           description?: string | null
+          digital_file_path?: string | null
+          discount_no_balance?: number
           id?: string
           lawtracker_id?: string | null
           name: string
           pixel_id?: string | null
           price_mzn: number
+          product_type?: string
           slug: string
+          sms_sender_id?: string | null
+          sms_template?: string | null
           support_phone?: string | null
+          thank_you_url?: string | null
           updated_at?: string
           user_id: string
           utimify_id?: string | null
         }
         Update: {
           active?: boolean
+          config?: Json
           cover_url?: string | null
           created_at?: string
           delivery_url?: string | null
           description?: string | null
+          digital_file_path?: string | null
+          discount_no_balance?: number
           id?: string
           lawtracker_id?: string | null
           name?: string
           pixel_id?: string | null
           price_mzn?: number
+          product_type?: string
           slug?: string
+          sms_sender_id?: string | null
+          sms_template?: string | null
           support_phone?: string | null
+          thank_you_url?: string | null
           updated_at?: string
           user_id?: string
           utimify_id?: string | null
