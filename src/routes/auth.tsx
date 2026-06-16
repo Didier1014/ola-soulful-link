@@ -170,7 +170,7 @@ function AuthPage() {
           {mode === "signup" && (
             <form onSubmit={handleSignup} className="space-y-4">
               <Header title="Criar conta" subtitle="Comece a receber em minutos" />
-              <GoogleBtn onClick={handleGoogle} disabled={loading} />
+
               <Divider />
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Nome completo"><Input value={fullName} onChange={(e) => setFullName(e.target.value)} required maxLength={120} /></Field>
