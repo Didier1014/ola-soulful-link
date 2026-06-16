@@ -155,27 +155,59 @@ function ProductsPage() {
           </Card>
         )}
         {products.map((p: any) => (
-          <Card key={p.id} className="rounded-2xl p-3 flex items-center gap-3">
-            <div className="h-14 w-14 rounded-xl bg-secondary overflow-hidden shrink-0">
-              {p.cover_url
-                ? <img src={p.cover_url} alt={p.name} className="w-full h-full object-cover" />
-                : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><PackageIcon className="h-5 w-5" /></div>}
+          <Card key={p.id} className="rounded-2xl overflow-hidden sm:p-3 sm:flex sm:items-center sm:gap-3">
+            {/* Mobile: large stacked layout */}
+            <div className="sm:hidden">
+              <div className="aspect-[16/10] w-full bg-secondary overflow-hidden">
+                {p.cover_url
+                  ? <img src={p.cover_url} alt={p.name} className="w-full h-full object-cover" />
+                  : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><PackageIcon className="h-10 w-10" /></div>}
+              </div>
+              <div className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-base truncate">{p.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">/{p.slug}</p>
+                  </div>
+                  <Switch checked={p.active} onCheckedChange={(v) => toggle({ data: { id: p.id, active: v } }).then(() => qc.invalidateQueries({ queryKey: ["products"] }))} />
+                </div>
+                <p className="text-primary font-bold text-lg">{fmtMT(Number(p.price_mzn))}</p>
+                <div className="grid grid-cols-5 gap-1 pt-2 border-t border-border">
+                  <Button variant="ghost" size="icon" className="w-full" onClick={() => window.open(`/c/${p.slug}`, "_blank")}><ExternalLink className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" className="w-full" onClick={() => copyLink(p.slug)}><Copy className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" className="w-full" onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" className="w-full" onClick={() => dup({ data: { id: p.id } }).then(() => qc.invalidateQueries({ queryKey: ["products"] })).then(() => toast.success("Duplicado"))}><Copy className="h-4 w-4 text-muted-foreground" /></Button>
+                  <Button variant="ghost" size="icon" className="w-full text-destructive"
+                    onClick={() => { if (confirm("Eliminar?")) del({ data: { id: p.id } }).then(() => qc.invalidateQueries({ queryKey: ["products"] })); }}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">{p.name}</p>
-              <p className="text-primary font-semibold text-sm">{fmtMT(Number(p.price_mzn))}</p>
-              <p className="text-xs text-muted-foreground truncate">/{p.slug}</p>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" onClick={() => window.open(`/c/${p.slug}`, "_blank")}><ExternalLink className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon" onClick={() => copyLink(p.slug)}><Copy className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon" onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></Button>
-              <Switch checked={p.active} onCheckedChange={(v) => toggle({ data: { id: p.id, active: v } }).then(() => qc.invalidateQueries({ queryKey: ["products"] }))} />
-              <Button variant="ghost" size="icon" onClick={() => dup({ data: { id: p.id } }).then(() => qc.invalidateQueries({ queryKey: ["products"] })).then(() => toast.success("Duplicado"))}><Copy className="h-4 w-4 text-muted-foreground" /></Button>
-              <Button variant="ghost" size="icon" className="text-destructive"
-                onClick={() => { if (confirm("Eliminar?")) del({ data: { id: p.id } }).then(() => qc.invalidateQueries({ queryKey: ["products"] })); }}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
+
+            {/* Desktop: compact row */}
+            <div className="hidden sm:flex sm:items-center sm:gap-3 sm:w-full">
+              <div className="h-14 w-14 rounded-xl bg-secondary overflow-hidden shrink-0">
+                {p.cover_url
+                  ? <img src={p.cover_url} alt={p.name} className="w-full h-full object-cover" />
+                  : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><PackageIcon className="h-5 w-5" /></div>}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{p.name}</p>
+                <p className="text-primary font-semibold text-sm">{fmtMT(Number(p.price_mzn))}</p>
+                <p className="text-xs text-muted-foreground truncate">/{p.slug}</p>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button variant="ghost" size="icon" onClick={() => window.open(`/c/${p.slug}`, "_blank")}><ExternalLink className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => copyLink(p.slug)}><Copy className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></Button>
+                <Switch checked={p.active} onCheckedChange={(v) => toggle({ data: { id: p.id, active: v } }).then(() => qc.invalidateQueries({ queryKey: ["products"] }))} />
+                <Button variant="ghost" size="icon" onClick={() => dup({ data: { id: p.id } }).then(() => qc.invalidateQueries({ queryKey: ["products"] })).then(() => toast.success("Duplicado"))}><Copy className="h-4 w-4 text-muted-foreground" /></Button>
+                <Button variant="ghost" size="icon" className="text-destructive"
+                  onClick={() => { if (confirm("Eliminar?")) del({ data: { id: p.id } }).then(() => qc.invalidateQueries({ queryKey: ["products"] })); }}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </Card>
         ))}
