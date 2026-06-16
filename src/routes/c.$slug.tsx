@@ -307,23 +307,63 @@ function CheckoutPage() {
               </div>
             </div>
 
-            <button onClick={() => m.mutate()} disabled={m.isPending || !form.customer_name || !form.customer_phone}
-              className="w-full py-5 rounded-xl text-base font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{
-                background: methodGradient,
-                boxShadow: m.isPending ? "none" : `0 8px 24px ${methodColor}33`,
-              }}
-              onMouseEnter={(e) => !m.isPending && form.customer_name && form.customer_phone && (e.currentTarget.style.transform = "translateY(-2px)")}
-              onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}>
-              {m.isPending ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-[18px] h-[18px] rounded-full border-2 border-white/25 border-t-white" style={{ animation: "spin 0.8s linear infinite" }} />
-                  A processar...
+            {modal?.status === "pending" && (
+              <div className="rounded-xl border-[1.5px] p-4 flex items-start gap-3"
+                style={{ borderColor: `${methodColor}33`, background: `${methodColor}0d`, animation: "fadeIn 0.3s ease" }}>
+                <div className="shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full border-2" style={{ borderColor: `${methodColor}40`, borderTopColor: methodColor, animation: "spin 0.8s linear infinite" }} />
                 </div>
-              ) : (
-                `Pagar ${fmt(price)}`
-              )}
-            </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-gray-900">A aguardar confirmação...</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Confirme o pagamento no seu telefone ({form.customer_phone}) introduzindo o PIN do {method === "mpesa" ? "M-Pesa" : "e-Mola"}.</p>
+                  {modal.id && <p className="text-[10px] text-gray-300 mt-1">Ref: {modal.id}</p>}
+                </div>
+              </div>
+            )}
+
+            {modal?.status === "paid" ? (
+              <div className="space-y-3" style={{ animation: "slideUp 0.4s cubic-bezier(0.25,0.46,0.45,0.94)" }}>
+                <div className="rounded-xl border-[1.5px] p-4 flex items-start gap-3"
+                  style={{ borderColor: "rgba(34,197,94,0.35)", background: "linear-gradient(135deg, rgba(34,197,94,0.08), rgba(34,197,94,0.14))" }}>
+                  <div className="shrink-0 mt-0.5 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#22c55e" }}>
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-green-700">Pagamento confirmado!</p>
+                    <p className="text-xs text-gray-600 mt-0.5">Obrigado pela sua compra. Já pode aceder ao seu produto.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (modal.delivery_url) window.open(modal.delivery_url, "_blank", "noopener,noreferrer");
+                    else window.location.href = `/obrigado?tx_id=${modal.id}&slug=${slug}`;
+                  }}
+                  className="w-full py-5 rounded-xl text-base font-bold text-white transition-all"
+                  style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", boxShadow: "0 8px 24px rgba(34,197,94,0.35)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}>
+                  Acesse o produto
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => m.mutate()} disabled={m.isPending || modal?.status === "pending" || !form.customer_name || !form.customer_phone}
+                className="w-full py-5 rounded-xl text-base font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{
+                  background: methodGradient,
+                  boxShadow: m.isPending ? "none" : `0 8px 24px ${methodColor}33`,
+                }}
+                onMouseEnter={(e) => !m.isPending && form.customer_name && form.customer_phone && (e.currentTarget.style.transform = "translateY(-2px)")}
+                onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}>
+                {m.isPending || modal?.status === "pending" ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-[18px] h-[18px] rounded-full border-2 border-white/25 border-t-white" style={{ animation: "spin 0.8s linear infinite" }} />
+                    {modal?.status === "pending" ? "A aguardar confirmação..." : "A processar..."}
+                  </div>
+                ) : (
+                  `Pagar ${fmt(price)}`
+                )}
+              </button>
+            )}
 
             <div className="flex items-center justify-center gap-2 text-[11px] font-medium text-green-600">
               <ShieldCheck className="h-3.5 w-3.5" />
