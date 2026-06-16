@@ -42,6 +42,7 @@ function mapGatewayStatus(payload: Record<string, unknown>) {
 export const Route = createFileRoute("/api/public/rlx-webhook")({
   server: {
     handlers: {
+      GET: async (ctx) => Route.options.server.handlers.POST(ctx),
       POST: async ({ request }) => {
         const token = process.env.RLX_API_TOKEN;
         const auth = request.headers.get("authorization") ?? "";
