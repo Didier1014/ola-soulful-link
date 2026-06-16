@@ -20,10 +20,12 @@ function stripPhone(phone: string) {
 }
 
 async function parseWebhookBody(request: Request) {
-  const raw = await request.text();
-  if (!raw) return {};
-  try { return JSON.parse(raw); } catch { /* not json */ }
-  return Object.fromEntries(new URLSearchParams(raw));
+  const url = new URL(request.url);
+  const queryParams = Object.fromEntries(url.searchParams);
+  const raw = await request.text().catch(() => "");
+  if (!raw) return queryParams;
+  try { return { ...queryParams, ...JSON.parse(raw) }; } catch { /* not json */ }
+  return { ...queryParams, ...Object.fromEntries(new URLSearchParams(raw)) };
 }
 
 function mapGatewayStatus(payload: Record<string, unknown>) {
@@ -37,10 +39,7 @@ function mapGatewayStatus(payload: Record<string, unknown>) {
   return "pending";
 }
 
-export const Route = createFileRoute("/api/public/rlx-webhook")({
-  server: {
-    handlers: {
-      POST: async ({ request }) => {
+async function processWebhook(request: Request) {
         const token = process.env.RLX_API_TOKEN;
         const auth = request.headers.get("authorization") ?? "";
         if (token && auth && !auth.includes(token)) {
@@ -48,6 +47,12 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
         }
 
         let payload: z.infer<typeof webhookSchema>;
+        try {
+          const body = await parseWebhookBody(request);
+          payload = webhookSchema.parse(body);
+        } catch {
+          return new Response("Invalid payload", { status: 400 });
+        }
         try {
           const body = await parseWebhookBody(request);
           payload = webhookSchema.parse(body);
@@ -285,7 +290,13 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
           }
         }
         return new Response("ok");
-      },
+}
+
+export const Route = createFileRoute("/api/public/rlx-webhook")({
+  server: {
+    handlers: {
+      GET: ({ request }) => processWebhook(request),
+      POST: ({ request }) => processWebhook(request),
     },
   },
 });

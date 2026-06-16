@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
-import { listMyTransactions } from "@/lib/transactions.functions";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { listMyTransactions, checkTransactionStatus } from "@/lib/transactions.functions";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard/transactions")({
   component: TxPage,
@@ -14,15 +15,42 @@ const fmtMT2 = (n: number) => new Intl.NumberFormat("pt-MZ", { minimumFractionDi
 
 function TxPage() {
   const fetchTx = useServerFn(listMyTransactions);
-  const { data = [], isLoading } = useQuery({ queryKey: ["tx"], queryFn: () => fetchTx() });
+  const checkStatus = useServerFn(checkTransactionStatus);
+  const qc = useQueryClient();
+  const { data = [], isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["tx"],
+    queryFn: () => fetchTx(),
+    refetchInterval: 5000,
+    refetchOnWindowFocus: true,
+  });
   const [filter, setFilter] = useState<"all"|"paid"|"pending"|"failed">("all");
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const filtered = data.filter(t => filter === "all" || t.status === filter);
+
+  const handleVerify = async (id: string) => {
+    setVerifyingId(id);
+    try {
+      const r = await checkStatus({ data: { transaction_id: id } });
+      if (r.status === "paid") toast.success("Pagamento confirmado!");
+      else if (r.status === "failed") toast.error("Pagamento falhou");
+      else toast.info("Ainda pendente no gateway");
+      qc.invalidateQueries({ queryKey: ["tx"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao verificar");
+    } finally {
+      setVerifyingId(null);
+    }
+  };
+
 
   return (
     <div className="space-y-4">
-      <div className="px-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Transações</h1>
-        <p className="text-sm text-muted-foreground">{data.length} no total</p>
+      <div className="px-1 flex items-center justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Transações</h1>
+          <p className="text-sm text-muted-foreground">{data.length} no total {isFetching && <span className="ml-1 opacity-60">· atualizando…</span>}</p>
+        </div>
+        <button onClick={()=>refetch()} className="text-xs px-3 py-1.5 rounded-lg border border-border bg-card">Atualizar</button>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -57,6 +85,15 @@ function TxPage() {
               {t.status === 'paid' && <p className="text-xs text-emerald-600">● Sucesso</p>}
               {t.status === 'failed' && <p className="text-xs text-[#e11d48]">● Falhou</p>}
               {t.status === 'pending' && <p className="text-xs text-amber-600">● Pendente</p>}
+              {t.status === 'pending' && (
+                <button
+                  disabled={verifyingId === t.id}
+                  onClick={() => handleVerify(t.id)}
+                  className="mt-1 text-[11px] px-2 py-1 rounded-md border border-border bg-card disabled:opacity-50"
+                >
+                  {verifyingId === t.id ? "A verificar…" : "Verificar"}
+                </button>
+              )}
             </div>
           </div>
         )})}
