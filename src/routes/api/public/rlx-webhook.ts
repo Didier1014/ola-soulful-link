@@ -89,7 +89,7 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
             const amount = Number(tx.amount_mzn) || 0;
             // Seller pays 15% + 15 MT; RLX costs 12% + 12 MT (from webhook or calculated)
             const sellerFee = Math.round((amount * 0.15 + 15) * 100) / 100;
-            const rlxCost = Math.round((amount * 0.12 + 12) * 100) / 100;
+            const rlxCost = Math.round((amount * 0.10 + 10) * 100) / 100;
             const sellerNet = Math.round((amount - sellerFee) * 100) / 100;
             updates.net_mzn = sellerNet;
             updates.rlx_fee = rlxCost;

@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 function calcFee(amount: number) {
   const seller_fee = Math.round((amount * 0.15 + 15) * 100) / 100;
-  const rlx_cost = Math.round((amount * 0.1199 + 11.99) * 100) / 100;
+  const rlx_cost = Math.round((amount * 0.10 + 10) * 100) / 100;
   const admin_margin = Math.round((seller_fee - rlx_cost) * 100) / 100;
   const seller_net = Math.round((amount - seller_fee) * 100) / 100;
   return { seller_fee, rlx_cost, admin_margin, seller_net };
