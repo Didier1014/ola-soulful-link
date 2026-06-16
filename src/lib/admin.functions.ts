@@ -121,6 +121,15 @@ export const approveWithdrawal = createServerFn({ method: "POST" })
     ]);
     if (uErr.error) throw new Error(uErr.error.message);
     if (wErr.error) throw new Error(wErr.error.message);
+
+    // Notify user
+    try {
+      const fmt = new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(Number(wd.amount_mzn));
+      await supabaseAdmin.from("notifications").insert({
+        user_id: wd.user_id, type: "withdrawal_paid",
+        title: "Saque pago", message: `O seu saque de ${fmt} MT foi processado.`,
+      });
+    } catch {}
     return { ok: true };
   });
 
