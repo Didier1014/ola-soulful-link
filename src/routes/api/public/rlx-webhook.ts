@@ -235,24 +235,63 @@ async function processWebhook(request: Request) {
                 utmifyToken = utmifyCfg?.settings?.api_token as string | undefined;
               }
               if (utmifyToken) {
+                const amountCents = Math.round(Number(tx.amount_mzn) * 100);
+                const netCents = Math.round(Number(tx.net_mzn || 0) * 100);
+                const feeCents = Math.max(0, amountCents - netCents);
+                const nowIso = new Date().toISOString().replace("T", " ").slice(0, 19);
+                const createdIso = new Date(tx.created_at).toISOString().replace("T", " ").slice(0, 19);
+                const trk = (tx.metadata as any)?.tracking || {};
 
                 const body = {
+                  orderId: String(tx.id),
+                  platform: "RedoxPay",
+                  paymentMethod: "pix",
                   status: "paid",
-                  orderId: tx.id,
+                  createdAt: createdIso,
+                  approvedDate: nowIso,
+                  refundedAt: null,
                   customer: {
                     name: tx.customer_name ?? "",
+                    email: tx.customer_email ?? "",
                     phone: tx.customer_phone ?? "",
+                    document: null,
+                    country: "MZ",
+                    ip: "0.0.0.0",
                   },
-                  products: productName
-                    ? [{ id: productUtmifyId ?? "", name: productName, quantity: 1, priceInCents: Math.round(Number(tx.amount_mzn) * 100) }]
-                    : [],
-                  createdAt: tx.created_at,
+                  products: [{
+                    id: productUtmifyId ?? String(tx.product_id ?? tx.id),
+                    name: productName ?? "Produto",
+                    planId: null,
+                    planName: null,
+                    quantity: 1,
+                    priceInCents: amountCents,
+                  }],
+                  trackingParameters: {
+                    src: trk.src ?? null,
+                    sck: trk.sck ?? null,
+                    utm_source: trk.utm_source ?? null,
+                    utm_campaign: trk.utm_campaign ?? null,
+                    utm_medium: trk.utm_medium ?? null,
+                    utm_content: trk.utm_content ?? null,
+                    utm_term: trk.utm_term ?? null,
+                  },
+                  commission: {
+                    totalPriceInCents: amountCents,
+                    gatewayFeeInCents: feeCents,
+                    userCommissionInCents: netCents,
+                  },
+                  isTest: false,
                 };
                 fetch("https://api.utmify.com.br/api-credentials/orders", {
                   method: "POST",
                   headers: { "Content-Type": "application/json", "x-api-token": utmifyToken },
                   body: JSON.stringify(body),
-                }).catch(() => {});
+                })
+                  .then(async (r) => {
+                    const t = await r.text().catch(() => "");
+                    console.log("[Utmify] →", r.status, t.slice(0, 200));
+                  })
+                  .catch((e) => console.log("[Utmify] error", e));
               }
             } catch {}
 
