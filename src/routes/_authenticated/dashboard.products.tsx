@@ -541,8 +541,8 @@ function PillDialog({ open, pillKey, config, onClose, onSave }: {
   onClose: () => void; onSave: (cfg: any) => void;
 }) {
   const [c, setC] = useState<any>(config);
-  // sync when opening different pill
-  if (open && (c as any)._pill !== pillKey) setC({ ...config, _pill: pillKey });
+  useEffect(() => { if (open) setC({ ...config }); }, [open, pillKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const meta = PILLS.find(p => p.key === pillKey);
   if (!meta) return null;
   const Icon = meta.icon;
