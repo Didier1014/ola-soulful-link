@@ -267,43 +267,40 @@ async function processWebhook(request: Request) {
               const lowtrackUrl = lowtrackCfg?.settings?.webhook_url as string | undefined;
               const lowtrackEnabled = lowtrackCfg?.settings?.enabled !== false;
               const lowtrackToken = lowtrackCfg?.settings?.api_token as string | undefined;
-              if (lowtrackUrl && lowtrackEnabled) {
-                const headers: Record<string, string> = { "Content-Type": "application/json" };
-                if (lowtrackToken) headers["authorization"] = `Bearer ${lowtrackToken}`;
+              if (lowtrackUrl && lowtrackEnabled && lowtrackToken) {
+                const headers: Record<string, string> = {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${lowtrackToken}`,
+                };
 
-                // Append product token + sale data as querystring (LowTrack postback style)
-                let finalUrl = lowtrackUrl;
-                try {
-                  const u = new URL(lowtrackUrl);
-                  if (productLowtrackId) {
-                    u.searchParams.set("token", productLowtrackId);
-                    u.searchParams.set("click_id", productLowtrackId);
-                  }
-                  u.searchParams.set("transaction_id", String(tx.id));
-                  u.searchParams.set("value", String(Number(tx.amount_mzn)));
-                  u.searchParams.set("status", "paid");
-                  finalUrl = u.toString();
-                } catch {}
+                const body = {
+                  event: "sale.approved",
+                  status: "paid",
+                  transaction_id: String(tx.id),
+                  amount: Number(tx.amount_mzn),
+                  sale_amount: Number(tx.amount_mzn),
+                  currency: "MZN",
+                  product_id: productLowtrackId || undefined,
+                  offer_id: productLowtrackId || undefined,
+                  product_name: productName || undefined,
+                  customer: {
+                    name: tx.customer_name || "",
+                    phone: tx.customer_phone || "",
+                    email: tx.customer_email || "",
+                  },
+                  created_at: tx.created_at,
+                };
 
-                fetch(finalUrl, {
+                fetch(lowtrackUrl, {
                   method: "POST",
                   headers,
-                  body: JSON.stringify({
-                    event: "payment.confirmed",
-                    token: productLowtrackId,
-                    click_id: productLowtrackId,
-                    orderId: tx.id,
-                    transaction_id: tx.id,
-                    amount: Number(tx.amount_mzn),
-                    value: Number(tx.amount_mzn),
-                    netAmount: Number(tx.net_mzn),
-                    status: "paid",
-                    customer: { name: tx.customer_name, phone: tx.customer_phone, email: tx.customer_email },
-                    product: productName,
-                    product_token: productLowtrackId,
-                    createdAt: tx.created_at,
-                  }),
-                }).catch(() => {});
+                  body: JSON.stringify(body),
+                })
+                  .then(async (r) => {
+                    const t = await r.text().catch(() => "");
+                    console.log("[LowTrack] →", r.status, t.slice(0, 200));
+                  })
+                  .catch((e) => console.log("[LowTrack] error", e));
               }
             } catch {}
           }
