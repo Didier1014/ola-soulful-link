@@ -256,7 +256,7 @@ async function processWebhook(request: Request) {
                     phone: tx.customer_phone ?? "",
                     document: null,
                     country: "MZ",
-                    ip: null,
+                    ip: "0.0.0.0",
                   },
                   products: [{
                     id: productUtmifyId ?? String(tx.product_id ?? tx.id),
