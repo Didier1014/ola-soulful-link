@@ -89,6 +89,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@RedoxPay" },
       { name: "twitter:title", content: "Redox Pay" },
       { name: "twitter:description", content: "Plataforma de pagamentos e vendas de infoprodutos para Moçambique." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bc28d42c-f751-41cb-8d77-619c1f51bf2f/id-preview-6bcb45f4--9a15d051-688d-4d24-81ef-d3e2614ab6ca.lovable.app-1781611581982.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bc28d42c-f751-41cb-8d77-619c1f51bf2f/id-preview-6bcb45f4--9a15d051-688d-4d24-81ef-d3e2614ab6ca.lovable.app-1781611581982.png" },
     ],
     links: [
       {
