@@ -85,8 +85,18 @@ function CheckoutPage() {
       setModal({ status: "processing", id: undefined });
     },
     onSuccess: (r) => {
+      if (r.status === "paid") {
+        setModal({ status: "paid", id: r.id, delivery_url: r.delivery_url ?? null });
+        toast.success("Pagamento confirmado!");
+        return;
+      }
+      if (r.status === "failed") {
+        setModal({ status: "failed", id: r.id });
+        toast.error(r.message ?? "Pagamento rejeitado pelo gateway");
+        return;
+      }
       setModal({ status: "pending", id: r.id, delivery_url: undefined });
-      toast("Pagamento enviado — confirme no seu telefone");
+      toast(r.message || "Pagamento enviado — confirme no seu telefone");
     },
     onError: (e) => {
       setModal({ status: "failed", id: undefined });
