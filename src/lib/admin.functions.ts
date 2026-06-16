@@ -130,8 +130,21 @@ export const rejectWithdrawal = createServerFn({ method: "POST" })
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("withdrawals")
-      .update({ status: "failed" }).eq("id", data.id);
+      .update({ status: "rejected" }).eq("id", data.id);
     if (error) throw new Error(error.message);
+
+    // Notify the user
+    try {
+      const { data: wd } = await supabaseAdmin.from("withdrawals")
+        .select("user_id, amount_mzn").eq("id", data.id).maybeSingle();
+      if (wd) {
+        const fmt = new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(Number(wd.amount_mzn));
+        await supabaseAdmin.from("notifications").insert({
+          user_id: wd.user_id, type: "withdrawal_rejected",
+          title: "Saque rejeitado", message: `O seu pedido de ${fmt} MT foi rejeitado.`,
+        });
+      }
+    } catch {}
     return { ok: true };
   });
 
@@ -162,11 +175,19 @@ export const listAllWithdrawals = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
-      .from("withdrawals").select("*, profiles!inner(full_name, business_name)").order("created_at", { ascending: false }).limit(200);
+    const { data: wds, error } = await supabaseAdmin
+      .from("withdrawals").select("*").order("created_at", { ascending: false }).limit(200);
     if (error) throw new Error(error.message);
-    return data ?? [];
+    const userIds = Array.from(new Set((wds ?? []).map((w: any) => w.user_id)));
+    let profilesMap: Record<string, any> = {};
+    if (userIds.length) {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles").select("id, full_name, business_name, phone").in("id", userIds);
+      (profs ?? []).forEach((p: any) => { profilesMap[p.id] = p; });
+    }
+    return (wds ?? []).map((w: any) => ({ ...w, profiles: profilesMap[w.user_id] ?? null }));
   });
+
 
 export const listAllProducts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
