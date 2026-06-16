@@ -19,7 +19,7 @@ const productSchema = z.object({
   utimify_id: z.string().trim().max(100).optional().default(""),
   lawtracker_id: z.string().trim().max(100).optional().default(""),
   support_phone: z.string().trim().max(20).optional().default(""),
-  slug: z.string().trim().regex(/^[a-z0-9-]*$/i).max(80).optional().default(""),
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9-]+$/, "Slug inválido (apenas letras minúsculas, números e -)").min(3, "Slug deve ter no mínimo 3 caracteres").max(80),
   config: z.record(z.unknown()).optional().default({}),
 });
 
