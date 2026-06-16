@@ -136,6 +136,30 @@ export const testUtmify = createServerFn({ method: "POST" })
     return { ok: true, status: r.status };
   });
 
+export const testLowtrack = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ webhook_url: z.string().url(), api_token: z.string().optional() }).parse(d))
+  .handler(async ({ data }) => {
+    const headers: Record<string, string> = { "content-type": "application/json" };
+    if (data.api_token) headers["authorization"] = `Bearer ${data.api_token}`;
+    const r = await fetch(data.webhook_url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        event: "payment.confirmed",
+        orderId: `test-${Date.now()}`,
+        amount: 100,
+        netAmount: 95,
+        customer: { name: "Teste RedoxPay", phone: "+258840000000" },
+        product: "Produto Teste",
+        createdAt: new Date().toISOString(),
+        isTest: true,
+      }),
+    });
+    if (!r.ok && r.status >= 500) throw new Error(`LowTrack respondeu ${r.status}`);
+    return { ok: true, status: r.status };
+  });
+
 export const sendTestSms = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
