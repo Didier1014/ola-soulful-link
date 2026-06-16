@@ -2,281 +2,257 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getIntegrationSettings, saveIntegrationSetting, deleteIntegrationSetting } from "@/lib/integrations.functions";
+import {
+  getIntegrationsBundle, saveIntegrationsBundle,
+  testPushcut, testUtmify, sendTestSms,
+} from "@/lib/integrations.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  TrendingUp, Gavel, BarChart3, Webhook,
-  ChevronRight, Copy, CheckCircle2, ExternalLink, Trash2,
-  Smartphone, type LucideIcon,
-} from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Bell, Sparkles, Webhook, TrendingUp, MessageSquare, Send, Save } from "lucide-react";
 import { toast } from "sonner";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/integrations")({
   component: IntegrationsPage,
 });
 
-type IntegrationId = "utimify" | "lowtrack" | "meta_pixel" | "moz_sms" | "webhooks";
-
-interface Integration {
-  id: IntegrationId;
-  group: string;
-  name: string;
-  desc: string;
-  icon: LucideIcon;
-  color: string;
-  fields: { key: string; label: string; type: "text" | "password" | "textarea" | "url"; placeholder?: string }[];
-  docUrl?: string;
+interface Bundle {
+  push_custom: { title?: string; body?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
+  pushcut: { enabled?: boolean; webhook_url?: string };
+  utmify: { enabled?: boolean; api_token?: string };
+  mozesms: { enabled?: boolean; sender_id?: string; template?: string; test_number?: string };
 }
 
-const INTEGRATIONS: Integration[] = [
-  {
-    id: "utimify", group: "MARKETING",
-    name: "Utmify", desc: "Rastreie conversões e atribuição UTM das suas vendas.",
-    icon: TrendingUp, color: "bg-violet-50 text-violet-600",
-    fields: [
-      { key: "api_token", label: "API Token", type: "password", placeholder: "Cole o token gerado em Integrações > Webhooks > Credenciais" },
-    ],
-    docUrl: "https://app.utmify.com.br/dashboards",
-  },
-  {
-    id: "lowtrack", group: "MARKETING",
-    name: "LowTrack", desc: "Rastreador inteligente para baixar CPA. Envia dados de vendas para a Meta.",
-    icon: TrendingUp, color: "bg-blue-50 text-blue-600",
-    fields: [
-      { key: "webhook_url", label: "Webhook URL (opcional)", type: "url", placeholder: "https://api.lowtrack.com.br/webhook" },
-    ],
-    docUrl: "https://lowtrack.com.br",
-  },
-  {
-    id: "meta_pixel", group: "MARKETING",
-    name: "Meta Pixel (Facebook)", desc: "Acompanhe conversões e crie públicos personalizados no Facebook/Instagram.",
-    icon: BarChart3, color: "bg-sky-50 text-sky-600",
-    fields: [
-      { key: "pixel_id", label: "Pixel ID", type: "text", placeholder: "1234567890" },
-      { key: "access_token", label: "Access Token (opcional)", type: "password", placeholder: "EA..." },
-    ],
-    docUrl: "https://developers.facebook.com/docs/meta-pixel",
-  },
-  {
-    id: "moz_sms", group: "COMUNICAÇÃO",
-    name: "MOZ SMS", desc: "Envie SMS em Moçambique via API da MOZ SMS. Usado para notificações de pagamento.",
-    icon: Smartphone, color: "bg-emerald-50 text-emerald-600",
-    fields: [
-      { key: "api_token", label: "API Token", type: "password", placeholder: "mozsms_..." },
-      { key: "sender_id", label: "Sender ID", type: "text", placeholder: "RedoxPay" },
-    ],
-    docUrl: "https://mozsms.co.mz/docs",
-  },
-  {
-    id: "webhooks", group: "DESENVOLVEDOR",
-    name: "Webhooks", desc: "Receba notificações em tempo real de eventos da sua conta (pagamentos, reembolsos, etc.).",
-    icon: Webhook, color: "bg-amber-50 text-amber-600",
-    fields: [
-      { key: "callback_url", label: "Callback URL", type: "url", placeholder: "https://seu-sistema.com/webhook" },
-      { key: "secret", label: "Segredo (para validar payloads)", type: "password", placeholder: "whsec_..." },
-    ],
-    docUrl: "#",
-  },
-];
-
-const fmtBaseUrl = typeof window !== "undefined" ? window.location.origin : "";
-
-const REDOX_WEBHOOK_URL = `${fmtBaseUrl}/api/public/webhook-payment`;
+const DEFAULT_BUNDLE: Bundle = {
+  push_custom: { title: "💰 Nova venda aprovada!", body: "{valor} — {cliente}", currency: "MZN" },
+  pushcut: { enabled: false, webhook_url: "" },
+  utmify: { enabled: false, api_token: "" },
+  mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Obrigado!", test_number: "" },
+};
 
 function IntegrationsPage() {
   const qc = useQueryClient();
-  const fetchSettings = useServerFn(getIntegrationSettings);
-  const { data: savedSettings = [] } = useQuery({
-    queryKey: ["integration_settings"],
-    queryFn: () => fetchSettings(),
+  const fetchBundle = useServerFn(getIntegrationsBundle);
+  const saveBundle = useServerFn(saveIntegrationsBundle);
+  const tPushcut = useServerFn(testPushcut);
+  const tUtmify = useServerFn(testUtmify);
+  const tSms = useServerFn(sendTestSms);
+
+  const { data } = useQuery({ queryKey: ["bundle"], queryFn: () => fetchBundle() });
+  const [b, setB] = useState<Bundle>(DEFAULT_BUNDLE);
+
+  useEffect(() => {
+    if (data) {
+      setB({
+        push_custom: { ...DEFAULT_BUNDLE.push_custom, ...(data.push_custom || {}) },
+        pushcut: { ...DEFAULT_BUNDLE.pushcut, ...(data.pushcut || {}) },
+        utmify: { ...DEFAULT_BUNDLE.utmify, ...(data.utmify || {}) },
+        mozesms: { ...DEFAULT_BUNDLE.mozesms, ...(data.mozesms || {}) },
+      });
+    }
+  }, [data]);
+
+  const saveM = useMutation({
+    mutationFn: () => saveBundle({ data: b }),
+    onSuccess: () => { toast.success("Integrações guardadas"); qc.invalidateQueries({ queryKey: ["bundle"] }); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
   });
 
-  const settingsMap = useMemo(() => {
-    const m = new Map<string, Record<string, string>>();
-    savedSettings.forEach((s: { integration_key: string; settings: Record<string, string> }) => m.set(s.integration_key, s.settings));
-    return m;
-  }, [savedSettings]);
-
-  const [selected, setSelected] = useState<IntegrationId | null>(null);
-  const groups = Array.from(new Set(INTEGRATIONS.map(i => i.group)));
-
-  if (selected) {
-    const it = INTEGRATIONS.find(i => i.id === selected)!;
-    return (
-      <IntegrationDetail
-        integration={it}
-        initial={settingsMap.get(selected) || {}}
-        onBack={() => setSelected(null)}
-        onSaved={() => qc.invalidateQueries({ queryKey: ["integration_settings"] })}
-      />
-    );
+  async function activatePush() {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      toast.error("Notificações não suportadas neste browser"); return;
+    }
+    const perm = await Notification.requestPermission();
+    if (perm === "granted") toast.success("Notificações activas neste dispositivo");
+    else toast.error("Permissão negada");
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-24">
       <div className="px-1">
         <h1 className="text-2xl font-semibold tracking-tight">Integrações</h1>
-        <p className="text-sm text-muted-foreground">Conecte ferramentas externas para automatizar, rastrear e notificar as suas vendas</p>
+        <p className="text-sm text-muted-foreground">Configure webhooks para notificações e rastreamento</p>
       </div>
 
-      {groups.map(g => (
-        <div key={g} className="space-y-2">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground px-1">{g}</p>
-          {INTEGRATIONS.filter(i => i.group === g).map(it => {
-            const saved = settingsMap.get(it.id);
-            const configured = saved && Object.keys(saved).length > 0 && Object.values(saved).some(v => v);
-            return (
-              <Card key={it.id} className="rounded-2xl shadow-sm p-5">
-                <div className="flex items-start justify-between">
-                  <div className={`h-11 w-11 rounded-xl flex items-center justify-center ${it.color}`}><it.icon className="h-5 w-5" /></div>
-                  {configured ? (
-                    <span className="text-xs px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3" /> Configurado
-                    </span>
-                  ) : (
-                    <span className="text-xs px-2 py-1 rounded-md bg-sky-50 text-sky-700">Disponível</span>
-                  )}
-                </div>
-                <h3 className="mt-3 font-semibold">{it.name}</h3>
-                <p className="text-sm text-muted-foreground">{it.desc}</p>
-                <button onClick={() => setSelected(it.id)} className="mt-3 text-sm text-sky-600 flex items-center gap-1 font-medium">
-                  {configured ? "Reconfigurar" : "Configurar"} <ChevronRight className="h-3.5 w-3.5" />
-                </button>
-              </Card>
-            );
-          })}
+      {/* 1) Push Web App */}
+      <Card className="rounded-2xl p-5 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+            <Bell className="h-5 w-5 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold">Notificações Push (Web App)</h3>
+            <p className="text-sm text-muted-foreground">Receba alertas de vendas no navegador ou no telemóvel (PWA)</p>
+          </div>
         </div>
-      ))}
+        <Button variant="outline" onClick={activatePush}><Bell className="h-4 w-4 mr-1" /> Ativar notificações</Button>
+      </Card>
+
+      {/* 2) Personalizar push */}
+      <Card className="rounded-2xl p-5 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+            <Sparkles className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className="font-semibold">Personalizar Notificação Push</h3>
+            <p className="text-sm text-muted-foreground">Edite o título e o conteúdo das notificações de venda aprovada</p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Título da notificação</Label>
+          <Input value={b.push_custom.title || ""}
+            onChange={(e) => setB({ ...b, push_custom: { ...b.push_custom, title: e.target.value } })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Moeda do valor</Label>
+          <Select value={b.push_custom.currency || "MZN"} onValueChange={(v: any) => setB({ ...b, push_custom: { ...b.push_custom, currency: v } })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="MZN">Metical (MZN)</SelectItem>
+              <SelectItem value="BRL">Real Brasileiro (R$)</SelectItem>
+              <SelectItem value="USD">Dólar (US$)</SelectItem>
+              <SelectItem value="EUR">Euro (€)</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">A variável {"{valor}"} será mostrada na moeda selecionada.</p>
+        </div>
+        <div className="space-y-2">
+          <Label>Mensagem (corpo)</Label>
+          <Textarea rows={3} value={b.push_custom.body || ""}
+            onChange={(e) => setB({ ...b, push_custom: { ...b.push_custom, body: e.target.value } })}
+          />
+          <p className="text-xs text-muted-foreground">Variáveis: {"{valor}"}, {"{produto}"}, {"{cliente}"}</p>
+        </div>
+      </Card>
+
+      {/* 3) PUSHcut */}
+      <IntegrationCard
+        icon={<Webhook className="h-5 w-5 text-white" />}
+        iconBg="from-orange-500 to-pink-500"
+        title="PUSHcut"
+        desc="Receba notificações de vendas em tempo real no seu dispositivo (iOS/iPadOS)"
+        enabled={!!b.pushcut.enabled}
+        onToggle={(v) => setB({ ...b, pushcut: { ...b.pushcut, enabled: v } })}
+      >
+        <Label>Webhook URL</Label>
+        <Input value={b.pushcut.webhook_url || ""}
+          onChange={(e) => setB({ ...b, pushcut: { ...b.pushcut, webhook_url: e.target.value } })}
+          placeholder="https://api.pushcut.io/..." />
+        <Button variant="outline" size="sm"
+          disabled={!b.pushcut.webhook_url}
+          onClick={async () => {
+            try { await tPushcut({ data: { webhook_url: b.pushcut.webhook_url! } }); toast.success("Notificação enviada para o PUSHcut"); }
+            catch (e: any) { toast.error(e.message); }
+          }}>
+          <Send className="h-3.5 w-3.5 mr-1" /> Testar
+        </Button>
+      </IntegrationCard>
+
+      {/* 4) UTMify */}
+      <IntegrationCard
+        icon={<TrendingUp className="h-5 w-5 text-white" />}
+        iconBg="from-violet-500 to-fuchsia-500"
+        title="UTMify"
+        desc="Rastreamento de conversões e atribuição de vendas"
+        enabled={!!b.utmify.enabled}
+        onToggle={(v) => setB({ ...b, utmify: { ...b.utmify, enabled: v } })}
+      >
+        <Label>API Token</Label>
+        <Input type="password" value={b.utmify.api_token || ""}
+          onChange={(e) => setB({ ...b, utmify: { ...b.utmify, api_token: e.target.value } })}
+          placeholder="utm_..." />
+        <Button variant="outline" size="sm"
+          disabled={!b.utmify.api_token}
+          onClick={async () => {
+            try { await tUtmify({ data: { api_token: b.utmify.api_token! } }); toast.success("Conexão UTMify validada"); }
+            catch (e: any) { toast.error(e.message); }
+          }}>
+          <Send className="h-3.5 w-3.5 mr-1" /> Testar
+        </Button>
+      </IntegrationCard>
+
+      {/* 5) MozeSMS */}
+      <IntegrationCard
+        icon={<MessageSquare className="h-5 w-5 text-white" />}
+        iconBg="from-emerald-500 to-teal-500"
+        title="MozeSMS"
+        desc="SMS automático para o cliente após pagamento aprovado"
+        enabled={!!b.mozesms.enabled}
+        onToggle={(v) => setB({ ...b, mozesms: { ...b.mozesms, enabled: v } })}
+      >
+        <Label>Nome do Remetente (Sender ID)</Label>
+        <Input value={b.mozesms.sender_id || ""}
+          onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, sender_id: e.target.value } })}
+          maxLength={11} placeholder="RedoxPay" />
+        <Label>Modelo da Mensagem SMS</Label>
+        <Textarea rows={3} value={b.mozesms.template || ""}
+          onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, template: e.target.value } })}
+        />
+        <p className="text-xs text-muted-foreground -mt-2">Variáveis: {"{nome}"}, {"{produto}"}, {"{valor}"}, {"{email}"}</p>
+        <Label>Número para teste SMS</Label>
+        <div className="flex gap-2">
+          <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+258</div>
+          <Input value={b.mozesms.test_number || ""}
+            onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, test_number: e.target.value.replace(/\D/g, "") } })}
+            placeholder="84XXXXXXX" />
+        </div>
+        <Button variant="outline" size="sm"
+          disabled={!b.mozesms.test_number || !b.mozesms.template}
+          onClick={async () => {
+            try {
+              await tSms({ data: {
+                sender_id: b.mozesms.sender_id || "RedoxPay",
+                message: (b.mozesms.template || "").replaceAll("{nome}", "Teste").replaceAll("{produto}", "Produto Teste").replaceAll("{valor}", "100 MT").replaceAll("{email}", "teste@redox.com"),
+                number: `258${b.mozesms.test_number}`,
+              } });
+              toast.success("SMS de teste enviado");
+            } catch (e: any) { toast.error(e.message); }
+          }}>
+          <Send className="h-3.5 w-3.5 mr-1" /> Testar
+        </Button>
+      </IntegrationCard>
+
+      {/* Sticky save bar */}
+      <div className="sticky bottom-0 left-0 right-0 pt-2 pb-1 bg-gradient-to-t from-background via-background to-transparent">
+        <Button
+          className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-white"
+          disabled={saveM.isPending}
+          onClick={() => saveM.mutate()}
+        >
+          <Save className="h-4 w-4 mr-2" /> {saveM.isPending ? "A guardar..." : "Salvar Integrações"}
+        </Button>
+      </div>
     </div>
   );
 }
 
-function IntegrationDetail({
-  integration, initial, onBack, onSaved,
+function IntegrationCard({
+  icon, iconBg, title, desc, enabled, onToggle, children,
 }: {
-  integration: Integration;
-  initial: Record<string, string>;
-  onBack: () => void;
-  onSaved: () => void;
+  icon: React.ReactNode; iconBg: string; title: string; desc: string;
+  enabled: boolean; onToggle: (v: boolean) => void; children: React.ReactNode;
 }) {
-  const qc = useQueryClient();
-  const saveFn = useServerFn(saveIntegrationSetting);
-  const deleteFn = useServerFn(deleteIntegrationSetting);
-  const [values, setValues] = useState<Record<string, string>>(initial);
-  const configured = Object.keys(initial).length > 0 && Object.values(initial).some(v => v);
-
-  const saveM = useMutation({
-    mutationFn: () => saveFn({ data: { integration_key: integration.id, settings: values } }),
-    onSuccess: () => { toast.success(`${integration.name} configurado com sucesso!`); onSaved(); qc.invalidateQueries({ queryKey: ["integration_settings"] }); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao guardar"),
-  });
-
-  const deleteM = useMutation({
-    mutationFn: () => deleteFn({ data: { integration_key: integration.id } }),
-    onSuccess: () => { toast.success("Configuração removida"); onSaved(); qc.invalidateQueries({ queryKey: ["integration_settings"] }); onBack(); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
-  });
-
   return (
-    <div className="space-y-4">
-      <button onClick={onBack} className="text-sm text-muted-foreground">← Voltar para integrações</button>
-
+    <Card className="rounded-2xl p-5 space-y-3">
       <div className="flex items-start gap-3">
-        <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${integration.color}`}>
-          <integration.icon className="h-6 w-6" />
+        <div className={`h-11 w-11 rounded-xl bg-gradient-to-br ${iconBg} flex items-center justify-center shrink-0`}>
+          {icon}
         </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold">{integration.name}</h1>
-            {configured && <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700">● Ativo</span>}
-          </div>
-          <p className="text-sm text-muted-foreground max-w-md">{integration.desc}</p>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold">{title}</h3>
+          <p className="text-sm text-muted-foreground">{desc}</p>
         </div>
+        <Switch checked={enabled} onCheckedChange={onToggle} />
       </div>
-
-      {integration.id === "webhooks" && (
-        <Card className="rounded-2xl shadow-sm p-5 bg-primary/5 border-primary/20">
-          <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Webhook Redox Pay (receber eventos)</h3>
-          <p className="text-xs text-muted-foreground mb-2">URL para receber atualizações de pagamento em tempo real:</p>
-          <code className="block p-3 rounded-lg bg-black/40 border border-white/10 text-xs break-all font-mono">{REDOX_WEBHOOK_URL}</code>
-          <Button
-            variant="outline" size="sm"
-            className="mt-2 rounded-xl bg-white/5 border-white/10"
-            onClick={() => { navigator.clipboard.writeText(REDOX_WEBHOOK_URL); toast.success("URL copiado"); }}
-          >
-            <Copy className="h-3.5 w-3.5 mr-1" /> Copiar URL
-          </Button>
-        </Card>
-      )}
-
-      <Card className="rounded-2xl shadow-sm p-5">
-        <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Como funciona</h3>
-        <ol className="space-y-3 text-sm">
-          {[
-            `Obtenha as suas credenciais no painel do ${integration.name}`,
-            "Insira os dados nos campos abaixo e guarde",
-            integration.id === "webhooks"
-              ? "Enviaremos eventos em tempo real para o seu URL"
-              : `Os dados serão enviados automaticamente para o ${integration.name}`,
-          ].map((s, i) => (
-            <li key={i} className="flex items-start gap-3">
-              <span className="h-5 w-5 rounded-full bg-violet-100 text-violet-700 text-xs flex items-center justify-center font-semibold shrink-0">{i + 1}</span>
-              <span>{s}</span>
-            </li>
-          ))}
-        </ol>
-        {integration.docUrl && integration.docUrl !== "#" && (
-          <a href={integration.docUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-xs text-primary-glow hover:underline">
-            <ExternalLink className="h-3 w-3" /> Documentação oficial
-          </a>
-        )}
-      </Card>
-
-      <Card className="rounded-2xl shadow-sm p-5 space-y-4">
-        <h3 className="text-xs uppercase tracking-wider text-muted-foreground">Configuração</h3>
-        {integration.fields.map(f => (
-          <div key={f.key} className="space-y-2">
-            <Label>{f.label}</Label>
-            {f.type === "textarea" ? (
-              <Textarea
-                value={values[f.key] || ""}
-                onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
-                placeholder={f.placeholder}
-              />
-            ) : (
-              <Input
-                type={f.type === "password" ? "password" : "text"}
-                value={values[f.key] || ""}
-                onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
-                placeholder={f.placeholder}
-                className="font-mono"
-              />
-            )}
-          </div>
-        ))}
-        <div className="flex justify-between pt-2">
-          {configured && (
-            <Button variant="ghost" className="text-destructive" onClick={() => deleteM.mutate()} disabled={deleteM.isPending}>
-              <Trash2 className="h-4 w-4 mr-1" /> Remover
-            </Button>
-          )}
-          <div className="flex gap-2 ml-auto">
-            <Button variant="ghost" onClick={onBack}>Cancelar</Button>
-            <Button
-              className="bg-foreground text-background"
-              disabled={saveM.isPending}
-              onClick={() => saveM.mutate()}
-            >
-              {saveM.isPending ? "A guardar..." : "Guardar configuração"}
-            </Button>
-          </div>
-        </div>
-      </Card>
-    </div>
+      {enabled && <div className="space-y-2 pt-2 border-t border-border/40">{children}</div>}
+    </Card>
   );
 }
