@@ -114,8 +114,12 @@ function IntegrationsPage() {
 
     try {
       if ("serviceWorker" in navigator) {
-        const reg = await navigator.serviceWorker.getRegistration();
+        let reg = await navigator.serviceWorker.getRegistration();
+        if (!reg) {
+          try { reg = await navigator.serviceWorker.register("/sw.js"); } catch {}
+        }
         if (reg) {
+          await navigator.serviceWorker.ready;
           await reg.showNotification(title, { body, icon: "/favicon.ico", badge: "/favicon.ico", tag: "test-notif" });
           toast.success("Notificação de teste enviada");
           return;
@@ -126,6 +130,7 @@ function IntegrationsPage() {
     } catch (e: any) {
       toast.error(e?.message || "Falha ao enviar notificação");
     }
+
   }
 
   return (
