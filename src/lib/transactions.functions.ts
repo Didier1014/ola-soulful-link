@@ -303,5 +303,32 @@ export const createWithdrawal = createServerFn({ method: "POST" })
       destination: data.destination,
     });
     if (error) throw new Error(error.message);
+
+    // Notify all admins (in-app + push)
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: admins } = await supabaseAdmin
+        .from("user_roles").select("user_id").eq("role", "admin");
+      const { data: reqProfile } = await supabaseAdmin
+        .from("profiles").select("full_name,business_name").eq("id", context.userId).maybeSingle();
+      const who = reqProfile?.business_name || reqProfile?.full_name || "Utilizador";
+      const fmt = new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(data.amount_mzn);
+      const title = "Novo pedido de saque";
+      const message = `${who} solicitou saque de ${fmt} MT via ${data.method.toUpperCase()}`;
+      const ids = (admins ?? []).map((a: any) => a.user_id);
+      if (ids.length) {
+        await supabaseAdmin.from("notifications").insert(
+          ids.map((uid: string) => ({
+            user_id: uid, type: "withdrawal_request", title, message,
+            data: { amount_mzn: data.amount_mzn, method: data.method, requester_id: context.userId },
+          }))
+        );
+        const { sendPushToUser } = await import("@/lib/push.functions");
+        await Promise.all(ids.map((uid: string) =>
+          sendPushToUser(supabaseAdmin, uid, title, message, "/dashboard/admin").catch(() => {})
+        ));
+      }
+    } catch (e) { console.log("[withdrawal] notify admins failed", e); }
+
     return { ok: true };
   });
