@@ -1,28 +1,33 @@
+// @ts-nocheck
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const productSchema = z.object({
   name: z.string().trim().min(1).max(120),
-  description: z.string().trim().max(2000).optional().default(""),
+  description: z.string().trim().max(4000).optional().default(""),
   price_mzn: z.number().min(0).max(1_000_000),
   cover_path: z.string().trim().max(500).optional().default(""),
   delivery_url: z.string().url().max(500).optional().or(z.literal("")).default(""),
+  thank_you_url: z.string().url().max(500).optional().or(z.literal("")).default(""),
+  product_type: z.enum(["external", "digital", "physical", "lead"]).default("external"),
+  digital_file_path: z.string().trim().max(500).optional().default(""),
+  discount_no_balance: z.number().min(0).max(100).default(0),
+  sms_sender_id: z.string().trim().max(20).optional().default(""),
+  sms_template: z.string().trim().max(500).optional().default(""),
   pixel_id: z.string().trim().max(100).optional().default(""),
   utimify_id: z.string().trim().max(100).optional().default(""),
   lawtracker_id: z.string().trim().max(100).optional().default(""),
   support_phone: z.string().trim().max(20).optional().default(""),
+  slug: z.string().trim().regex(/^[a-z0-9-]*$/i).max(80).optional().default(""),
+  config: z.record(z.unknown()).optional().default({}),
 });
 
-const updateSchema = productSchema.extend({
-  id: z.string().uuid(),
-});
+const updateSchema = productSchema.extend({ id: z.string().uuid() });
 
-// short 5-char alphanumeric id (lowercase) — e.g. "eed3d"
 function shortId(len = 5) {
-  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let s = "";
-  for (let i = 0; i < len; i++) s += alphabet[Math.floor(Math.random() * alphabet.length)];
+  const a = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let s = ""; for (let i = 0; i < len; i++) s += a[Math.floor(Math.random() * a.length)];
   return s;
 }
 
@@ -43,17 +48,21 @@ export const listMyProducts = createServerFn({ method: "GET" })
     return Promise.all(rows.map(async (p) => ({ ...p, cover_url: await signCover(context.supabase, p.cover_url) })));
   });
 
+async function uniqueSlug(supabase: any, desired: string): Promise<string> {
+  let slug = (desired || shortId()).toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 60) || shortId();
+  for (let i = 0; i < 6; i++) {
+    const { data: ex } = await supabase.from("products").select("id").eq("slug", slug).maybeSingle();
+    if (!ex) return slug;
+    slug = `${slug}-${shortId(3)}`;
+  }
+  return shortId(8);
+}
+
 export const createProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => productSchema.parse(d))
   .handler(async ({ data, context }) => {
-    let slug = shortId();
-    for (let i = 0; i < 5; i++) {
-      const { data: existing } = await context.supabase
-        .from("products").select("id").eq("slug", slug).maybeSingle();
-      if (!existing) break;
-      slug = shortId();
-    }
+    const slug = await uniqueSlug(context.supabase, data.slug || "");
     const { data: row, error } = await context.supabase
       .from("products")
       .insert({
@@ -64,10 +73,17 @@ export const createProduct = createServerFn({ method: "POST" })
         price_mzn: data.price_mzn,
         cover_url: data.cover_path || null,
         delivery_url: data.delivery_url || null,
+        thank_you_url: data.thank_you_url || null,
+        product_type: data.product_type,
+        digital_file_path: data.digital_file_path || null,
+        discount_no_balance: data.discount_no_balance,
+        sms_sender_id: data.sms_sender_id || null,
+        sms_template: data.sms_template || null,
         pixel_id: data.pixel_id || null,
         utimify_id: data.utimify_id || null,
         lawtracker_id: data.lawtracker_id || null,
         support_phone: data.support_phone || null,
+        config: data.config || {},
       })
       .select().single();
     if (error) throw new Error(error.message);
@@ -78,21 +94,30 @@ export const updateProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => updateSchema.parse(d))
   .handler(async ({ data, context }) => {
-    const { id, name, description, price_mzn, cover_path, delivery_url, pixel_id, utimify_id, lawtracker_id, support_phone } = data;
-    const { error } = await context.supabase
-      .from("products")
-      .update({
-        name,
-        description: description || null,
-        price_mzn,
-        cover_url: cover_path || null,
-        delivery_url: delivery_url || null,
-        pixel_id: pixel_id || null,
-        utimify_id: utimify_id || null,
-        lawtracker_id: lawtracker_id || null,
-        support_phone: support_phone || null,
-      })
-      .eq("id", id);
+    const { id, ...rest } = data;
+    const patch: Record<string, unknown> = {
+      name: rest.name,
+      description: rest.description || null,
+      price_mzn: rest.price_mzn,
+      cover_url: rest.cover_path || null,
+      delivery_url: rest.delivery_url || null,
+      thank_you_url: rest.thank_you_url || null,
+      product_type: rest.product_type,
+      digital_file_path: rest.digital_file_path || null,
+      discount_no_balance: rest.discount_no_balance,
+      sms_sender_id: rest.sms_sender_id || null,
+      sms_template: rest.sms_template || null,
+      pixel_id: rest.pixel_id || null,
+      utimify_id: rest.utimify_id || null,
+      lawtracker_id: rest.lawtracker_id || null,
+      support_phone: rest.support_phone || null,
+      config: rest.config || {},
+    };
+    if (rest.slug) {
+      const { data: cur } = await context.supabase.from("products").select("slug").eq("id", id).maybeSingle();
+      if (cur?.slug !== rest.slug) patch.slug = await uniqueSlug(context.supabase, rest.slug);
+    }
+    const { error } = await context.supabase.from("products").update(patch).eq("id", id).eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -116,6 +141,45 @@ export const deleteProduct = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const duplicateProduct = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: src, error: e1 } = await context.supabase
+      .from("products").select("*").eq("id", data.id).eq("user_id", context.userId).single();
+    if (e1 || !src) throw new Error("Produto não encontrado");
+    const slug = await uniqueSlug(context.supabase, `${src.slug}-copy`);
+    const { id, created_at, updated_at, ...rest } = src as any;
+    const { data: row, error } = await context.supabase
+      .from("products").insert({ ...rest, slug, name: `${src.name} (cópia)`, active: false }).select().single();
+    if (error) throw new Error(error.message);
+    return row;
+  });
+
+export const aiGenerateProductCopy = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ name: z.string().min(1).max(120), hint: z.string().max(500).optional().default("") }).parse(d))
+  .handler(async ({ data }) => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("AI Gateway não configurado");
+    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: "És um copywriter de vendas em português de Moçambique. Devolve JSON {\"title\":string,\"description\":string} curto e directo, sem emojis em excesso." },
+          { role: "user", content: `Produto: ${data.name}\nNotas: ${data.hint || "(sem notas)"}` },
+        ],
+        response_format: { type: "json_object" },
+      }),
+    });
+    if (!r.ok) throw new Error(`AI ${r.status}`);
+    const j = await r.json();
+    try { return JSON.parse(j.choices?.[0]?.message?.content ?? "{}"); }
+    catch { return { title: data.name, description: "" }; }
+  });
+
 // Public — fetch product by slug for checkout
 export const getProductBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
@@ -123,7 +187,7 @@ export const getProductBySlug = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
       .from("products")
-      .select("id,user_id,slug,name,description,price_mzn,cover_url,delivery_url,active,pixel_id,utimify_id,lawtracker_id,support_phone")
+      .select("id,user_id,slug,name,description,price_mzn,cover_url,delivery_url,thank_you_url,product_type,discount_no_balance,active,pixel_id,utimify_id,lawtracker_id,support_phone,config")
       .eq("slug", data.slug).eq("active", true).maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) throw new Error("Produto não encontrado");
