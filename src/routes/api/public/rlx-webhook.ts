@@ -112,7 +112,14 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
             const sellerNet = Math.round((amount - sellerFee) * 100) / 100;
             updates.net_mzn = sellerNet;
 
-            await supabaseAdmin.from("transactions").update(updates).eq("id", tx.id);
+            const { data: changed } = await supabaseAdmin
+              .from("transactions")
+              .update(updates)
+              .eq("id", tx.id)
+              .eq("status", "pending")
+              .select("id")
+              .maybeSingle();
+            if (!changed) return new Response("ok");
 
             const { data: prof } = await supabaseAdmin
               .from("profiles").select("balance_mzn").eq("id", tx.user_id).maybeSingle();
