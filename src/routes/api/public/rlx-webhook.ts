@@ -95,6 +95,11 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
 
         const next = mapGatewayStatus(payload);
 
+        if (externalRef && tx.external_ref !== externalRef) {
+          await supabaseAdmin.from("transactions").update({ external_ref: externalRef }).eq("id", tx.id);
+          tx.external_ref = externalRef;
+        }
+
         if (next !== tx.status) {
           const updates: Record<string, unknown> = { status: next };
           if (!tx.external_ref && externalRef) updates.external_ref = externalRef;
@@ -106,7 +111,6 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
             const rlxCost = Math.round((amount * 0.10 + 10) * 100) / 100;
             const sellerNet = Math.round((amount - sellerFee) * 100) / 100;
             updates.net_mzn = sellerNet;
-            updates.rlx_fee = rlxCost;
 
             await supabaseAdmin.from("transactions").update(updates).eq("id", tx.id);
 
