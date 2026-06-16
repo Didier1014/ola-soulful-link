@@ -94,18 +94,38 @@ export function AuthLayout() {
               <div className="h-px flex-1 bg-white/10" />
             </div>
 
-            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-4" onSubmit={handleSubmit}>
               {mode === "signup" && (
                 <Field label="Nome">
                   <input type="text" placeholder="O seu nome" className="input" />
                 </Field>
               )}
               <Field label="Email">
-                <input type="email" placeholder="voce@exemplo.com" className="input" />
+                <input
+                  type="email"
+                  placeholder="voce@exemplo.com"
+                  className="input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                />
               </Field>
               <Field label="Senha" trailing={mode === "login" ? <a href="#" className="text-xs text-primary hover:underline">Esqueci</a> : undefined}>
-                <input type="password" placeholder="••••••••" className="input" />
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  className="input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                />
               </Field>
+
+              {error && (
+                <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                  {error}
+                </p>
+              )}
 
               <button
                 type="submit"
