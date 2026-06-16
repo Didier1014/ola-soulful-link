@@ -20,10 +20,12 @@ function stripPhone(phone: string) {
 }
 
 async function parseWebhookBody(request: Request) {
-  const raw = await request.text();
-  if (!raw) return {};
-  try { return JSON.parse(raw); } catch { /* not json */ }
-  return Object.fromEntries(new URLSearchParams(raw));
+  const url = new URL(request.url);
+  const queryParams = Object.fromEntries(url.searchParams);
+  const raw = await request.text().catch(() => "");
+  if (!raw) return queryParams;
+  try { return { ...queryParams, ...JSON.parse(raw) }; } catch { /* not json */ }
+  return { ...queryParams, ...Object.fromEntries(new URLSearchParams(raw)) };
 }
 
 function mapGatewayStatus(payload: Record<string, unknown>) {
