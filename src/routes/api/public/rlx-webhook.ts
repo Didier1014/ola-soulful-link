@@ -148,11 +148,13 @@ async function processWebhook(request: Request) {
 
             let productName: string | null = null;
             let productUtmifyId: string | null = null;
+            let productLowtrackId: string | null = null;
             if (tx.product_id) {
               const { data: prod } = await supabaseAdmin
-                .from("products").select("name,utimify_id").eq("id", tx.product_id).maybeSingle();
+                .from("products").select("name,utimify_id,lawtracker_id").eq("id", tx.product_id).maybeSingle();
               productName = prod?.name ?? null;
               productUtmifyId = prod?.utimify_id ?? null;
+              productLowtrackId = prod?.lawtracker_id ?? null;
             }
 
             if (notificationsEnabled) {
