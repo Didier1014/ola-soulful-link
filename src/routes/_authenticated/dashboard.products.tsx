@@ -424,7 +424,7 @@ function FormStep({
           </div>
 
           <div className="space-y-2">
-            <Label>Slug (URL do checkout)</Label>
+            <Label>Slug (URL do checkout) <span className="text-destructive">*</span></Label>
             <div className="flex items-center gap-1 rounded-md border border-border bg-secondary">
               <span className="px-3 text-xs text-muted-foreground">{typeof window !== "undefined" ? window.location.origin : "redoxpay.site"}/c/</span>
               <Input value={form.slug}
