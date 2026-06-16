@@ -547,7 +547,7 @@ function PillDialog({ open, pillKey, config, onClose, onSave }: {
   if (!meta) return null;
   const Icon = meta.icon;
 
-  function save() { const { _pill, ...rest } = c; onSave({ ...rest, enabled: !!rest.enabled }); onClose(); }
+  function save() { onSave({ ...c, enabled: !!c.enabled }); onClose(); }
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
