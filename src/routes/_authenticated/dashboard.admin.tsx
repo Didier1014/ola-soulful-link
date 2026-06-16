@@ -8,7 +8,8 @@ import {
 } from "@/lib/admin.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Shield, Users, Receipt, Package, TrendingUp, AlertTriangle,
@@ -43,17 +44,46 @@ function AdminPage() {
   const wds = useQuery({ queryKey: ["admin_wd"], queryFn: () => fnWd(), enabled: tab === "withdrawals" });
   const prods = useQuery({ queryKey: ["admin_prods"], queryFn: () => fnProd(), enabled: tab === "products" });
 
+  const invalidateAll = () => {
+    qc.invalidateQueries({ queryKey: ["admin_wd"] });
+    qc.invalidateQueries({ queryKey: ["admin_overview"] });
+    qc.invalidateQueries({ queryKey: ["admin_tx"] });
+    qc.invalidateQueries({ queryKey: ["admin_profiles"] });
+    qc.invalidateQueries({ queryKey: ["notifications"] });
+    qc.invalidateQueries({ queryKey: ["notifications", "unread"] });
+  };
+
   const approveM = useMutation({
     mutationFn: (id: string) => fnApprove({ data: { id } }),
-    onSuccess: () => { toast.success("Saque aprovado!"); qc.invalidateQueries({ queryKey: ["admin_wd"] }); qc.invalidateQueries({ queryKey: ["admin_overview"] }); },
+    onSuccess: () => { toast.success("Saque aprovado!"); invalidateAll(); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
   });
 
   const rejectM = useMutation({
     mutationFn: (id: string) => fnReject({ data: { id } }),
-    onSuccess: () => { toast.success("Saque rejeitado"); qc.invalidateQueries({ queryKey: ["admin_wd"] }); qc.invalidateQueries({ queryKey: ["admin_overview"] }); },
+    onSuccess: () => { toast.success("Saque rejeitado"); invalidateAll(); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
   });
+
+  // Realtime: keep admin panel in sync with new withdrawals, transactions, and notifications.
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "withdrawals" }, () => {
+        qc.invalidateQueries({ queryKey: ["admin_wd"] });
+        qc.invalidateQueries({ queryKey: ["admin_overview"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, () => {
+        qc.invalidateQueries({ queryKey: ["admin_tx"] });
+        qc.invalidateQueries({ queryKey: ["admin_overview"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () => {
+        qc.invalidateQueries({ queryKey: ["notifications"] });
+        qc.invalidateQueries({ queryKey: ["notifications", "unread"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
 
   const isAdmin = !overview.error;
 
@@ -242,7 +272,8 @@ function AdminPage() {
                       </Button>
                     </div>
                   )}
-                  {w.status === 'failed' && <p className="text-xs text-[#e11d48]">● Rejeitado</p>}
+                  {w.status === 'rejected' && <p className="text-xs text-[#e11d48]">● Rejeitado</p>}
+                  {w.status === 'processing' && <p className="text-xs text-amber-600">● A processar</p>}
                 </div>
               </div>
             ))}
