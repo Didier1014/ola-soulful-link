@@ -1,8 +1,10 @@
 // @ts-nocheck
+import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { listNotifications, markNotificationRead, markAllNotificationsRead } from "@/lib/notifications.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCheck, Settings2 } from "lucide-react";
@@ -42,6 +44,24 @@ function NotificationsPage() {
     queryFn: () => fetchList(),
     refetchInterval: 15000,
   });
+
+  // Realtime sync: any change refreshes both the list and the unread badge.
+  useEffect(() => {
+    let channel: any;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      const uid = data?.user?.id;
+      if (!uid) return;
+      channel = supabase
+        .channel(`notif-page-${uid}`)
+        .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${uid}` }, () => {
+          queryClient.invalidateQueries({ queryKey: ["notifications"] });
+          queryClient.invalidateQueries({ queryKey: ["notifications", "unread"] });
+        })
+        .subscribe();
+    })();
+    return () => { if (channel) supabase.removeChannel(channel); };
+  }, [queryClient]);
 
   const { mutate: doMarkRead } = useMutation({
     mutationFn: (id: string) => markRead({ data: { id } }),

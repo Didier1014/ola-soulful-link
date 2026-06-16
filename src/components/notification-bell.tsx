@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { listNotifications, markNotificationRead, markAllNotificationsRead, getUnreadCount } from "@/lib/notifications.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 function timeAgo(date: string) {
@@ -46,6 +48,24 @@ export function NotificationBell() {
     queryFn: () => fetchList(),
     refetchInterval: 30000,
   });
+
+  // Realtime: invalidate on any change to notifications for current user
+  useEffect(() => {
+    let channel: any;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      const uid = data?.user?.id;
+      if (!uid) return;
+      channel = supabase
+        .channel(`notif-bell-${uid}`)
+        .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${uid}` }, () => {
+          queryClient.invalidateQueries({ queryKey: ["notifications"] });
+          queryClient.invalidateQueries({ queryKey: ["notifications", "unread"] });
+        })
+        .subscribe();
+    })();
+    return () => { if (channel) supabase.removeChannel(channel); };
+  }, [queryClient]);
 
   const fetchMarkAll = useServerFn(markAllNotificationsRead);
 
