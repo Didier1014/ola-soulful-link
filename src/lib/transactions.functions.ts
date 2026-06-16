@@ -89,6 +89,40 @@ async function creditSellerIfPending(supabaseAdmin: any, txId: string, userId: s
   if (!changed) return false;
   const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", userId).maybeSingle();
   await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + sellerNet }).eq("id", userId);
+
+  // Notify seller in real-time (in-app + web push)
+  try {
+    const { data: tx } = await supabaseAdmin
+      .from("transactions")
+      .select("id, amount_mzn, customer_name, product_id")
+      .eq("id", txId)
+      .maybeSingle();
+    let productName: string | undefined;
+    if (tx?.product_id) {
+      const { data: p } = await supabaseAdmin.from("products").select("name").eq("id", tx.product_id).maybeSingle();
+      productName = p?.name;
+    }
+    const amount = Number(tx?.amount_mzn ?? 0);
+    const customer = tx?.customer_name ?? "Cliente";
+    const title = "Nova venda aprovada";
+    const message = `Pagamento de ${amount.toLocaleString("pt-PT", { minimumFractionDigits: 2 })} MT recebido${productName ? ` — ${productName}` : ""}`;
+
+    await supabaseAdmin.from("notifications").insert({
+      user_id: userId,
+      type: "sale",
+      title,
+      message,
+      data: { transaction_id: txId, amount_mzn: amount, currency: "MZN", customer_name: customer, product_name: productName },
+    });
+
+    const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
+    if (user?.user?.user_metadata?.notifications_enabled !== false) {
+      const { sendPushToUser } = await import("@/lib/push.functions");
+      sendPushToUser(supabaseAdmin, userId, title, message, "/dashboard/transactions").catch(() => {});
+    }
+  } catch (e) {
+    console.log("[creditSellerIfPending] notify error", e);
+  }
   return true;
 }
 
