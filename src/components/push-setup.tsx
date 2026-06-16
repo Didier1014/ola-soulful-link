@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { subscribePush, unsubscribePush } from "@/lib/push.functions";
 
-const VAPID_PUBLIC_KEY = "BBZ4Ea57McmQs3KDQ0fvJ3DwfQ7RdQ41549AEJ7Mf8rnud3-Uq4FokJCbLvN_I4sv7zCBbbrbz1z1tmRrfNHdSw";
+const VAPID_PUBLIC_KEY = "BLcrtjTjC39GxJQAa-9PZOVdOkoSIhfr6xaEhXlkbW_-aIPnghqwYkiI-u89fJAvmG37T7LxEzAcmbpjlVQuJ1Q";
 
 function urlBase64ToUint8Array(base64: string) {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
