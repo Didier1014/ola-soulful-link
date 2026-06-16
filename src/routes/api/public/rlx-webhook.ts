@@ -39,21 +39,7 @@ function mapGatewayStatus(payload: Record<string, unknown>) {
   return "pending";
 }
 
-async function handleWebhook({ request }: { request: Request }) {
-        const token = process.env.RLX_API_TOKEN;
-        const auth = request.headers.get("authorization") ?? "";
-        if (token && auth && !auth.includes(token)) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-        return await processWebhook(request);
-}
-
-export const Route = createFileRoute("/api/public/rlx-webhook")({
-  server: {
-    handlers: {
-      GET: handleWebhook,
-      POST: handleWebhook,
-      _OLD: async ({ request }) => {
+async function processWebhook(request: Request) {
         const token = process.env.RLX_API_TOKEN;
         const auth = request.headers.get("authorization") ?? "";
         if (token && auth && !auth.includes(token)) {
@@ -61,6 +47,12 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
         }
 
         let payload: z.infer<typeof webhookSchema>;
+        try {
+          const body = await parseWebhookBody(request);
+          payload = webhookSchema.parse(body);
+        } catch {
+          return new Response("Invalid payload", { status: 400 });
+        }
         try {
           const body = await parseWebhookBody(request);
           payload = webhookSchema.parse(body);
