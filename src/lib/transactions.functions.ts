@@ -91,13 +91,18 @@ export const createCheckout = createServerFn({ method: "POST" })
       const phone = normalizePhone(data.customer_phone);
       const webhookUrl = `${process.env.SITE_URL ?? "https://redoxpay.vercel.app"}/api/public/rlx-webhook?tx_id=${tx.id}`;
       try {
+        const payload = { action: "pay", phone, amount, nome_cliente: data.customer_name, webhook_url: webhookUrl };
+        console.log("[RLX] →", JSON.stringify(payload));
         const res = await fetch("https://checkout.rlxl.ink/api.php", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ action: "pay", phone, amount, nome_cliente: data.customer_name, webhook_url: webhookUrl }),
+          body: JSON.stringify(payload),
         });
-        const json = (await res.json().catch(() => ({}))) as { status?: string; txid?: string; msg?: string; message?: string };
-        gatewayMessage = json.msg ?? json.message ?? null;
+        const rawText = await res.text();
+        console.log("[RLX] ← HTTP", res.status, rawText.slice(0, 400));
+        let json: { status?: string; txid?: string; msg?: string; message?: string } = {};
+        try { json = JSON.parse(rawText); } catch { /* not json */ }
+        gatewayMessage = json.msg ?? json.message ?? (rawText ? rawText.slice(0, 200) : null);
         if (json.txid) {
           await supabaseAdmin.from("transactions").update({ external_ref: String(json.txid) }).eq("id", tx.id);
         }
@@ -106,8 +111,10 @@ export const createCheckout = createServerFn({ method: "POST" })
           return { id: tx.id, status: "failed", amount, fee: seller_fee, net: seller_net, message: gatewayMessage ?? "Pagamento rejeitado pelo gateway" };
         }
       } catch (e) {
+        console.log("[RLX] error", e);
         gatewayMessage = e instanceof Error ? e.message : "Falha ao contactar o gateway";
       }
+
     } else if (!token) {
       await supabaseAdmin.from("transactions").update({ status: "paid", external_ref: `SIM-${Date.now()}` }).eq("id", tx.id);
       const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", product.user_id).maybeSingle();
