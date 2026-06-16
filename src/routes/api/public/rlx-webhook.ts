@@ -236,16 +236,20 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
                 .eq("integration_key", "lowtrack")
                 .maybeSingle();
               const lowtrackUrl = lowtrackCfg?.settings?.webhook_url as string | undefined;
-              if (lowtrackUrl) {
+              const lowtrackEnabled = lowtrackCfg?.settings?.enabled !== false;
+              const lowtrackToken = lowtrackCfg?.settings?.api_token as string | undefined;
+              if (lowtrackUrl && lowtrackEnabled) {
+                const headers: Record<string, string> = { "Content-Type": "application/json" };
+                if (lowtrackToken) headers["authorization"] = `Bearer ${lowtrackToken}`;
                 fetch(lowtrackUrl, {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
+                  headers,
                   body: JSON.stringify({
                     event: "payment.confirmed",
                     orderId: tx.id,
                     amount: Number(tx.amount_mzn),
                     netAmount: Number(tx.net_mzn),
-                    customer: { name: tx.customer_name, phone: tx.customer_phone },
+                    customer: { name: tx.customer_name, phone: tx.customer_phone, email: tx.customer_email },
                     product: productName,
                     createdAt: tx.created_at,
                   }),
