@@ -181,7 +181,7 @@ function AdminPage() {
           {(txs.data ?? []).map((t: any) => {
             const amt = Number(t.amount_mzn);
             const sFee = Math.round((amt * 0.15 + 15) * 100) / 100;
-            const rCost = Math.round((amt * 0.12 + 12) * 100) / 100;
+            const rCost = Math.round((amt * 0.10 + 10) * 100) / 100;
             const margin = sFee - rCost;
             return (
             <div key={t.id} className="p-4 flex items-center gap-3">
