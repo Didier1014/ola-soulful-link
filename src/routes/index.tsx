@@ -23,7 +23,7 @@ const WHATSAPP = "https://wa.me/258840000000";
 function Landing() {
   return (
     <div className="min-h-screen text-foreground overflow-x-hidden">
-      <ShaderBackground />
+
       {/* Ambient glow */}
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute -top-40 left-1/4 h-[520px] w-[520px] rounded-full bg-primary/25 blur-[160px]" />
