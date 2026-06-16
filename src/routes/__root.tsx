@@ -8,9 +8,11 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+
+
 
 function NotFoundComponent() {
   return (
@@ -38,7 +40,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    console.error("[ErrorBoundary]", error);
   }, [error]);
 
   return (
@@ -77,14 +79,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Redox Pay" },
+      { name: "description", content: "Plataforma de pagamentos e vendas de infoprodutos para Moçambique." },
+      { name: "author", content: "Redox Pay" },
+      { property: "og:title", content: "Redox Pay" },
+      { property: "og:description", content: "Plataforma de pagamentos e vendas de infoprodutos para Moçambique." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@RedoxPay" },
+      { name: "twitter:title", content: "Redox Pay" },
+      { name: "twitter:description", content: "Plataforma de pagamentos e vendas de infoprodutos para Moçambique." },
     ],
     links: [
       {
@@ -101,7 +105,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
@@ -120,6 +124,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <Toaster position="top-center" richColors closeButton />
     </QueryClientProvider>
   );
 }

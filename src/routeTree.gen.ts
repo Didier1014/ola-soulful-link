@@ -9,13 +9,44 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ObrigadoRouteImport } from './routes/obrigado'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LSlugRouteImport } from './routes/l.$slug'
+import { Route as CSlugRouteImport } from './routes/c.$slug'
+import { Route as ApiDebugNotificationRouteImport } from './routes/api/debug-notification'
+import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
+import { Route as ApiPublicWebhookPaymentRouteImport } from './routes/api/public/webhook-payment'
+import { Route as ApiPublicRlxWebhookRouteImport } from './routes/api/public/rlx-webhook'
+import { Route as AuthenticatedDashboardWithdrawalsRouteImport } from './routes/_authenticated/dashboard.withdrawals'
+import { Route as AuthenticatedDashboardTransactionsRouteImport } from './routes/_authenticated/dashboard.transactions'
+import { Route as AuthenticatedDashboardSubscriptionsRouteImport } from './routes/_authenticated/dashboard.subscriptions'
+import { Route as AuthenticatedDashboardSmsRouteImport } from './routes/_authenticated/dashboard.sms'
+import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_authenticated/dashboard.settings'
+import { Route as AuthenticatedDashboardReportsRouteImport } from './routes/_authenticated/dashboard.reports'
+import { Route as AuthenticatedDashboardProfileRouteImport } from './routes/_authenticated/dashboard.profile'
+import { Route as AuthenticatedDashboardProductsRouteImport } from './routes/_authenticated/dashboard.products'
+import { Route as AuthenticatedDashboardPaymentLinksRouteImport } from './routes/_authenticated/dashboard.payment-links'
+import { Route as AuthenticatedDashboardNotificationsRouteImport } from './routes/_authenticated/dashboard.notifications'
+import { Route as AuthenticatedDashboardNewTransactionRouteImport } from './routes/_authenticated/dashboard.new-transaction'
+import { Route as AuthenticatedDashboardIntegrationsRouteImport } from './routes/_authenticated/dashboard.integrations'
+import { Route as AuthenticatedDashboardCustomersRouteImport } from './routes/_authenticated/dashboard.customers'
+import { Route as AuthenticatedDashboardApiRouteImport } from './routes/_authenticated/dashboard.api'
+import { Route as AuthenticatedDashboardAdminRouteImport } from './routes/_authenticated/dashboard.admin'
+import { Route as ApiPublicNotificationsPollRouteImport } from './routes/api/public/notifications.poll'
+import { Route as ApiPublicEmbedScriptRouteImport } from './routes/api/public/embed.script'
+import { Route as AuthenticatedDashboardNotificationsConfigRouteImport } from './routes/_authenticated/dashboard.notifications.config'
 
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ObrigadoRoute = ObrigadoRouteImport.update({
+  id: '/obrigado',
+  path: '/obrigado',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -23,49 +54,369 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LSlugRoute = LSlugRouteImport.update({
+  id: '/l/$slug',
+  path: '/l/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CSlugRoute = CSlugRouteImport.update({
+  id: '/c/$slug',
+  path: '/c/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDebugNotificationRoute = ApiDebugNotificationRouteImport.update({
+  id: '/api/debug-notification',
+  path: '/api/debug-notification',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDashboardIndexRoute =
+  AuthenticatedDashboardIndexRouteImport.update({
+    id: '/dashboard/',
+    path: '/dashboard/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicWebhookPaymentRoute = ApiPublicWebhookPaymentRouteImport.update({
+  id: '/api/public/webhook-payment',
+  path: '/api/public/webhook-payment',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicRlxWebhookRoute = ApiPublicRlxWebhookRouteImport.update({
+  id: '/api/public/rlx-webhook',
+  path: '/api/public/rlx-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDashboardWithdrawalsRoute =
+  AuthenticatedDashboardWithdrawalsRouteImport.update({
+    id: '/dashboard/withdrawals',
+    path: '/dashboard/withdrawals',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardTransactionsRoute =
+  AuthenticatedDashboardTransactionsRouteImport.update({
+    id: '/dashboard/transactions',
+    path: '/dashboard/transactions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardSubscriptionsRoute =
+  AuthenticatedDashboardSubscriptionsRouteImport.update({
+    id: '/dashboard/subscriptions',
+    path: '/dashboard/subscriptions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardSmsRoute =
+  AuthenticatedDashboardSmsRouteImport.update({
+    id: '/dashboard/sms',
+    path: '/dashboard/sms',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardSettingsRoute =
+  AuthenticatedDashboardSettingsRouteImport.update({
+    id: '/dashboard/settings',
+    path: '/dashboard/settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardReportsRoute =
+  AuthenticatedDashboardReportsRouteImport.update({
+    id: '/dashboard/reports',
+    path: '/dashboard/reports',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardProfileRoute =
+  AuthenticatedDashboardProfileRouteImport.update({
+    id: '/dashboard/profile',
+    path: '/dashboard/profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardProductsRoute =
+  AuthenticatedDashboardProductsRouteImport.update({
+    id: '/dashboard/products',
+    path: '/dashboard/products',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardPaymentLinksRoute =
+  AuthenticatedDashboardPaymentLinksRouteImport.update({
+    id: '/dashboard/payment-links',
+    path: '/dashboard/payment-links',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardNotificationsRoute =
+  AuthenticatedDashboardNotificationsRouteImport.update({
+    id: '/dashboard/notifications',
+    path: '/dashboard/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardNewTransactionRoute =
+  AuthenticatedDashboardNewTransactionRouteImport.update({
+    id: '/dashboard/new-transaction',
+    path: '/dashboard/new-transaction',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardIntegrationsRoute =
+  AuthenticatedDashboardIntegrationsRouteImport.update({
+    id: '/dashboard/integrations',
+    path: '/dashboard/integrations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardCustomersRoute =
+  AuthenticatedDashboardCustomersRouteImport.update({
+    id: '/dashboard/customers',
+    path: '/dashboard/customers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardApiRoute =
+  AuthenticatedDashboardApiRouteImport.update({
+    id: '/dashboard/api',
+    path: '/dashboard/api',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardAdminRoute =
+  AuthenticatedDashboardAdminRouteImport.update({
+    id: '/dashboard/admin',
+    path: '/dashboard/admin',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicNotificationsPollRoute =
+  ApiPublicNotificationsPollRouteImport.update({
+    id: '/api/public/notifications/poll',
+    path: '/api/public/notifications/poll',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicEmbedScriptRoute = ApiPublicEmbedScriptRouteImport.update({
+  id: '/api/public/embed/script',
+  path: '/api/public/embed/script',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDashboardNotificationsConfigRoute =
+  AuthenticatedDashboardNotificationsConfigRouteImport.update({
+    id: '/config',
+    path: '/config',
+    getParentRoute: () => AuthenticatedDashboardNotificationsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
+  '/obrigado': typeof ObrigadoRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/api/debug-notification': typeof ApiDebugNotificationRoute
+  '/c/$slug': typeof CSlugRoute
+  '/l/$slug': typeof LSlugRoute
+  '/dashboard/admin': typeof AuthenticatedDashboardAdminRoute
+  '/dashboard/api': typeof AuthenticatedDashboardApiRoute
+  '/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
+  '/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
+  '/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
+  '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
+  '/dashboard/payment-links': typeof AuthenticatedDashboardPaymentLinksRoute
+  '/dashboard/products': typeof AuthenticatedDashboardProductsRoute
+  '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
+  '/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
+  '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
+  '/dashboard/sms': typeof AuthenticatedDashboardSmsRoute
+  '/dashboard/subscriptions': typeof AuthenticatedDashboardSubscriptionsRoute
+  '/dashboard/transactions': typeof AuthenticatedDashboardTransactionsRoute
+  '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
+  '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
+  '/api/public/webhook-payment': typeof ApiPublicWebhookPaymentRoute
+  '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
+  '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
+  '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
+  '/obrigado': typeof ObrigadoRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/api/debug-notification': typeof ApiDebugNotificationRoute
+  '/c/$slug': typeof CSlugRoute
+  '/l/$slug': typeof LSlugRoute
+  '/dashboard/admin': typeof AuthenticatedDashboardAdminRoute
+  '/dashboard/api': typeof AuthenticatedDashboardApiRoute
+  '/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
+  '/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
+  '/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
+  '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
+  '/dashboard/payment-links': typeof AuthenticatedDashboardPaymentLinksRoute
+  '/dashboard/products': typeof AuthenticatedDashboardProductsRoute
+  '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
+  '/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
+  '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
+  '/dashboard/sms': typeof AuthenticatedDashboardSmsRoute
+  '/dashboard/subscriptions': typeof AuthenticatedDashboardSubscriptionsRoute
+  '/dashboard/transactions': typeof AuthenticatedDashboardTransactionsRoute
+  '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
+  '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
+  '/api/public/webhook-payment': typeof ApiPublicWebhookPaymentRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
+  '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
+  '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
+  '/obrigado': typeof ObrigadoRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/api/debug-notification': typeof ApiDebugNotificationRoute
+  '/c/$slug': typeof CSlugRoute
+  '/l/$slug': typeof LSlugRoute
+  '/_authenticated/dashboard/admin': typeof AuthenticatedDashboardAdminRoute
+  '/_authenticated/dashboard/api': typeof AuthenticatedDashboardApiRoute
+  '/_authenticated/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
+  '/_authenticated/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
+  '/_authenticated/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
+  '/_authenticated/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
+  '/_authenticated/dashboard/payment-links': typeof AuthenticatedDashboardPaymentLinksRoute
+  '/_authenticated/dashboard/products': typeof AuthenticatedDashboardProductsRoute
+  '/_authenticated/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
+  '/_authenticated/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
+  '/_authenticated/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
+  '/_authenticated/dashboard/sms': typeof AuthenticatedDashboardSmsRoute
+  '/_authenticated/dashboard/subscriptions': typeof AuthenticatedDashboardSubscriptionsRoute
+  '/_authenticated/dashboard/transactions': typeof AuthenticatedDashboardTransactionsRoute
+  '/_authenticated/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
+  '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
+  '/api/public/webhook-payment': typeof ApiPublicWebhookPaymentRoute
+  '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
+  '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
+  '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/obrigado'
+    | '/reset-password'
+    | '/api/debug-notification'
+    | '/c/$slug'
+    | '/l/$slug'
+    | '/dashboard/admin'
+    | '/dashboard/api'
+    | '/dashboard/customers'
+    | '/dashboard/integrations'
+    | '/dashboard/new-transaction'
+    | '/dashboard/notifications'
+    | '/dashboard/payment-links'
+    | '/dashboard/products'
+    | '/dashboard/profile'
+    | '/dashboard/reports'
+    | '/dashboard/settings'
+    | '/dashboard/sms'
+    | '/dashboard/subscriptions'
+    | '/dashboard/transactions'
+    | '/dashboard/withdrawals'
+    | '/api/public/rlx-webhook'
+    | '/api/public/webhook-payment'
+    | '/dashboard/'
+    | '/dashboard/notifications/config'
+    | '/api/public/embed/script'
+    | '/api/public/notifications/poll'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard'
-  id: '__root__' | '/' | '/auth' | '/dashboard'
+  to:
+    | '/'
+    | '/auth'
+    | '/obrigado'
+    | '/reset-password'
+    | '/api/debug-notification'
+    | '/c/$slug'
+    | '/l/$slug'
+    | '/dashboard/admin'
+    | '/dashboard/api'
+    | '/dashboard/customers'
+    | '/dashboard/integrations'
+    | '/dashboard/new-transaction'
+    | '/dashboard/notifications'
+    | '/dashboard/payment-links'
+    | '/dashboard/products'
+    | '/dashboard/profile'
+    | '/dashboard/reports'
+    | '/dashboard/settings'
+    | '/dashboard/sms'
+    | '/dashboard/subscriptions'
+    | '/dashboard/transactions'
+    | '/dashboard/withdrawals'
+    | '/api/public/rlx-webhook'
+    | '/api/public/webhook-payment'
+    | '/dashboard'
+    | '/dashboard/notifications/config'
+    | '/api/public/embed/script'
+    | '/api/public/notifications/poll'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/obrigado'
+    | '/reset-password'
+    | '/api/debug-notification'
+    | '/c/$slug'
+    | '/l/$slug'
+    | '/_authenticated/dashboard/admin'
+    | '/_authenticated/dashboard/api'
+    | '/_authenticated/dashboard/customers'
+    | '/_authenticated/dashboard/integrations'
+    | '/_authenticated/dashboard/new-transaction'
+    | '/_authenticated/dashboard/notifications'
+    | '/_authenticated/dashboard/payment-links'
+    | '/_authenticated/dashboard/products'
+    | '/_authenticated/dashboard/profile'
+    | '/_authenticated/dashboard/reports'
+    | '/_authenticated/dashboard/settings'
+    | '/_authenticated/dashboard/sms'
+    | '/_authenticated/dashboard/subscriptions'
+    | '/_authenticated/dashboard/transactions'
+    | '/_authenticated/dashboard/withdrawals'
+    | '/api/public/rlx-webhook'
+    | '/api/public/webhook-payment'
+    | '/_authenticated/dashboard/'
+    | '/_authenticated/dashboard/notifications/config'
+    | '/api/public/embed/script'
+    | '/api/public/notifications/poll'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  DashboardRoute: typeof DashboardRoute
+  ObrigadoRoute: typeof ObrigadoRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiDebugNotificationRoute: typeof ApiDebugNotificationRoute
+  CSlugRoute: typeof CSlugRoute
+  LSlugRoute: typeof LSlugRoute
+  ApiPublicRlxWebhookRoute: typeof ApiPublicRlxWebhookRoute
+  ApiPublicWebhookPaymentRoute: typeof ApiPublicWebhookPaymentRoute
+  ApiPublicEmbedScriptRoute: typeof ApiPublicEmbedScriptRoute
+  ApiPublicNotificationsPollRoute: typeof ApiPublicNotificationsPollRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/obrigado': {
+      id: '/obrigado'
+      path: '/obrigado'
+      fullPath: '/obrigado'
+      preLoaderRoute: typeof ObrigadoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -75,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -82,24 +440,254 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/l/$slug': {
+      id: '/l/$slug'
+      path: '/l/$slug'
+      fullPath: '/l/$slug'
+      preLoaderRoute: typeof LSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/c/$slug': {
+      id: '/c/$slug'
+      path: '/c/$slug'
+      fullPath: '/c/$slug'
+      preLoaderRoute: typeof CSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/debug-notification': {
+      id: '/api/debug-notification'
+      path: '/api/debug-notification'
+      fullPath: '/api/debug-notification'
+      preLoaderRoute: typeof ApiDebugNotificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard/': {
+      id: '/_authenticated/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/webhook-payment': {
+      id: '/api/public/webhook-payment'
+      path: '/api/public/webhook-payment'
+      fullPath: '/api/public/webhook-payment'
+      preLoaderRoute: typeof ApiPublicWebhookPaymentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rlx-webhook': {
+      id: '/api/public/rlx-webhook'
+      path: '/api/public/rlx-webhook'
+      fullPath: '/api/public/rlx-webhook'
+      preLoaderRoute: typeof ApiPublicRlxWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard/withdrawals': {
+      id: '/_authenticated/dashboard/withdrawals'
+      path: '/dashboard/withdrawals'
+      fullPath: '/dashboard/withdrawals'
+      preLoaderRoute: typeof AuthenticatedDashboardWithdrawalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/transactions': {
+      id: '/_authenticated/dashboard/transactions'
+      path: '/dashboard/transactions'
+      fullPath: '/dashboard/transactions'
+      preLoaderRoute: typeof AuthenticatedDashboardTransactionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/subscriptions': {
+      id: '/_authenticated/dashboard/subscriptions'
+      path: '/dashboard/subscriptions'
+      fullPath: '/dashboard/subscriptions'
+      preLoaderRoute: typeof AuthenticatedDashboardSubscriptionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/sms': {
+      id: '/_authenticated/dashboard/sms'
+      path: '/dashboard/sms'
+      fullPath: '/dashboard/sms'
+      preLoaderRoute: typeof AuthenticatedDashboardSmsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/settings': {
+      id: '/_authenticated/dashboard/settings'
+      path: '/dashboard/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof AuthenticatedDashboardSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/reports': {
+      id: '/_authenticated/dashboard/reports'
+      path: '/dashboard/reports'
+      fullPath: '/dashboard/reports'
+      preLoaderRoute: typeof AuthenticatedDashboardReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/profile': {
+      id: '/_authenticated/dashboard/profile'
+      path: '/dashboard/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof AuthenticatedDashboardProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/products': {
+      id: '/_authenticated/dashboard/products'
+      path: '/dashboard/products'
+      fullPath: '/dashboard/products'
+      preLoaderRoute: typeof AuthenticatedDashboardProductsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/payment-links': {
+      id: '/_authenticated/dashboard/payment-links'
+      path: '/dashboard/payment-links'
+      fullPath: '/dashboard/payment-links'
+      preLoaderRoute: typeof AuthenticatedDashboardPaymentLinksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/notifications': {
+      id: '/_authenticated/dashboard/notifications'
+      path: '/dashboard/notifications'
+      fullPath: '/dashboard/notifications'
+      preLoaderRoute: typeof AuthenticatedDashboardNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/new-transaction': {
+      id: '/_authenticated/dashboard/new-transaction'
+      path: '/dashboard/new-transaction'
+      fullPath: '/dashboard/new-transaction'
+      preLoaderRoute: typeof AuthenticatedDashboardNewTransactionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/integrations': {
+      id: '/_authenticated/dashboard/integrations'
+      path: '/dashboard/integrations'
+      fullPath: '/dashboard/integrations'
+      preLoaderRoute: typeof AuthenticatedDashboardIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/customers': {
+      id: '/_authenticated/dashboard/customers'
+      path: '/dashboard/customers'
+      fullPath: '/dashboard/customers'
+      preLoaderRoute: typeof AuthenticatedDashboardCustomersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/api': {
+      id: '/_authenticated/dashboard/api'
+      path: '/dashboard/api'
+      fullPath: '/dashboard/api'
+      preLoaderRoute: typeof AuthenticatedDashboardApiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/admin': {
+      id: '/_authenticated/dashboard/admin'
+      path: '/dashboard/admin'
+      fullPath: '/dashboard/admin'
+      preLoaderRoute: typeof AuthenticatedDashboardAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/notifications/poll': {
+      id: '/api/public/notifications/poll'
+      path: '/api/public/notifications/poll'
+      fullPath: '/api/public/notifications/poll'
+      preLoaderRoute: typeof ApiPublicNotificationsPollRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/embed/script': {
+      id: '/api/public/embed/script'
+      path: '/api/public/embed/script'
+      fullPath: '/api/public/embed/script'
+      preLoaderRoute: typeof ApiPublicEmbedScriptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard/notifications/config': {
+      id: '/_authenticated/dashboard/notifications/config'
+      path: '/config'
+      fullPath: '/dashboard/notifications/config'
+      preLoaderRoute: typeof AuthenticatedDashboardNotificationsConfigRouteImport
+      parentRoute: typeof AuthenticatedDashboardNotificationsRoute
+    }
   }
 }
 
+interface AuthenticatedDashboardNotificationsRouteChildren {
+  AuthenticatedDashboardNotificationsConfigRoute: typeof AuthenticatedDashboardNotificationsConfigRoute
+}
+
+const AuthenticatedDashboardNotificationsRouteChildren: AuthenticatedDashboardNotificationsRouteChildren =
+  {
+    AuthenticatedDashboardNotificationsConfigRoute:
+      AuthenticatedDashboardNotificationsConfigRoute,
+  }
+
+const AuthenticatedDashboardNotificationsRouteWithChildren =
+  AuthenticatedDashboardNotificationsRoute._addFileChildren(
+    AuthenticatedDashboardNotificationsRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardAdminRoute: typeof AuthenticatedDashboardAdminRoute
+  AuthenticatedDashboardApiRoute: typeof AuthenticatedDashboardApiRoute
+  AuthenticatedDashboardCustomersRoute: typeof AuthenticatedDashboardCustomersRoute
+  AuthenticatedDashboardIntegrationsRoute: typeof AuthenticatedDashboardIntegrationsRoute
+  AuthenticatedDashboardNewTransactionRoute: typeof AuthenticatedDashboardNewTransactionRoute
+  AuthenticatedDashboardNotificationsRoute: typeof AuthenticatedDashboardNotificationsRouteWithChildren
+  AuthenticatedDashboardPaymentLinksRoute: typeof AuthenticatedDashboardPaymentLinksRoute
+  AuthenticatedDashboardProductsRoute: typeof AuthenticatedDashboardProductsRoute
+  AuthenticatedDashboardProfileRoute: typeof AuthenticatedDashboardProfileRoute
+  AuthenticatedDashboardReportsRoute: typeof AuthenticatedDashboardReportsRoute
+  AuthenticatedDashboardSettingsRoute: typeof AuthenticatedDashboardSettingsRoute
+  AuthenticatedDashboardSmsRoute: typeof AuthenticatedDashboardSmsRoute
+  AuthenticatedDashboardSubscriptionsRoute: typeof AuthenticatedDashboardSubscriptionsRoute
+  AuthenticatedDashboardTransactionsRoute: typeof AuthenticatedDashboardTransactionsRoute
+  AuthenticatedDashboardWithdrawalsRoute: typeof AuthenticatedDashboardWithdrawalsRoute
+  AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardAdminRoute: AuthenticatedDashboardAdminRoute,
+  AuthenticatedDashboardApiRoute: AuthenticatedDashboardApiRoute,
+  AuthenticatedDashboardCustomersRoute: AuthenticatedDashboardCustomersRoute,
+  AuthenticatedDashboardIntegrationsRoute:
+    AuthenticatedDashboardIntegrationsRoute,
+  AuthenticatedDashboardNewTransactionRoute:
+    AuthenticatedDashboardNewTransactionRoute,
+  AuthenticatedDashboardNotificationsRoute:
+    AuthenticatedDashboardNotificationsRouteWithChildren,
+  AuthenticatedDashboardPaymentLinksRoute:
+    AuthenticatedDashboardPaymentLinksRoute,
+  AuthenticatedDashboardProductsRoute: AuthenticatedDashboardProductsRoute,
+  AuthenticatedDashboardProfileRoute: AuthenticatedDashboardProfileRoute,
+  AuthenticatedDashboardReportsRoute: AuthenticatedDashboardReportsRoute,
+  AuthenticatedDashboardSettingsRoute: AuthenticatedDashboardSettingsRoute,
+  AuthenticatedDashboardSmsRoute: AuthenticatedDashboardSmsRoute,
+  AuthenticatedDashboardSubscriptionsRoute:
+    AuthenticatedDashboardSubscriptionsRoute,
+  AuthenticatedDashboardTransactionsRoute:
+    AuthenticatedDashboardTransactionsRoute,
+  AuthenticatedDashboardWithdrawalsRoute:
+    AuthenticatedDashboardWithdrawalsRoute,
+  AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  DashboardRoute: DashboardRoute,
+  ObrigadoRoute: ObrigadoRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  ApiDebugNotificationRoute: ApiDebugNotificationRoute,
+  CSlugRoute: CSlugRoute,
+  LSlugRoute: LSlugRoute,
+  ApiPublicRlxWebhookRoute: ApiPublicRlxWebhookRoute,
+  ApiPublicWebhookPaymentRoute: ApiPublicWebhookPaymentRoute,
+  ApiPublicEmbedScriptRoute: ApiPublicEmbedScriptRoute,
+  ApiPublicNotificationsPollRoute: ApiPublicNotificationsPollRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

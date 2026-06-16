@@ -1,262 +1,408 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
+import { Button } from "@/components/ui/button";
+import ShaderBackground from "@/components/ui/shader-background";
 import {
-  ArrowRight, MessageCircle, Smartphone, Zap, Code2, Repeat,
-  QrCode, Link as LinkIcon, Clock, BarChart3, ShieldCheck, Lock,
-  Fingerprint, AlertTriangle, TrendingUp,
+  ShieldCheck, Zap, Smartphone, Code2, Repeat, QrCode, Link2, BarChart3,
+  Lock, Fingerprint, KeyRound, CheckCircle2, Star, ArrowRight, MessageCircle,
+  Cpu, TrendingUp, Globe, CreditCard,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Redox Pay — Receba pagamentos em Moçambique (M-Pesa & e-Mola)" },
-      { name: "description", content: "Aceite M-Pesa e e-Mola no seu site, app, link ou QR Code. Liquidação em tempo real, taxas justas e painel inteligente." },
+      { title: "Redox Pay — Receba pagamentos online em Moçambique" },
+      { name: "description", content: "Receba pagamentos via M-Pesa e e-Mola em segundos. Checkout, links, QR Code e API para o seu negócio em Moçambique." },
       { property: "og:title", content: "Redox Pay — Pagamentos online em Moçambique" },
-      { property: "og:description", content: "Checkout rápido, API moderna e liquidação em tempo real para M-Pesa e e-Mola." },
+      { property: "og:description", content: "M-Pesa, e-Mola, checkout, links, QR Code e API. Liquidação em tempo real." },
     ],
   }),
   component: Landing,
 });
 
-const stats = [
-  { v: "1.6M+", l: "Transações" },
-  { v: "130k+", l: "Movimentados/dia" },
-  { v: "<1s", l: "Confirmação" },
-  { v: "99.4%", l: "Taxa de sucesso" },
-];
-
-const features = [
-  { i: Smartphone, t: "M-Pesa & e-Mola", d: "Receba diretamente nas carteiras móveis em segundos." },
-  { i: Zap, t: "Checkout rápido", d: "Páginas otimizadas para máxima conversão." },
-  { i: Code2, t: "API & SDKs", d: "API REST moderna, webhooks e SDKs prontos." },
-  { i: Repeat, t: "Recorrência", d: "Cobranças automáticas e planos de assinatura." },
-  { i: QrCode, t: "QR Code", d: "Gere QR dinâmicos para receber em qualquer lugar." },
-  { i: LinkIcon, t: "Links de pagamento", d: "Partilhe via WhatsApp, SMS ou email." },
-  { i: Clock, t: "Transferências 24/7", d: "Liquidação em tempo real, todos os dias." },
-  { i: BarChart3, t: "Relatórios", d: "Dashboards completos e exportações." },
-];
-
-const security = [
-  { i: Lock, t: "Criptografia AES-256 e TLS 1.3", d: "Dados protegidos em trânsito e em repouso." },
-  { i: AlertTriangle, t: "Antifraude em tempo real", d: "Análise de risco em cada transação." },
-  { i: ShieldCheck, t: "Infra PCI-DSS", d: "Padrão internacional de pagamentos." },
-  { i: Fingerprint, t: "2FA e biometria", d: "Autenticação reforçada e tokens rotativos." },
-];
-
-const txs = [
-  { n: "Aisha M.", m: "M-Pesa", v: "MZN 4.500", c: "M" },
-  { n: "Bruno Sitoe", m: "e-Mola", v: "MZN 1.200", c: "e" },
-  { n: "Carla Macuácua", m: "M-Pesa", v: "MZN 8.750", c: "M" },
-  { n: "Délcio Nhaca", m: "e-Mola", v: "MZN 2.450", c: "e" },
-];
-
-const testimonials = [
-  { q: "Em 1 semana migrámos todo o checkout. Conversão subiu 34%.", n: "Hélder Mucavele", r: "CEO, Loja Online MZ", i: "HM" },
-  { q: "O suporte é fantástico e a liquidação chega no mesmo dia.", n: "Lúcia Tembe", r: "Fundadora, Beleza Maputo", i: "LT" },
-  { q: "API limpa, webhooks confiáveis. Integração feita em horas.", n: "Edson Mahumane", r: "CTO, EduTech", i: "EM" },
-  { q: "Os meus clientes adoram pagar com M-Pesa em 2 segundos.", n: "Sara Cossa", r: "Diretora, Boutique Sol", i: "SC" },
-];
+const WHATSAPP = "https://wa.me/258840000000";
 
 function Landing() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
+    <div className="min-h-screen text-foreground overflow-x-hidden">
+      <ShaderBackground />
+      {/* Ambient glow */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute -top-40 left-1/4 h-[520px] w-[520px] rounded-full bg-primary/25 blur-[160px]" />
+        <div className="absolute top-1/2 -right-32 h-[420px] w-[420px] rounded-full bg-primary-glow/20 blur-[140px]" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:48px_48px]" />
+      </div>
 
-      {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
-        <div className="relative mx-auto max-w-5xl px-6 pt-20 pb-16 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Operando em Moçambique · M-Pesa & e-Mola
+      <div className="relative z-10 bg-background min-h-screen">
+        <Nav />
+        <Hero />
+        <PaymentFlow />
+        <Features />
+        <Security />
+        <DashboardPreview />
+        <Testimonials />
+        <FinalCTA />
+        <Footer />
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- NAV ---------------- */
+function Nav() {
+  return (
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/70 border-b border-white/5">
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 font-bold text-lg tracking-tight">
+          <span className="h-2.5 w-2.5 rounded-full bg-primary-glow shadow-[0_0_14px_var(--primary-glow)]" />
+          REDOX <span className="text-gradient-red">PAY</span>
+        </Link>
+        <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
+          <a href="#features" className="hover:text-foreground transition">Funcionalidades</a>
+          <a href="#security" className="hover:text-foreground transition">Segurança</a>
+          <a href="#dashboard" className="hover:text-foreground transition">Painel</a>
+          <a href="#contact" className="hover:text-foreground transition">Contacto</a>
+        </nav>
+        <div className="flex items-center gap-2">
+          <Link to="/auth"><Button variant="ghost" className="text-foreground hover:bg-white/5">Entrar</Button></Link>
+          <Link to="/auth"><Button className="bg-primary hover:bg-primary/90 text-primary-foreground red-glow">Criar conta</Button></Link>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/* ---------------- HERO ---------------- */
+function Hero() {
+  return (
+    <section className="max-w-7xl mx-auto px-6 pt-20 pb-24 text-center">
+      <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs text-muted-foreground mb-8">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        Operando em Moçambique · M-Pesa & e-Mola
+      </div>
+      <h1 className="text-5xl md:text-7xl font-bold tracking-tight max-w-4xl mx-auto leading-[1.05]">
+        Receba pagamentos online em{" "}
+        <span className="text-gradient-red">Moçambique</span> com rapidez e segurança
+      </h1>
+      <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+        Aceite M-Pesa e e-Mola no seu site, app, link ou QR Code. Liquidação em tempo real, taxas justas e um painel inteligente.
+      </p>
+      <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <Link to="/auth">
+          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground red-glow h-12 px-7 text-base">
+            Criar conta grátis <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </Link>
+        <Link to="/auth">
+          <Button size="lg" variant="outline" className="border-white/15 bg-white/5 hover:bg-white/10 h-12 px-7 text-base">
+            Entrar
+          </Button>
+        </Link>
+        <a href={WHATSAPP} target="_blank" rel="noreferrer">
+          <Button size="lg" variant="ghost" className="h-12 px-7 text-base text-muted-foreground hover:text-foreground">
+            <MessageCircle className="mr-2 h-4 w-4" /> Falar com suporte
+          </Button>
+        </a>
+      </div>
+
+      {/* Stats */}
+      <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+        <Stat value="1.6M+" label="Transações" />
+        <Stat value="130k+" label="Movimentados/dia" />
+        <Stat value="<1s" label="Confirmação" />
+        <Stat value="99.4%" label="Taxa de sucesso" />
+      </div>
+    </section>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 backdrop-blur">
+      <div className="text-3xl md:text-4xl font-bold text-gradient-red">{value}</div>
+      <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+/* ---------------- PAYMENT FLOW ---------------- */
+function PaymentFlow() {
+  return (
+    <section className="max-w-7xl mx-auto px-6 py-24">
+      <div className="text-center max-w-2xl mx-auto mb-16">
+        <p className="text-sm uppercase tracking-widest text-primary-glow mb-3">Checkout em 2 segundos</p>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Pague do seu jeito, em segundos</h2>
+        <p className="mt-4 text-muted-foreground">Experiência de pagamento nativa para M-Pesa e e-Mola.</p>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6">
+        <StepCard n={1} title="Escolha o método" desc="Cliente seleciona M-Pesa ou e-Mola no checkout." icon={Smartphone} />
+        <StepCard n={2} title="Insere o número" desc="Confirma no telemóvel com PIN da carteira." icon={KeyRound} />
+        <StepCard n={3} title="Confirmado" desc="Pagamento processado em menos de 2 segundos." icon={CheckCircle2} highlight />
+      </div>
+
+      <div className="mt-12 flex items-center justify-center gap-6">
+        <MethodPill name="M-Pesa" color="#e11d48" letter="M" />
+        <MethodPill name="e-Mola" color="#f59e0b" letter="e" />
+      </div>
+    </section>
+  );
+}
+
+function StepCard({ n, title, desc, icon: Icon, highlight }: { n: number; title: string; desc: string; icon: React.ElementType; highlight?: boolean }) {
+  return (
+    <div className={`relative overflow-hidden rounded-3xl p-7 border ${highlight ? "border-primary/40 bg-gradient-to-br from-primary/15 to-transparent" : "border-white/5 bg-white/[0.02]"}`}>
+      <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/15 blur-2xl" />
+      <div className="flex items-center justify-between mb-5">
+        <span className="text-xs uppercase tracking-widest text-muted-foreground">Passo {n}</span>
+        <div className="h-10 w-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
+          <Icon className="h-5 w-5 text-primary-glow" />
+        </div>
+      </div>
+      <h3 className="text-xl font-semibold">{title}</h3>
+      <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
+    </div>
+  );
+}
+
+function MethodPill({ name, color, letter }: { name: string; color: string; letter: string }) {
+  return (
+    <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-5 py-2.5">
+      <div className="h-8 w-8 rounded-full flex items-center justify-center text-white font-bold" style={{ background: color }}>{letter}</div>
+      <span className="font-medium">{name}</span>
+    </div>
+  );
+}
+
+/* ---------------- FEATURES ---------------- */
+function Features() {
+  const items = [
+    { icon: Smartphone, title: "M-Pesa & e-Mola", desc: "Receba diretamente nas carteiras móveis em segundos." },
+    { icon: Zap, title: "Checkout rápido", desc: "Páginas otimizadas para máxima conversão." },
+    { icon: Code2, title: "API & SDKs", desc: "API REST moderna, webhooks e SDKs prontos." },
+    { icon: Repeat, title: "Recorrência", desc: "Cobranças automáticas e planos de assinatura." },
+    { icon: QrCode, title: "QR Code", desc: "Gere QR dinâmicos para receber em qualquer lugar." },
+    { icon: Link2, title: "Links de pagamento", desc: "Partilhe via WhatsApp, SMS ou email." },
+    { icon: TrendingUp, title: "Transferências 24/7", desc: "Liquidação em tempo real, todos os dias." },
+    { icon: BarChart3, title: "Relatórios", desc: "Dashboards completos e exportações." },
+  ];
+  return (
+    <section id="features" className="max-w-7xl mx-auto px-6 py-24">
+      <div className="text-center max-w-2xl mx-auto mb-16">
+        <p className="text-sm uppercase tracking-widest text-primary-glow mb-3">Funcionalidades</p>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Tudo o que precisa para receber</h2>
+      </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {items.map((it) => (
+          <div key={it.title} className="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:border-primary/30 hover:bg-white/[0.04] transition">
+            <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
+              <it.icon className="h-5 w-5 text-primary-glow" />
+            </div>
+            <h3 className="font-semibold">{it.title}</h3>
+            <p className="mt-1.5 text-sm text-muted-foreground">{it.desc}</p>
           </div>
-          <h1 className="mt-6 text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">
-            Receba pagamentos online em{" "}
-            <span className="text-brand-gradient">Moçambique</span> com rapidez e segurança
-          </h1>
-          <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Aceite M-Pesa e e-Mola no seu site, app, link ou QR Code. Liquidação em tempo real, taxas justas e um painel inteligente.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link to="/auth" className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-medium text-primary-foreground btn-glow hover:brightness-110 transition">
-              Criar conta grátis <ArrowRight className="h-4 w-4" />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- SECURITY ---------------- */
+function Security() {
+  const items = [
+    { icon: Lock, title: "Criptografia AES-256 e TLS 1.3", desc: "Dados protegidos em trânsito e em repouso." },
+    { icon: ShieldCheck, title: "Antifraude em tempo real", desc: "Análise de risco em cada transação." },
+    { icon: Cpu, title: "Infra PCI-DSS", desc: "Padrão internacional de pagamentos." },
+    { icon: Fingerprint, title: "2FA e biometria", desc: "Autenticação reforçada e tokens rotativos." },
+  ];
+  return (
+    <section id="security" className="max-w-7xl mx-auto px-6 py-24">
+      <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-card via-card to-primary/10 p-10 md:p-16">
+        <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-primary/20 blur-[120px]" />
+        <div className="relative grid md:grid-cols-2 gap-10">
+          <div>
+            <p className="text-sm uppercase tracking-widest text-primary-glow mb-3">Segurança</p>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Confiança em cada transação</h2>
+            <p className="mt-4 text-muted-foreground">Construído com os mais altos padrões de segurança bancária para proteger o seu negócio e os seus clientes.</p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              {["PCI-DSS", "ISO 27001", "SOC 2", "GDPR"].map(b => (
+                <span key={b} className="rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-medium">{b}</span>
+              ))}
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {items.map(it => (
+              <div key={it.title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <it.icon className="h-5 w-5 text-primary-glow mb-3" />
+                <p className="font-semibold text-sm">{it.title}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{it.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- DASHBOARD PREVIEW ---------------- */
+function DashboardPreview() {
+  return (
+    <section id="dashboard" className="max-w-7xl mx-auto px-6 py-24">
+      <div className="text-center max-w-2xl mx-auto mb-12">
+        <p className="text-sm uppercase tracking-widest text-primary-glow mb-3">Painel inteligente</p>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Gestão completa do seu negócio</h2>
+        <p className="mt-4 text-muted-foreground">Vendas em tempo real, taxas, relatórios, estornos e antecipação de recebíveis.</p>
+      </div>
+
+      <div className="relative rounded-3xl border border-white/10 bg-card/40 p-6 md:p-10 backdrop-blur">
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 h-48 w-[60%] rounded-full bg-primary/20 blur-[100px]" />
+        <div className="relative grid md:grid-cols-3 gap-4">
+          <MockKpi label="Saldo disponível" value="MZN 1.284.530" delta="+12.4%" />
+          <MockKpi label="Receita do mês" value="MZN 482.110" delta="+28.9%" />
+          <MockKpi label="Taxa de sucesso" value="99.4%" delta="+0.2%" />
+        </div>
+        <div className="relative mt-6 rounded-2xl border border-white/10 bg-background/40 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-semibold">Transações recentes</h4>
+            <span className="text-xs text-emerald-400 flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Crescendo</span>
+          </div>
+          <div className="space-y-2 text-sm">
+            <MockTx name="Aisha M." method="M-Pesa" color="#e11d48" amount="MZN 4.500" />
+            <MockTx name="Bruno Sitoe" method="e-Mola" color="#f59e0b" amount="MZN 1.200" />
+            <MockTx name="Carla Macuácua" method="M-Pesa" color="#e11d48" amount="MZN 8.750" />
+            <MockTx name="Délcio Nhaca" method="e-Mola" color="#f59e0b" amount="MZN 2.450" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MockKpi({ label, value, delta }: { label: string; value: string; delta: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-background/40 p-5">
+      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="mt-1.5 text-2xl font-bold">{value}</p>
+      <p className="mt-1 text-xs text-emerald-400">{delta}</p>
+    </div>
+  );
+}
+function MockTx({ name, method, color, amount }: { name: string; method: string; color: string; amount: string }) {
+  return (
+    <div className="flex items-center justify-between border-b border-white/5 last:border-0 py-2">
+      <div className="flex items-center gap-3">
+        <span className="h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: color }}>{method[0]}</span>
+        <span>{name}</span>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="text-xs text-muted-foreground">{method}</span>
+        <span className="font-semibold">{amount}</span>
+        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- TESTIMONIALS ---------------- */
+function Testimonials() {
+  const items = [
+    { name: "Hélder Mucavele", role: "CEO, Loja Online MZ", text: "Em 1 semana migrámos todo o checkout. Conversão subiu 34%." },
+    { name: "Lúcia Tembe", role: "Fundadora, Beleza Maputo", text: "O suporte é fantástico e a liquidação chega no mesmo dia." },
+    { name: "Edson Mahumane", role: "CTO, EduTech", text: "API limpa, webhooks confiáveis. Integração feita em horas." },
+    { name: "Sara Cossa", role: "Diretora, Boutique Sol", text: "Os meus clientes adoram pagar com M-Pesa em 2 segundos." },
+  ];
+  return (
+    <section className="max-w-7xl mx-auto px-6 py-24">
+      <div className="text-center max-w-2xl mx-auto mb-16">
+        <p className="text-sm uppercase tracking-widest text-primary-glow mb-3">Depoimentos</p>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Negócios que confiam na Redox</h2>
+      </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {items.map(t => (
+          <div key={t.name} className="rounded-2xl border border-white/5 bg-white/[0.02] p-6">
+            <div className="flex gap-0.5 mb-3">
+              {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />)}
+            </div>
+            <p className="text-sm text-foreground/85">"{t.text}"</p>
+            <div className="mt-5 flex items-center gap-3">
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center text-xs font-bold">
+                {t.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+              </div>
+              <div>
+                <p className="text-sm font-semibold">{t.name}</p>
+                <p className="text-[11px] text-muted-foreground">{t.role}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- FINAL CTA ---------------- */
+function FinalCTA() {
+  return (
+    <section id="contact" className="max-w-7xl mx-auto px-6 py-24">
+      <div className="relative overflow-hidden rounded-[2.5rem] border border-primary/30 bg-gradient-to-br from-primary/20 via-card to-card p-12 md:p-20 text-center">
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 h-72 w-[60%] rounded-full bg-primary/25 blur-[140px]" />
+        <div className="relative">
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Comece a receber em minutos</h2>
+          <p className="mt-5 text-lg text-muted-foreground max-w-xl mx-auto">Sem mensalidades, sem instalação. Crie a sua conta e aceite o primeiro pagamento hoje.</p>
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link to="/auth">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground red-glow h-12 px-8 text-base">
+                Criar conta grátis <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </Link>
-            <Link to="/auth" className="rounded-lg border border-white/10 bg-white/5 px-5 py-3 text-sm hover:bg-white/10 transition">Entrar</Link>
-            <a href="https://wa.me/258840000000" className="inline-flex items-center gap-2 px-3 py-3 text-sm text-muted-foreground hover:text-foreground">
-              <MessageCircle className="h-4 w-4" /> Falar com suporte
+            <a href={WHATSAPP} target="_blank" rel="noreferrer">
+              <Button size="lg" variant="outline" className="border-white/15 bg-white/5 hover:bg-white/10 h-12 px-8 text-base">
+                <MessageCircle className="mr-2 h-4 w-4" /> Suporte WhatsApp
+              </Button>
             </a>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
-          <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4">
-            {stats.map((s) => (
-              <div key={s.l} className="card-soft rounded-2xl px-5 py-6">
-                <div className="text-2xl md:text-3xl font-bold text-brand-gradient">{s.v}</div>
-                <div className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">{s.l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="text-center">
-          <div className="text-xs uppercase tracking-widest text-primary font-semibold">Checkout em 2 segundos</div>
-          <h2 className="mt-3 text-3xl md:text-4xl font-bold">Pague do seu jeito, em segundos</h2>
-          <p className="mt-3 text-muted-foreground">Experiência de pagamento nativa para M-Pesa e e-Mola.</p>
-        </div>
-        <div className="mt-12 grid md:grid-cols-3 gap-5">
-          {[
-            { s: "Passo 1", t: "Escolha o método", d: "Cliente seleciona M-Pesa ou e-Mola no checkout." },
-            { s: "Passo 2", t: "Insere o número", d: "Confirma no telemóvel com PIN da carteira." },
-            { s: "Passo 3", t: "Confirmado", d: "Pagamento processado em menos de 2 segundos." },
-          ].map((x) => (
-            <div key={x.s} className="card-soft rounded-2xl p-6">
-              <div className="text-xs text-primary">{x.s}</div>
-              <h3 className="mt-2 text-lg font-semibold">{x.t}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{x.d}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-8 flex justify-center gap-3">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-red-500 text-white text-xs font-bold">M</span> M-Pesa
-          </span>
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-amber-500 text-black text-xs font-bold">e</span> e-Mola
-          </span>
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section id="funcionalidades" className="mx-auto max-w-6xl px-6 py-20">
-        <div className="text-center">
-          <div className="text-xs uppercase tracking-widest text-primary font-semibold">Funcionalidades</div>
-          <h2 className="mt-3 text-3xl md:text-4xl font-bold">Tudo o que precisa para receber</h2>
-        </div>
-        <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {features.map((f) => (
-            <div key={f.t} className="card-soft rounded-2xl p-6 hover:border-primary/30 transition">
-              <f.i className="h-6 w-6 text-primary" />
-              <h3 className="mt-4 font-semibold">{f.t}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{f.d}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* SECURITY */}
-      <section id="seguranca" className="mx-auto max-w-6xl px-6 py-20">
-        <div className="text-center max-w-2xl mx-auto">
-          <div className="text-xs uppercase tracking-widest text-primary font-semibold">Segurança</div>
-          <h2 className="mt-3 text-3xl md:text-4xl font-bold">Confiança em cada transação</h2>
-          <p className="mt-3 text-muted-foreground">Construído com os mais altos padrões de segurança bancária para proteger o seu negócio e os seus clientes.</p>
-          <div className="mt-6 flex flex-wrap justify-center gap-2">
-            {["PCI-DSS", "ISO 27001", "SOC 2", "GDPR"].map((b) => (
-              <span key={b} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-muted-foreground">{b}</span>
-            ))}
-          </div>
-        </div>
-        <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {security.map((s) => (
-            <div key={s.t} className="card-soft rounded-2xl p-6">
-              <s.i className="h-6 w-6 text-primary" />
-              <h3 className="mt-4 font-semibold">{s.t}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{s.d}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* DASHBOARD PREVIEW */}
-      <section id="painel" className="mx-auto max-w-6xl px-6 py-20">
-        <div className="grid lg:grid-cols-2 gap-10 items-center">
-          <div>
-            <div className="text-xs uppercase tracking-widest text-primary font-semibold">Painel inteligente</div>
-            <h2 className="mt-3 text-3xl md:text-4xl font-bold">Gestão completa do seu negócio</h2>
-            <p className="mt-4 text-muted-foreground">Vendas em tempo real, taxas, relatórios, estornos e antecipação de recebíveis.</p>
-            <ul className="mt-6 space-y-3 text-sm">
-              {["Saldo e fluxo de caixa em tempo real", "Conciliação automática por canal", "Exportações em CSV e PDF", "Webhooks e API REST"].map((x) => (
-                <li key={x} className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />{x}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="card-soft rounded-3xl p-6">
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { l: "Saldo disponível", v: "MZN 1.284.530", d: "+12.4%" },
-                { l: "Receita do mês", v: "MZN 482.110", d: "+28.9%" },
-                { l: "Taxa de sucesso", v: "99.4%", d: "+0.2%" },
-              ].map((k) => (
-                <div key={k.l} className="rounded-xl bg-white/5 p-3 border border-white/5">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{k.l}</div>
-                  <div className="mt-1 text-sm font-semibold">{k.v}</div>
-                  <div className="text-[11px] text-emerald-400 flex items-center gap-1"><TrendingUp className="h-3 w-3" />{k.d}</div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-5">
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold">Transações recentes</h4>
-                <span className="text-[11px] text-emerald-400 inline-flex items-center gap-1"><TrendingUp className="h-3 w-3" />Crescendo</span>
-              </div>
-              <div className="mt-3 divide-y divide-white/5">
-                {txs.map((t) => (
-                  <div key={t.n} className="flex items-center justify-between py-3">
-                    <div className="flex items-center gap-3">
-                      <span className={`grid h-8 w-8 place-items-center rounded-full text-xs font-bold ${t.m === "M-Pesa" ? "bg-red-500 text-white" : "bg-amber-500 text-black"}`}>{t.c}</span>
-                      <div>
-                        <div className="text-sm font-medium">{t.n}</div>
-                        <div className="text-[11px] text-muted-foreground">{t.m}</div>
-                      </div>
-                    </div>
-                    <div className="text-sm font-semibold">{t.v}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TESTIMONIALS */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="text-center">
-          <div className="text-xs uppercase tracking-widest text-primary font-semibold">Depoimentos</div>
-          <h2 className="mt-3 text-3xl md:text-4xl font-bold">Negócios que confiam na Redox</h2>
-        </div>
-        <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {testimonials.map((t) => (
-            <div key={t.n} className="card-soft rounded-2xl p-6">
-              <p className="text-sm leading-relaxed">“{t.q}”</p>
-              <div className="mt-5 flex items-center gap-3">
-                <div className="grid h-9 w-9 place-items-center rounded-full bg-primary/20 text-primary text-xs font-bold">{t.i}</div>
-                <div>
-                  <div className="text-sm font-medium">{t.n}</div>
-                  <div className="text-[11px] text-muted-foreground">{t.r}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="mx-auto max-w-4xl px-6 py-20">
-        <div className="card-soft relative overflow-hidden rounded-3xl p-10 text-center">
-          <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
-          <h2 className="relative text-3xl md:text-4xl font-bold">Comece a receber em minutos</h2>
-          <p className="relative mt-3 text-muted-foreground">Sem mensalidades, sem instalação. Crie a sua conta e aceite o primeiro pagamento hoje.</p>
-          <div className="relative mt-7 flex flex-wrap justify-center gap-3">
-            <Link to="/auth" className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-medium text-primary-foreground btn-glow hover:brightness-110 transition">
-              Criar conta grátis <ArrowRight className="h-4 w-4" />
+/* ---------------- FOOTER ---------------- */
+function Footer() {
+  const groups = [
+    { title: "Produto", links: ["Funcionalidades", "Checkout", "Links", "QR Code", "Preços"] },
+    { title: "Desenvolvedores", links: ["Documentação", "API REST", "SDKs", "Webhooks", "Status"] },
+    { title: "Empresa", links: ["Sobre", "Carreiras", "Imprensa", "Parceiros", "Blog"] },
+    { title: "Suporte", links: ["Centro de ajuda", "Contacto WhatsApp", "Comunidade", "Termos", "Privacidade"] },
+  ];
+  return (
+    <footer className="border-t border-white/5 bg-background/60 backdrop-blur mt-12">
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid md:grid-cols-5 gap-10">
+          <div className="md:col-span-1">
+            <Link to="/" className="flex items-center gap-2 font-bold text-lg">
+              <span className="h-2.5 w-2.5 rounded-full bg-primary-glow shadow-[0_0_14px_var(--primary-glow)]" />
+              REDOX <span className="text-gradient-red">PAY</span>
             </Link>
-            <a href="https://wa.me/258840000000" className="rounded-lg border border-white/10 bg-white/5 px-5 py-3 text-sm hover:bg-white/10 transition">Falar com suporte</a>
+            <p className="mt-4 text-sm text-muted-foreground">A forma mais rápida de receber pagamentos online em Moçambique.</p>
+            <p className="mt-4 text-xs text-muted-foreground flex items-center gap-2"><Globe className="h-3 w-3" /> contacto@redoxpay.mz</p>
+          </div>
+          {groups.map(g => (
+            <div key={g.title}>
+              <p className="text-sm font-semibold mb-4">{g.title}</p>
+              <ul className="space-y-2.5 text-sm text-muted-foreground">
+                {g.links.map(l => <li key={l}><a href="#" className="hover:text-foreground transition">{l}</a></li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-3">
+          <p>© {new Date().getFullYear()} Redox Pay · Maputo, Moçambique</p>
+          <div className="flex items-center gap-2">
+            <CreditCard className="h-3 w-3" /> PCI-DSS · ISO 27001 · SOC 2
           </div>
         </div>
-      </section>
-
-      <SiteFooter />
-    </div>
+      </div>
+    </footer>
   );
 }
