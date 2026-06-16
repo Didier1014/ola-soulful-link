@@ -117,7 +117,11 @@ function ProductsPage() {
   function close() { setOpen(false); setEditingId(null); setForm(emptyForm); setStep("type"); }
 
   const createM = useMutation({
-    mutationFn: () => create({ data: serialize(form) }),
+    mutationFn: () => {
+      const s = serialize(form);
+      if (!s.slug || s.slug.length < 3) throw new Error("Define um slug (mínimo 3 caracteres, ex: meu-produto)");
+      return create({ data: s });
+    },
     onSuccess: (p) => { toast.success(`Produto criado: /c/${p.slug}`); qc.invalidateQueries({ queryKey: ["products"] }); close(); },
     onError: (e: any) => toast.error(e.message),
   });
@@ -420,7 +424,7 @@ function FormStep({
           </div>
 
           <div className="space-y-2">
-            <Label>Slug (URL do checkout)</Label>
+            <Label>Slug (URL do checkout) <span className="text-destructive">*</span></Label>
             <div className="flex items-center gap-1 rounded-md border border-border bg-secondary">
               <span className="px-3 text-xs text-muted-foreground">{typeof window !== "undefined" ? window.location.origin : "redoxpay.site"}/c/</span>
               <Input value={form.slug}
