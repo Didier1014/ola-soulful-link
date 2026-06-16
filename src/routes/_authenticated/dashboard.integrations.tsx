@@ -4,7 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getIntegrationsBundle, saveIntegrationsBundle,
-  testPushcut, testUtmify, sendTestSms,
+  testPushcut, testUtmify, sendTestSms, testLowtrack,
+  getIntegrationSettings, saveIntegrationSetting,
 } from "@/lib/integrations.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bell, Sparkles, Webhook, TrendingUp, MessageSquare, Send, Save } from "lucide-react";
+import { Bell, Sparkles, Webhook, TrendingUp, MessageSquare, Send, Save, Radar } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 
@@ -42,9 +43,14 @@ function IntegrationsPage() {
   const tPushcut = useServerFn(testPushcut);
   const tUtmify = useServerFn(testUtmify);
   const tSms = useServerFn(sendTestSms);
+  const tLowtrack = useServerFn(testLowtrack);
+  const fetchLegacy = useServerFn(getIntegrationSettings);
+  const saveLegacy = useServerFn(saveIntegrationSetting);
 
   const { data } = useQuery({ queryKey: ["bundle"], queryFn: () => fetchBundle() });
+  const { data: legacy } = useQuery({ queryKey: ["legacy-integrations"], queryFn: () => fetchLegacy() });
   const [b, setB] = useState<Bundle>(DEFAULT_BUNDLE);
+  const [lowtrack, setLowtrack] = useState<{ enabled: boolean; webhook_url: string; api_token: string }>({ enabled: false, webhook_url: "", api_token: "" });
 
   useEffect(() => {
     if (data) {
@@ -57,9 +63,27 @@ function IntegrationsPage() {
     }
   }, [data]);
 
+  useEffect(() => {
+    const row = (legacy || []).find((r: any) => r.integration_key === "lowtrack");
+    if (row?.settings) {
+      setLowtrack({
+        enabled: row.settings.enabled !== false,
+        webhook_url: row.settings.webhook_url || "",
+        api_token: row.settings.api_token || "",
+      });
+    }
+  }, [legacy]);
+
   const saveM = useMutation({
-    mutationFn: () => saveBundle({ data: b }),
-    onSuccess: () => { toast.success("Integrações guardadas"); qc.invalidateQueries({ queryKey: ["bundle"] }); },
+    mutationFn: async () => {
+      await saveBundle({ data: b });
+      await saveLegacy({ data: { integration_key: "lowtrack", settings: lowtrack } });
+    },
+    onSuccess: () => {
+      toast.success("Integrações guardadas");
+      qc.invalidateQueries({ queryKey: ["bundle"] });
+      qc.invalidateQueries({ queryKey: ["legacy-integrations"] });
+    },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
   });
 
@@ -173,6 +197,34 @@ function IntegrationsPage() {
           disabled={!b.utmify.api_token}
           onClick={async () => {
             try { await tUtmify({ data: { api_token: b.utmify.api_token! } }); toast.success("Conexão UTMify validada"); }
+            catch (e: any) { toast.error(e.message); }
+          }}>
+          <Send className="h-3.5 w-3.5 mr-1" /> Testar
+        </Button>
+      </IntegrationCard>
+
+      {/* 4b) LowTrack */}
+      <IntegrationCard
+        icon={<Radar className="h-5 w-5 text-white" />}
+        iconBg="from-sky-500 to-cyan-500"
+        title="LowTrack"
+        desc="Rastreamento inteligente para low ticket — devolve dados ao Pixel para baixar CPA (lowtrack.com.br)"
+        enabled={!!lowtrack.enabled}
+        onToggle={(v) => setLowtrack({ ...lowtrack, enabled: v })}
+      >
+        <Label>Webhook / Postback URL</Label>
+        <Input value={lowtrack.webhook_url}
+          onChange={(e) => setLowtrack({ ...lowtrack, webhook_url: e.target.value })}
+          placeholder="https://api.lowtrack.com.br/postback/..." />
+        <Label>API Token (opcional)</Label>
+        <Input type="password" value={lowtrack.api_token}
+          onChange={(e) => setLowtrack({ ...lowtrack, api_token: e.target.value })}
+          placeholder="lt_..." />
+        <p className="text-xs text-muted-foreground -mt-1">Enviado como <code>Authorization: Bearer …</code> no postback.</p>
+        <Button variant="outline" size="sm"
+          disabled={!lowtrack.webhook_url}
+          onClick={async () => {
+            try { await tLowtrack({ data: { webhook_url: lowtrack.webhook_url, api_token: lowtrack.api_token || undefined } }); toast.success("Postback de teste enviado ao LowTrack"); }
             catch (e: any) { toast.error(e.message); }
           }}>
           <Send className="h-3.5 w-3.5 mr-1" /> Testar
