@@ -203,6 +203,34 @@ function IntegrationsPage() {
         </Button>
       </IntegrationCard>
 
+      {/* 4b) LowTrack */}
+      <IntegrationCard
+        icon={<Radar className="h-5 w-5 text-white" />}
+        iconBg="from-sky-500 to-cyan-500"
+        title="LowTrack"
+        desc="Rastreamento inteligente para low ticket — devolve dados ao Pixel para baixar CPA (lowtrack.com.br)"
+        enabled={!!lowtrack.enabled}
+        onToggle={(v) => setLowtrack({ ...lowtrack, enabled: v })}
+      >
+        <Label>Webhook / Postback URL</Label>
+        <Input value={lowtrack.webhook_url}
+          onChange={(e) => setLowtrack({ ...lowtrack, webhook_url: e.target.value })}
+          placeholder="https://api.lowtrack.com.br/postback/..." />
+        <Label>API Token (opcional)</Label>
+        <Input type="password" value={lowtrack.api_token}
+          onChange={(e) => setLowtrack({ ...lowtrack, api_token: e.target.value })}
+          placeholder="lt_..." />
+        <p className="text-xs text-muted-foreground -mt-1">Enviado como <code>Authorization: Bearer …</code> no postback.</p>
+        <Button variant="outline" size="sm"
+          disabled={!lowtrack.webhook_url}
+          onClick={async () => {
+            try { await tLowtrack({ data: { webhook_url: lowtrack.webhook_url, api_token: lowtrack.api_token || undefined } }); toast.success("Postback de teste enviado ao LowTrack"); }
+            catch (e: any) { toast.error(e.message); }
+          }}>
+          <Send className="h-3.5 w-3.5 mr-1" /> Testar
+        </Button>
+      </IntegrationCard>
+
       {/* 5) MozeSMS */}
       <IntegrationCard
         icon={<MessageSquare className="h-5 w-5 text-white" />}
