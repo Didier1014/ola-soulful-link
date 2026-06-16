@@ -3,20 +3,38 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 const webhookSchema = z.object({
-  event: z.string(),
-  txid: z.string(),
-  status: z.string(),
+  event: z.coerce.string().optional().default(""),
+  txid: z.coerce.string().optional().default(""),
+  status: z.coerce.string().optional().default(""),
   valor_bruto: z.number().optional(),
   valor_liquido: z.number().optional(),
   taxa_rlx: z.number().optional(),
   canal: z.string().optional(),
   pagador: z.string().optional(),
   nome_pagador: z.string().optional(),
-});
+}).passthrough();
 
 function stripPhone(phone: string) {
   const d = phone.replace(/\D/g, "");
   return d.startsWith("258") ? d.slice(3) : d;
+}
+
+async function parseWebhookBody(request: Request) {
+  const raw = await request.text();
+  if (!raw) return {};
+  try { return JSON.parse(raw); } catch { /* not json */ }
+  return Object.fromEntries(new URLSearchParams(raw));
+}
+
+function mapGatewayStatus(payload: Record<string, unknown>) {
+  const text = [payload.status, payload.event, payload.estado, payload.state, payload.message, payload.msg]
+    .filter(Boolean)
+    .map(String)
+    .join(" ")
+    .toLowerCase();
+  if (/success|paid|completed|approved|confirm|confirmado|aprovad|pago/.test(text)) return "paid";
+  if (/failed|error|cancel|reject|rejeitad|expirad|falh/.test(text)) return "failed";
+  return "pending";
 }
 
 export const Route = createFileRoute("/api/public/rlx-webhook")({
