@@ -145,9 +145,11 @@ export const sendTestSms = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data }) => {
     // Stub: writes to sms_logs as "queued"; real provider integration ships later
-    const { error } = await (await import("@/integrations/supabase/client.server")).supabaseAdmin
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("sms_logs")
-      .insert({ to_number: data.number, body: data.message, status: "queued", provider: "mozesms-test" } as any);
+      .insert({ phone: data.number, message: `[${data.sender_id}] ${data.message}`, status: "queued" } as any);
     if (error) throw new Error(error.message);
     return { ok: true };
+
   });
