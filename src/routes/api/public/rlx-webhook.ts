@@ -185,9 +185,10 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
                   .replaceAll("{valor}", formattedAmount)
                   .replaceAll("{email}", tx.customer_email ?? "");
                 await supabaseAdmin.from("sms_logs").insert({
-                  to_number: tx.customer_phone, body: msg, status: "queued",
-                  provider: "mozesms", user_id: tx.user_id,
+                  phone: tx.customer_phone, message: `[${sms.sender_id || "RedoxPay"}] ${msg}`, status: "queued",
+                  user_id: tx.user_id, transaction_id: tx.id,
                 } as any).catch(() => {});
+
               }
             }
 
