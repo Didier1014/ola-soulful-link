@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import ShaderBackground from "@/components/ui/shader-background";
 import {
   ShieldCheck, Zap, Smartphone, Code2, Repeat, QrCode, Link2, BarChart3,
   Lock, Fingerprint, KeyRound, CheckCircle2, Star, ArrowRight, MessageCircle,
