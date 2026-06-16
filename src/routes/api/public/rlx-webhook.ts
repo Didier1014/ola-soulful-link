@@ -39,11 +39,21 @@ function mapGatewayStatus(payload: Record<string, unknown>) {
   return "pending";
 }
 
+async function handleWebhook({ request }: { request: Request }) {
+        const token = process.env.RLX_API_TOKEN;
+        const auth = request.headers.get("authorization") ?? "";
+        if (token && auth && !auth.includes(token)) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return await processWebhook(request);
+}
+
 export const Route = createFileRoute("/api/public/rlx-webhook")({
   server: {
     handlers: {
-      GET: async (ctx) => Route.options.server.handlers.POST(ctx),
-      POST: async ({ request }) => {
+      GET: handleWebhook,
+      POST: handleWebhook,
+      _OLD: async ({ request }) => {
         const token = process.env.RLX_API_TOKEN;
         const auth = request.headers.get("authorization") ?? "";
         if (token && auth && !auth.includes(token)) {
