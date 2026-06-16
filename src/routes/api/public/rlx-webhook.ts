@@ -192,16 +192,20 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
             }
 
 
-            // 🔗 Send sale data to Utmify
+            // 🔗 Send sale data to Utmify (new bundle takes precedence, legacy key as fallback)
             try {
-              const { data: utmifyCfg } = await supabaseAdmin
-                .from("integration_settings")
-                .select("settings")
-                .eq("user_id", tx.user_id)
-                .eq("integration_key", "utimify")
-                .maybeSingle();
-              const utmifyToken = utmifyCfg?.settings?.api_token as string | undefined;
+              let utmifyToken = bundle?.utmify?.enabled ? (bundle?.utmify?.api_token as string | undefined) : undefined;
+              if (!utmifyToken) {
+                const { data: utmifyCfg } = await supabaseAdmin
+                  .from("integration_settings")
+                  .select("settings")
+                  .eq("user_id", tx.user_id)
+                  .eq("integration_key", "utimify")
+                  .maybeSingle();
+                utmifyToken = utmifyCfg?.settings?.api_token as string | undefined;
+              }
               if (utmifyToken) {
+
                 const body = {
                   status: "paid",
                   orderId: tx.id,
