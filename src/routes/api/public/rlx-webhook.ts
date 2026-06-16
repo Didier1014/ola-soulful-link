@@ -3,20 +3,38 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 const webhookSchema = z.object({
-  event: z.string(),
-  txid: z.string(),
-  status: z.string(),
+  event: z.coerce.string().optional().default(""),
+  txid: z.coerce.string().optional().default(""),
+  status: z.coerce.string().optional().default(""),
   valor_bruto: z.number().optional(),
   valor_liquido: z.number().optional(),
   taxa_rlx: z.number().optional(),
   canal: z.string().optional(),
   pagador: z.string().optional(),
   nome_pagador: z.string().optional(),
-});
+}).passthrough();
 
 function stripPhone(phone: string) {
   const d = phone.replace(/\D/g, "");
   return d.startsWith("258") ? d.slice(3) : d;
+}
+
+async function parseWebhookBody(request: Request) {
+  const raw = await request.text();
+  if (!raw) return {};
+  try { return JSON.parse(raw); } catch { /* not json */ }
+  return Object.fromEntries(new URLSearchParams(raw));
+}
+
+function mapGatewayStatus(payload: Record<string, unknown>) {
+  const text = [payload.status, payload.event, payload.estado, payload.state, payload.message, payload.msg]
+    .filter(Boolean)
+    .map(String)
+    .join(" ")
+    .toLowerCase();
+  if (/success|paid|completed|approved|confirm|confirmado|aprovad|pago/.test(text)) return "paid";
+  if (/failed|error|cancel|reject|rejeitad|expirad|falh/.test(text)) return "failed";
+  return "pending";
 }
 
 export const Route = createFileRoute("/api/public/rlx-webhook")({
@@ -31,11 +49,12 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
 
         let payload: z.infer<typeof webhookSchema>;
         try {
-          const body = await request.json();
+          const body = await parseWebhookBody(request);
           payload = webhookSchema.parse(body);
         } catch {
           return new Response("Invalid payload", { status: 400 });
         }
+        const externalRef = String(payload.txid || payload.transaction_id || payload.reference || payload.ref || payload.id || "");
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -51,14 +70,14 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
           const result = await supabaseAdmin
             .from("transactions")
             .select("*")
-            .eq("external_ref", payload.txid)
+            .eq("external_ref", externalRef)
             .maybeSingle();
           tx = result.data;
         }
 
         // Priority 3: fallback — match by normalised phone for pending transactions
         if (!tx) {
-          const txidDigits = payload.txid.replace(/\D/g, "");
+          const txidDigits = externalRef.replace(/\D/g, "");
           const { data: candidates } = await supabaseAdmin
             .from("transactions")
             .select("*")
@@ -74,16 +93,11 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
 
         if (!tx) return new Response("ok"); // ignore unknown txids
 
-        const next =
-          payload.status === "success" || payload.status === "paid" || payload.event === "payment.success"
-            ? "paid"
-            : payload.status === "failed" || payload.event === "payment.failed"
-            ? "failed"
-            : "pending";
+        const next = mapGatewayStatus(payload);
 
         if (next !== tx.status) {
           const updates: Record<string, unknown> = { status: next };
-          if (!tx.external_ref) updates.external_ref = payload.txid;
+          if (!tx.external_ref && externalRef) updates.external_ref = externalRef;
 
           if (next === "paid") {
             const amount = Number(tx.amount_mzn) || 0;

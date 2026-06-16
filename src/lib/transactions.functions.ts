@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -53,6 +54,19 @@ function normalizePhone(phone: string) {
   return digits;
 }
 
+function getCurrentOrigin() {
+  const request = getRequest();
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
+  if (forwardedHost) return `${forwardedProto}://${forwardedHost}`;
+  return process.env.SITE_URL || new URL(request.url).origin;
+}
+
+function looksLikeGatewayFailure(status?: string, message?: string) {
+  const text = `${status ?? ""} ${message ?? ""}`.toLowerCase();
+  return /error|failed|falh|inv[aá]lido|invalid|unauthorized|rejeitad|cancel/.test(text);
+}
+
 export const createCheckout = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => checkoutSchema.parse(d))
   .handler(async ({ data }) => {
@@ -89,7 +103,7 @@ export const createCheckout = createServerFn({ method: "POST" })
     let gatewayMessage: string | null = null;
     if (token && data.method !== "card") {
       const phone = normalizePhone(data.customer_phone);
-      const webhookUrl = `${process.env.SITE_URL ?? "https://redoxpay.vercel.app"}/api/public/rlx-webhook?tx_id=${tx.id}`;
+      const webhookUrl = `${getCurrentOrigin()}/api/public/rlx-webhook?tx_id=${tx.id}`;
       try {
         const payload = { action: "pay", phone, amount, nome_cliente: data.customer_name, webhook_url: webhookUrl };
         console.log("[RLX] →", JSON.stringify(payload));
@@ -100,19 +114,22 @@ export const createCheckout = createServerFn({ method: "POST" })
         });
         const rawText = await res.text();
         console.log("[RLX] ← HTTP", res.status, rawText.slice(0, 400));
-        let json: { status?: string; txid?: string; msg?: string; message?: string } = {};
+        let json: { status?: string; txid?: string; transaction_id?: string; reference?: string; ref?: string; id?: string; msg?: string; message?: string } = {};
         try { json = JSON.parse(rawText); } catch { /* not json */ }
         gatewayMessage = json.msg ?? json.message ?? (rawText ? rawText.slice(0, 200) : null);
-        if (json.txid) {
-          await supabaseAdmin.from("transactions").update({ external_ref: String(json.txid) }).eq("id", tx.id);
+        const externalRef = json.txid ?? json.transaction_id ?? json.reference ?? json.ref ?? json.id;
+        if (externalRef) {
+          await supabaseAdmin.from("transactions").update({ external_ref: String(externalRef) }).eq("id", tx.id);
         }
-        if (json.status && (json.status === "error" || json.status === "failed")) {
+        if (!res.ok || looksLikeGatewayFailure(json.status, gatewayMessage)) {
           await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
           return { id: tx.id, status: "failed", amount, fee: seller_fee, net: seller_net, message: gatewayMessage ?? "Pagamento rejeitado pelo gateway" };
         }
       } catch (e) {
         console.log("[RLX] error", e);
         gatewayMessage = e instanceof Error ? e.message : "Falha ao contactar o gateway";
+        await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
+        return { id: tx.id, status: "failed", amount, fee: seller_fee, net: seller_net, message: gatewayMessage };
       }
 
     } else if (!token) {
