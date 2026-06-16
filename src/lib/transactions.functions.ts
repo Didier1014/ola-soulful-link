@@ -296,6 +296,14 @@ export const createWithdrawal = createServerFn({ method: "POST" })
     destination: z.string().trim().min(3).max(120),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    // Validate available balance
+    const { data: prof, error: pErr } = await context.supabase
+      .from("profiles").select("balance_mzn").eq("id", context.userId).maybeSingle();
+    if (pErr) throw new Error(pErr.message);
+    const bal = Number(prof?.balance_mzn ?? 0);
+    if (data.amount_mzn > bal) throw new Error(`Saldo insuficiente. Disponível: ${bal.toFixed(0)} MT`);
+    if (data.amount_mzn < 100) throw new Error("Valor mínimo de saque: 100 MT");
+
     const { error } = await context.supabase.from("withdrawals").insert({
       user_id: context.userId,
       amount_mzn: data.amount_mzn,
