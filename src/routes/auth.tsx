@@ -103,23 +103,8 @@ function AuthPage() {
     }
   }
 
-  async function handleGoogle() {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: window.location.origin + "/dashboard" },
-      });
-      if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-        return;
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro com Google");
-      setLoading(false);
-    }
-  }
+
+
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background text-foreground relative overflow-hidden">
