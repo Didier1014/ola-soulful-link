@@ -54,7 +54,7 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
         } catch {
           return new Response("Invalid payload", { status: 400 });
         }
-        const externalRef = String(payload.txid || payload.transaction_id || payload.reference || payload.ref || payload.id || "");
+        const externalRef = String(payload.txid || payload.transaction_id || payload.partner_transaction_id || payload.reference || payload.ref || payload.id || "");
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -95,6 +95,11 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
 
         const next = mapGatewayStatus(payload);
 
+        if (externalRef && tx.external_ref !== externalRef) {
+          await supabaseAdmin.from("transactions").update({ external_ref: externalRef }).eq("id", tx.id);
+          tx.external_ref = externalRef;
+        }
+
         if (next !== tx.status) {
           const updates: Record<string, unknown> = { status: next };
           if (!tx.external_ref && externalRef) updates.external_ref = externalRef;
@@ -106,9 +111,15 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
             const rlxCost = Math.round((amount * 0.10 + 10) * 100) / 100;
             const sellerNet = Math.round((amount - sellerFee) * 100) / 100;
             updates.net_mzn = sellerNet;
-            updates.rlx_fee = rlxCost;
 
-            await supabaseAdmin.from("transactions").update(updates).eq("id", tx.id);
+            const { data: changed } = await supabaseAdmin
+              .from("transactions")
+              .update(updates)
+              .eq("id", tx.id)
+              .eq("status", "pending")
+              .select("id")
+              .maybeSingle();
+            if (!changed) return new Response("ok");
 
             const { data: prof } = await supabaseAdmin
               .from("profiles").select("balance_mzn").eq("id", tx.user_id).maybeSingle();
@@ -157,7 +168,7 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
               const customTitle = (bundle?.push_custom?.title as string) || "💰 Nova venda aprovada!";
               const customBody = (bundle?.push_custom?.body as string) || `{valor} — {cliente}`;
 
-              await supabaseAdmin.from("notifications").insert({
+              const { error: notificationError } = await supabaseAdmin.from("notifications").insert({
                 user_id: tx.user_id,
                 type: "sale",
                 title: fillVars(customTitle),
@@ -169,7 +180,8 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
                   customer_name: tx.customer_name ?? null,
                   product_name: productName,
                 },
-              }).catch(() => {});
+              });
+              if (notificationError) console.error("[webhook] notification insert failed:", notificationError.message);
 
               // 📲 Send PWA push notification
               const { sendPushToUser } = await import("@/lib/push.functions");
