@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Logo } from "@/components/SiteHeader";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
@@ -13,12 +13,36 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+// Credenciais mock para teste (substituir por auth real ao ligar Lovable Cloud)
+const MOCK_EMAIL = "semanaferdinand6@gmail.com";
+const MOCK_PASSWORD = "Didier10";
+
 function AuthPage() {
   return <AuthLayout />;
 }
 
 export function AuthLayout() {
   const [mode, setMode] = useState<"login" | "signup">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (mode === "login") {
+      if (email.trim().toLowerCase() === MOCK_EMAIL && password === MOCK_PASSWORD) {
+        try { localStorage.setItem("redox_demo_user", email); } catch {}
+        navigate({ to: "/dashboard" });
+      } else {
+        setError("Email ou senha incorretos.");
+      }
+    } else {
+      try { localStorage.setItem("redox_demo_user", email || "demo@redoxpay.site"); } catch {}
+      navigate({ to: "/dashboard" });
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
