@@ -9,7 +9,7 @@ import { NotificationBell } from "@/components/notification-bell";
 import { FloatingSaleNotification } from "@/components/floating-sale-notification";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import ShaderBackground from "@/components/ui/shader-background";
+
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated")({
