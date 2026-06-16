@@ -51,20 +51,24 @@ export function FloatingSaleNotification() {
   }, [dismiss]);
 
   useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
     (async () => {
       const { data: u } = await supabase.auth.getUser();
-      userIdRef.current = u.user?.id ?? null;
-      if (!userIdRef.current) return;
+      const uid = u.user?.id ?? null;
+      userIdRef.current = uid;
+      if (!uid || cancelled) return;
 
-      const channel = supabase
-        .channel("floating-sale-notifications")
+      channel = supabase
+        .channel(`floating-sale-${uid}`)
         .on(
           "postgres_changes",
           {
             event: "INSERT",
             schema: "public",
             table: "notifications",
-            filter: `user_id=eq.${userIdRef.current}`,
+            filter: `user_id=eq.${uid}`,
           },
           (payload) => {
             const n = payload.new as Record<string, unknown>;
@@ -83,7 +87,8 @@ export function FloatingSaleNotification() {
     })();
 
     return () => {
-      supabase.channel("floating-sale-notifications").unsubscribe();
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
       timers.current.forEach((t) => clearTimeout(t));
       timers.current.clear();
     };
