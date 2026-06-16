@@ -120,15 +120,17 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
               .eq("integration_key", "_bundle")
               .maybeSingle();
 
+            let productName: string | null = null;
+            let productUtmifyId: string | null = null;
+            if (tx.product_id) {
+              const { data: prod } = await supabaseAdmin
+                .from("products").select("name,utimify_id").eq("id", tx.product_id).maybeSingle();
+              productName = prod?.name ?? null;
+              productUtmifyId = prod?.utimify_id ?? null;
+            }
+
             if (notificationsEnabled) {
-              let productName: string | null = null;
-              let productUtmifyId: string | null = null;
-              if (tx.product_id) {
-                const { data: prod } = await supabaseAdmin
-                  .from("products").select("name,utimify_id").eq("id", tx.product_id).maybeSingle();
-                productName = prod?.name ?? null;
-                productUtmifyId = prod?.utimify_id ?? null;
-              }
+
 
               // Format value in chosen currency from push_custom override (fallback to user meta currency)
               const pushCurrency = (bundle?.push_custom?.currency as string) || currency;
