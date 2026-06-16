@@ -510,7 +510,7 @@ function FormStep({
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
             <div className="space-y-2"><Label>Pixel ID (Meta)</Label><Input value={form.pixel_id} onChange={(e) => setForm({ ...form, pixel_id: e.target.value })} /></div>
             <div className="space-y-2"><Label>UTMify ID</Label><Input value={form.utimify_id} onChange={(e) => setForm({ ...form, utimify_id: e.target.value })} /></div>
-            <div className="space-y-2"><Label>LowTrack ID</Label><Input value={form.lawtracker_id} onChange={(e) => setForm({ ...form, lawtracker_id: e.target.value })} /></div>
+            <div className="space-y-2"><Label>LowTrack Token</Label><Input value={form.lawtracker_id} onChange={(e) => setForm({ ...form, lawtracker_id: e.target.value })} placeholder="Cole aqui o token do LowTrack" /></div>
             <div className="space-y-2"><Label>Telefone Suporte</Label><Input value={form.support_phone} onChange={(e) => setForm({ ...form, support_phone: e.target.value })} placeholder="+258 84..." /></div>
           </div>
         </div>
