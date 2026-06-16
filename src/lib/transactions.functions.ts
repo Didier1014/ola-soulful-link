@@ -201,7 +201,7 @@ export const createCheckout = createServerFn({ method: "POST" })
       await supabaseAdmin.from("transactions").update({ status: "paid", external_ref: `SIM-${Date.now()}` }).eq("id", tx.id);
       const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", product.user_id).maybeSingle();
       await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + seller_net }).eq("id", product.user_id);
-      return { id: tx.id, status: "paid", amount, fee: seller_fee, net: seller_net, message: "Modo simulação (sem token RLX)" };
+      return { id: tx.id, status: "paid", amount, fee: seller_fee, net: seller_net, message: "Modo simulação" };
     }
 
     return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, message: gatewayMessage };
