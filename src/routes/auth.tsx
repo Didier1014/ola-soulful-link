@@ -170,8 +170,6 @@ function AuthPage() {
           {mode === "signup" && (
             <form onSubmit={handleSignup} className="space-y-4">
               <Header title="Criar conta" subtitle="Comece a receber em minutos" />
-
-              <Divider />
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Nome completo"><Input value={fullName} onChange={(e) => setFullName(e.target.value)} required maxLength={120} /></Field>
                 <Field label="WhatsApp"><Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} required maxLength={20} placeholder="+258 84..." /></Field>
