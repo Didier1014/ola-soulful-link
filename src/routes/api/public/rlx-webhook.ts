@@ -168,7 +168,7 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
               const customTitle = (bundle?.push_custom?.title as string) || "💰 Nova venda aprovada!";
               const customBody = (bundle?.push_custom?.body as string) || `{valor} — {cliente}`;
 
-              await supabaseAdmin.from("notifications").insert({
+              const { error: notificationError } = await supabaseAdmin.from("notifications").insert({
                 user_id: tx.user_id,
                 type: "sale",
                 title: fillVars(customTitle),
@@ -180,7 +180,8 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
                   customer_name: tx.customer_name ?? null,
                   product_name: productName,
                 },
-              }).catch(() => {});
+              });
+              if (notificationError) console.error("[webhook] notification insert failed:", notificationError.message);
 
               // 📲 Send PWA push notification
               const { sendPushToUser } = await import("@/lib/push.functions");

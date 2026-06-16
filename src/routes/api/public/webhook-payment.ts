@@ -125,7 +125,7 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
               productUtmifyId = prod?.utimify_id ?? null;
             }
 
-            await supabaseAdmin.from("notifications").insert({
+            const { error: notificationError } = await supabaseAdmin.from("notifications").insert({
               user_id: tx.user_id,
               type: "sale",
               title: "Nova venda",
@@ -137,9 +137,8 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
                 customer_name: tx.customer_name ?? null,
                 product_name: productName,
               },
-            }).catch((err: any) => {
-              console.error("[webhook] notification insert failed:", err);
             });
+            if (notificationError) console.error("[webhook] notification insert failed:", notificationError.message);
 
             const { sendPushToUser } = await import("@/lib/push.functions");
             const formattedAmount = Number(tx.amount_mzn).toLocaleString("pt-MZ", { style: "currency", currency });
