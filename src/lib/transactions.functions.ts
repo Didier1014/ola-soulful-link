@@ -67,6 +67,31 @@ function looksLikeGatewayFailure(status?: string, message?: string) {
   return /error|failed|falh|inv[aá]lido|invalid|unauthorized|rejeitad|cancel/.test(text);
 }
 
+function mapGatewayStatus(payload: Record<string, unknown>) {
+  const text = [payload.status, payload.event, payload.estado, payload.state, payload.message, payload.msg]
+    .filter(Boolean)
+    .map(String)
+    .join(" ")
+    .toLowerCase();
+  if (/success|paid|completed|approved|confirm|confirmado|aprovad|pago/.test(text)) return "paid";
+  if (/failed|error|cancel|reject|rejeitad|expirad|falh/.test(text)) return "failed";
+  return "pending";
+}
+
+async function creditSellerIfPending(supabaseAdmin: any, txId: string, userId: string, sellerNet: number, updates: Record<string, unknown>) {
+  const { data: changed } = await supabaseAdmin
+    .from("transactions")
+    .update({ ...updates, status: "paid" })
+    .eq("id", txId)
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle();
+  if (!changed) return false;
+  const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", userId).maybeSingle();
+  await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + sellerNet }).eq("id", userId);
+  return true;
+}
+
 export const createCheckout = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => checkoutSchema.parse(d))
   .handler(async ({ data }) => {
@@ -114,16 +139,22 @@ export const createCheckout = createServerFn({ method: "POST" })
         });
         const rawText = await res.text();
         console.log("[RLX] ← HTTP", res.status, rawText.slice(0, 400));
-        let json: { status?: string; txid?: string; transaction_id?: string; reference?: string; ref?: string; id?: string; msg?: string; message?: string } = {};
+        let json: { status?: string; txid?: string; transaction_id?: string; partner_transaction_id?: string; reference?: string; ref?: string; id?: string; msg?: string; message?: string } = {};
         try { json = JSON.parse(rawText); } catch { /* not json */ }
         gatewayMessage = json.msg ?? json.message ?? (rawText ? rawText.slice(0, 200) : null);
-        const externalRef = json.txid ?? json.transaction_id ?? json.reference ?? json.ref ?? json.id;
-        if (externalRef) {
-          await supabaseAdmin.from("transactions").update({ external_ref: String(externalRef) }).eq("id", tx.id);
-        }
+        const externalRef = json.txid ?? json.transaction_id ?? json.partner_transaction_id ?? json.reference ?? json.ref ?? json.id;
+        const gatewayStatus = mapGatewayStatus(json as Record<string, unknown>);
         if (!res.ok || looksLikeGatewayFailure(json.status, gatewayMessage)) {
           await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
           return { id: tx.id, status: "failed", amount, fee: seller_fee, net: seller_net, message: gatewayMessage ?? "Pagamento rejeitado pelo gateway" };
+        }
+        if (gatewayStatus === "paid") {
+          await creditSellerIfPending(supabaseAdmin, tx.id, product.user_id, seller_net, { external_ref: externalRef ? String(externalRef) : tx.external_ref });
+          const { data: prod } = await supabaseAdmin.from("products").select("delivery_url").eq("id", product.id).maybeSingle();
+          return { id: tx.id, status: "paid", amount, fee: seller_fee, net: seller_net, delivery_url: prod?.delivery_url ?? undefined, message: gatewayMessage ?? "Pagamento confirmado" };
+        }
+        if (externalRef) {
+          await supabaseAdmin.from("transactions").update({ external_ref: String(externalRef) }).eq("id", tx.id);
         }
       } catch (e) {
         console.log("[RLX] error", e);
@@ -168,15 +199,18 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ action: "check", txid: tx.external_ref }),
       });
-      const json = (await res.json().catch(() => ({}))) as { status?: string };
-      const next = json.status === "success" || json.status === "paid"
-        ? "paid"
-        : json.status === "failed" ? "failed" : "pending";
+      const rawText = await res.text().catch(() => "");
+      let json: Record<string, unknown> = {};
+      try { json = JSON.parse(rawText); } catch { json = { status: rawText }; }
+      console.log("[RLX check] ← HTTP", res.status, rawText.slice(0, 300));
+      const next = mapGatewayStatus(json);
 
       if (next !== tx.status) {
-        await supabaseAdmin.from("transactions").update({ status: next }).eq("id", tx.id);
-        // Saldo creditado apenas no webhook (que tem info das taxas).
-
+        if (next === "paid") {
+          await creditSellerIfPending(supabaseAdmin, tx.id, tx.user_id, Number(tx.net_mzn ?? 0), {});
+        } else {
+          await supabaseAdmin.from("transactions").update({ status: next }).eq("id", tx.id);
+        }
       }
       if (next === "paid" || tx.status === "paid") {
         const { data: prod } = await supabaseAdmin
