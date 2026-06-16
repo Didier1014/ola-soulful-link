@@ -117,7 +117,11 @@ function ProductsPage() {
   function close() { setOpen(false); setEditingId(null); setForm(emptyForm); setStep("type"); }
 
   const createM = useMutation({
-    mutationFn: () => create({ data: serialize(form) }),
+    mutationFn: () => {
+      const s = serialize(form);
+      if (!s.slug || s.slug.length < 3) throw new Error("Define um slug (mínimo 3 caracteres, ex: meu-produto)");
+      return create({ data: s });
+    },
     onSuccess: (p) => { toast.success(`Produto criado: /c/${p.slug}`); qc.invalidateQueries({ queryKey: ["products"] }); close(); },
     onError: (e: any) => toast.error(e.message),
   });
