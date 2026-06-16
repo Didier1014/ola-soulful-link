@@ -43,9 +43,14 @@ function IntegrationsPage() {
   const tPushcut = useServerFn(testPushcut);
   const tUtmify = useServerFn(testUtmify);
   const tSms = useServerFn(sendTestSms);
+  const tLowtrack = useServerFn(testLowtrack);
+  const fetchLegacy = useServerFn(getIntegrationSettings);
+  const saveLegacy = useServerFn(saveIntegrationSetting);
 
   const { data } = useQuery({ queryKey: ["bundle"], queryFn: () => fetchBundle() });
+  const { data: legacy } = useQuery({ queryKey: ["legacy-integrations"], queryFn: () => fetchLegacy() });
   const [b, setB] = useState<Bundle>(DEFAULT_BUNDLE);
+  const [lowtrack, setLowtrack] = useState<{ enabled: boolean; webhook_url: string; api_token: string }>({ enabled: false, webhook_url: "", api_token: "" });
 
   useEffect(() => {
     if (data) {
@@ -58,9 +63,27 @@ function IntegrationsPage() {
     }
   }, [data]);
 
+  useEffect(() => {
+    const row = (legacy || []).find((r: any) => r.integration_key === "lowtrack");
+    if (row?.settings) {
+      setLowtrack({
+        enabled: row.settings.enabled !== false,
+        webhook_url: row.settings.webhook_url || "",
+        api_token: row.settings.api_token || "",
+      });
+    }
+  }, [legacy]);
+
   const saveM = useMutation({
-    mutationFn: () => saveBundle({ data: b }),
-    onSuccess: () => { toast.success("Integrações guardadas"); qc.invalidateQueries({ queryKey: ["bundle"] }); },
+    mutationFn: async () => {
+      await saveBundle({ data: b });
+      await saveLegacy({ data: { integration_key: "lowtrack", settings: lowtrack } });
+    },
+    onSuccess: () => {
+      toast.success("Integrações guardadas");
+      qc.invalidateQueries({ queryKey: ["bundle"] });
+      qc.invalidateQueries({ queryKey: ["legacy-integrations"] });
+    },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
   });
 
