@@ -1,9 +1,14 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Logo } from "@/components/SiteHeader";
-import { ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { Loader2, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Entrar — Redox Pay" },
@@ -13,180 +18,262 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-// Credenciais mock para teste (substituir por auth real ao ligar Lovable Cloud)
-const MOCK_EMAIL = "semanaferdinand6@gmail.com";
-const MOCK_PASSWORD = "Didier10";
+type Mode = "login" | "signup" | "forgot";
 
 function AuthPage() {
-  return <AuthLayout />;
-}
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<Mode>("login");
+  const [loading, setLoading] = useState(false);
 
-export function AuthLayout() {
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  // shared
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  // signup-only
+  const [fullName, setFullName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [accountType, setAccountType] = useState<"person" | "company">("person");
+  const [city, setCity] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate({ to: "/dashboard" });
+    });
+  }, [navigate]);
+
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    if (mode === "login") {
-      if (email.trim().toLowerCase() === MOCK_EMAIL && password === MOCK_PASSWORD) {
-        try { localStorage.setItem("redox_demo_user", email); } catch {}
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      navigate({ to: "/dashboard" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao entrar");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSignup(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email, password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            full_name: fullName,
+            whatsapp,
+            business_name: businessName,
+            account_type: accountType,
+            city,
+          },
+        },
+      });
+      if (error) throw error;
+      if (data.session) {
         navigate({ to: "/dashboard" });
       } else {
-        setError("Email ou senha incorretos.");
+        toast.success("Conta criada! Confirme o seu email antes de entrar.");
+        setMode("login");
       }
-    } else {
-      try { localStorage.setItem("redox_demo_user", email || "demo@redoxpay.site"); } catch {}
-      navigate({ to: "/dashboard" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao criar conta");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleForgot(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("Verifique o seu email para redefinir a senha.");
+      setMode("login");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogle() {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin + "/dashboard" },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro com Google");
+      setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="px-6 py-5 flex items-center justify-between">
-        <Logo />
-        <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">← Voltar</Link>
-      </header>
+    <div className="min-h-screen grid lg:grid-cols-2 bg-background text-foreground relative overflow-hidden">
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute -top-40 -left-32 h-[500px] w-[500px] rounded-full bg-primary/25 blur-[160px]" />
+        <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-primary-glow/15 blur-[140px]" />
+      </div>
 
-      <main className="flex-1 grid lg:grid-cols-2 gap-12 px-6 lg:px-16 py-10 items-center">
-        {/* Left side */}
+      {/* LEFT — brand */}
+      <div className="relative hidden lg:flex flex-col justify-between p-12">
+        <Link to="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
+          <span className="h-2.5 w-2.5 rounded-full bg-primary-glow shadow-[0_0_14px_var(--primary-glow)]" />
+          REDOX <span className="text-gradient-red">PAY</span>
+        </Link>
         <div>
-          <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-            Receba pagamentos<br />em <span className="text-brand-gradient">Moçambique</span>
+          <h2 className="text-5xl font-bold leading-[1.05] tracking-tight">
+            Receba pagamentos<br />em <span className="text-gradient-red">Moçambique</span>
           </h2>
-          <p className="mt-5 text-muted-foreground max-w-md">
+          <p className="mt-5 text-muted-foreground max-w-md text-lg">
             M-Pesa, e-Mola e mais. Checkout rápido, liquidação em tempo real, taxas justas.
           </p>
-          <div className="mt-10 grid grid-cols-2 gap-3 max-w-md">
+          <div className="mt-8 grid grid-cols-2 gap-3 max-w-md">
             {[
               { v: "1.6M+", l: "Transações" },
               { v: "99.4%", l: "Sucesso" },
               { v: "<2s", l: "Confirmação" },
               { v: "24/7", l: "Liquidação" },
             ].map((s) => (
-              <div key={s.l} className="card-soft rounded-2xl px-5 py-4">
-                <div className="text-xl font-bold text-brand-gradient">{s.v}</div>
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1">{s.l}</div>
+              <div key={s.l} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                <p className="text-2xl font-bold text-gradient-red">{s.v}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{s.l}</p>
               </div>
             ))}
           </div>
         </div>
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Redox Pay · Maputo, Moçambique</p>
+      </div>
 
-        {/* Right side - form */}
-        <div className="card-soft rounded-3xl p-8 max-w-md w-full justify-self-center lg:justify-self-end relative">
-          <div className="absolute -inset-px rounded-3xl bg-gradient-to-b from-primary/30 to-transparent opacity-50 pointer-events-none" />
-          <div className="relative">
-            <h1 className="text-3xl font-bold">{mode === "login" ? "Entrar" : "Criar conta"}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {mode === "login" ? "Acesse o seu painel Redox Pay" : "Comece a receber em minutos"}
-            </p>
+      {/* RIGHT — form */}
+      <div className="flex items-center justify-center p-6 py-12">
+        <div className="w-full max-w-md">
+          <Link to="/" className="lg:hidden flex items-center gap-2 font-bold text-lg mb-8 justify-center">
+            <span className="h-2 w-2 rounded-full bg-primary-glow" /> REDOX <span className="text-gradient-red">PAY</span>
+          </Link>
 
-            <button className="mt-6 w-full inline-flex items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition py-3 text-sm font-medium">
-              <GoogleIcon /> Continuar com Google
-            </button>
-
-            <div className="my-6 flex items-center gap-3">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">ou com email</span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
-
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              {mode === "signup" && (
-                <Field label="Nome">
-                  <input type="text" placeholder="O seu nome" className="input" />
-                </Field>
-              )}
-              <Field label="Email">
-                <input
-                  type="email"
-                  placeholder="voce@exemplo.com"
-                  className="input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                />
+          {mode === "login" && (
+            <form onSubmit={handleLogin} className="space-y-5">
+              <Header title="Entrar" subtitle="Acesse o seu painel Redox Pay" />
+              <GoogleBtn onClick={handleGoogle} disabled={loading} />
+              <Divider />
+              <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={160} placeholder="voce@exemplo.com" /></Field>
+              <Field label="Senha" right={<button type="button" onClick={() => setMode("forgot")} className="text-xs text-primary-glow hover:text-primary-foreground">Esqueci</button>}>
+                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={72} placeholder="••••••••" />
               </Field>
-              <Field label="Senha" trailing={mode === "login" ? <a href="#" className="text-xs text-primary hover:underline">Esqueci</a> : undefined}>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete={mode === "login" ? "current-password" : "new-password"}
-                />
-              </Field>
-
-              {error && (
-                <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-                  {error}
-                </p>
-              )}
-
-              <button
-                type="submit"
-                className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-medium text-primary-foreground btn-glow hover:brightness-110 transition"
-              >
-                {mode === "login" ? "Entrar" : "Criar conta"} <ArrowRight className="h-4 w-4" />
-              </button>
+              <SubmitBtn loading={loading}>Entrar <ArrowRight className="ml-2 h-4 w-4" /></SubmitBtn>
+              <Switcher>
+                Não tem conta?{" "}
+                <button type="button" onClick={() => setMode("signup")} className="text-primary-glow hover:underline font-medium">Criar agora</button>
+              </Switcher>
             </form>
+          )}
 
-            <p className="mt-6 text-center text-sm text-muted-foreground">
-              {mode === "login" ? "Não tem conta? " : "Já tem conta? "}
-              <button
-                onClick={() => setMode(mode === "login" ? "signup" : "login")}
-                className="text-primary hover:underline font-medium"
-              >
-                {mode === "login" ? "Criar agora" : "Entrar"}
-              </button>
-            </p>
-          </div>
+          {mode === "signup" && (
+            <form onSubmit={handleSignup} className="space-y-4">
+              <Header title="Criar conta" subtitle="Comece a receber em minutos" />
+              <GoogleBtn onClick={handleGoogle} disabled={loading} />
+              <Divider />
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Nome completo"><Input value={fullName} onChange={(e) => setFullName(e.target.value)} required maxLength={120} /></Field>
+                <Field label="WhatsApp"><Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} required maxLength={20} placeholder="+258 84..." /></Field>
+              </div>
+              <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={160} /></Field>
+              <Field label="Nome do negócio"><Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} maxLength={120} placeholder="Opcional" /></Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Tipo">
+                  <div className="flex rounded-md border border-white/10 bg-white/[0.03] p-1">
+                    {(["person", "company"] as const).map((t) => (
+                      <button key={t} type="button" onClick={() => setAccountType(t)}
+                        className={`flex-1 text-xs py-1.5 rounded ${accountType === t ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+                        {t === "person" ? "Pessoa" : "Empresa"}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+                <Field label="Cidade"><Input value={city} onChange={(e) => setCity(e.target.value)} maxLength={80} placeholder="Maputo" /></Field>
+              </div>
+              <Field label="Senha"><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={72} placeholder="Mínimo 6 caracteres" /></Field>
+              <SubmitBtn loading={loading}>Criar conta <ArrowRight className="ml-2 h-4 w-4" /></SubmitBtn>
+              <Switcher>
+                Já tem conta?{" "}
+                <button type="button" onClick={() => setMode("login")} className="text-primary-glow hover:underline font-medium">Entrar</button>
+              </Switcher>
+            </form>
+          )}
+
+          {mode === "forgot" && (
+            <form onSubmit={handleForgot} className="space-y-5">
+              <Header title="Recuperar senha" subtitle="Enviaremos um link de redefinição para o seu email." />
+              <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={160} /></Field>
+              <SubmitBtn loading={loading}>Enviar link</SubmitBtn>
+              <Switcher>
+                <button type="button" onClick={() => setMode("login")} className="text-primary-glow hover:underline">← Voltar para entrar</button>
+              </Switcher>
+            </form>
+          )}
         </div>
-      </main>
-
-      <footer className="px-6 py-6 text-center text-xs text-muted-foreground">
-        © 2026 Redox Pay · Maputo, Moçambique
-      </footer>
-
-      <style>{`
-        .input {
-          width: 100%;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 0.75rem;
-          padding: 0.75rem 1rem;
-          font-size: 0.875rem;
-          color: inherit;
-          outline: none;
-          transition: border-color .15s, background .15s;
-        }
-        .input:focus { border-color: var(--primary); background: rgba(255,255,255,0.06); }
-        .input::placeholder { color: var(--muted-foreground); }
-      `}</style>
+      </div>
     </div>
   );
 }
 
-function Field({ label, trailing, children }: { label: string; trailing?: React.ReactNode; children: React.ReactNode }) {
+/* ---- subcomponents ---- */
+function Header({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <label className="block">
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</span>
-        {trailing}
-      </div>
-      {children}
-    </label>
+    <div className="mb-6">
+      <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+      <p className="text-sm text-muted-foreground mt-1.5">{subtitle}</p>
+    </div>
   );
 }
-
-function GoogleIcon() {
+function Field({ label, right, children }: { label: string; right?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden>
-      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.4-1.6 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.9 1.5l2.6-2.5C16.9 3.4 14.7 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12S6.7 21.6 12 21.6c6.9 0 11.5-4.8 11.5-11.6 0-.8-.1-1.4-.2-1.9H12z"/>
-    </svg>
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Label>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+function SubmitBtn({ loading, children }: { loading: boolean; children: React.ReactNode }) {
+  return (
+    <Button type="submit" className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground red-glow" disabled={loading}>
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{children}</>}
+    </Button>
+  );
+}
+function Divider() {
+  return (
+    <div className="relative">
+      <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/10" /></div>
+      <div className="relative flex justify-center text-xs"><span className="bg-background px-3 text-muted-foreground uppercase tracking-wider">ou com email</span></div>
+    </div>
+  );
+}
+function Switcher({ children }: { children: React.ReactNode }) {
+  return <p className="text-center text-sm text-muted-foreground">{children}</p>;
+}
+function GoogleBtn({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
+  return (
+    <Button type="button" variant="outline" className="w-full h-11 border-white/15 bg-white/5 hover:bg-white/10" onClick={onClick} disabled={disabled}>
+      <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continuar com Google
+    </Button>
   );
 }
