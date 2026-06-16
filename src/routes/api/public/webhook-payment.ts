@@ -3,10 +3,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 const webhookSchema = z.object({
-  event: z.string(),
-  txid: z.string(),
-  partner_transaction_id: z.string().optional(),
-  status: z.string(),
+  event: z.coerce.string().optional().default(""),
+  txid: z.coerce.string().optional().default(""),
+  partner_transaction_id: z.coerce.string().optional().default(""),
+  status: z.coerce.string().optional().default(""),
   valor_bruto: z.number().optional(),
   valor_liquido: z.number().optional(),
   taxa_rlx: z.number().optional(),
@@ -91,7 +91,6 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
           if (next === "paid") {
             const amount = Number(tx.amount_mzn) || 0;
             const sellerFee = Math.round((amount * 0.15 + 15) * 100) / 100;
-            const rlxCost = Math.round((amount * 0.10 + 10) * 100) / 100;
             const sellerNet = Math.round((amount - sellerFee) * 100) / 100;
             updates.net_mzn = sellerNet;
 
