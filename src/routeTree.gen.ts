@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ObrigadoRouteImport } from './routes/obrigado'
-import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -48,11 +47,6 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const ObrigadoRoute = ObrigadoRouteImport.update({
   id: '/obrigado',
   path: '/obrigado',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -211,7 +205,6 @@ const AuthenticatedDashboardNotificationsConfigRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
@@ -242,7 +235,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
@@ -265,6 +257,7 @@ export interface FileRoutesByTo {
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/api/public/webhook-payment': typeof ApiPublicWebhookPaymentRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
@@ -274,7 +267,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
@@ -307,7 +299,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/dashboard'
     | '/obrigado'
     | '/reset-password'
     | '/api/debug-notification'
@@ -338,7 +329,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
-    | '/dashboard'
     | '/obrigado'
     | '/reset-password'
     | '/api/debug-notification'
@@ -361,6 +351,7 @@ export interface FileRouteTypes {
     | '/dashboard/withdrawals'
     | '/api/public/rlx-webhook'
     | '/api/public/webhook-payment'
+    | '/dashboard'
     | '/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
@@ -369,7 +360,6 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/dashboard'
     | '/obrigado'
     | '/reset-password'
     | '/api/debug-notification'
@@ -402,7 +392,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  DashboardRoute: typeof DashboardRoute
   ObrigadoRoute: typeof ObrigadoRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiDebugNotificationRoute: typeof ApiDebugNotificationRoute
@@ -428,13 +417,6 @@ declare module '@tanstack/react-router' {
       path: '/obrigado'
       fullPath: '/obrigado'
       preLoaderRoute: typeof ObrigadoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -696,7 +678,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  DashboardRoute: DashboardRoute,
   ObrigadoRoute: ObrigadoRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiDebugNotificationRoute: ApiDebugNotificationRoute,
