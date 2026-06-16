@@ -148,11 +148,13 @@ async function processWebhook(request: Request) {
 
             let productName: string | null = null;
             let productUtmifyId: string | null = null;
+            let productLowtrackId: string | null = null;
             if (tx.product_id) {
               const { data: prod } = await supabaseAdmin
-                .from("products").select("name,utimify_id").eq("id", tx.product_id).maybeSingle();
+                .from("products").select("name,utimify_id,lawtracker_id").eq("id", tx.product_id).maybeSingle();
               productName = prod?.name ?? null;
               productUtmifyId = prod?.utimify_id ?? null;
+              productLowtrackId = prod?.lawtracker_id ?? null;
             }
 
             if (notificationsEnabled) {
@@ -268,16 +270,37 @@ async function processWebhook(request: Request) {
               if (lowtrackUrl && lowtrackEnabled) {
                 const headers: Record<string, string> = { "Content-Type": "application/json" };
                 if (lowtrackToken) headers["authorization"] = `Bearer ${lowtrackToken}`;
-                fetch(lowtrackUrl, {
+
+                // Append product token + sale data as querystring (LowTrack postback style)
+                let finalUrl = lowtrackUrl;
+                try {
+                  const u = new URL(lowtrackUrl);
+                  if (productLowtrackId) {
+                    u.searchParams.set("token", productLowtrackId);
+                    u.searchParams.set("click_id", productLowtrackId);
+                  }
+                  u.searchParams.set("transaction_id", String(tx.id));
+                  u.searchParams.set("value", String(Number(tx.amount_mzn)));
+                  u.searchParams.set("status", "paid");
+                  finalUrl = u.toString();
+                } catch {}
+
+                fetch(finalUrl, {
                   method: "POST",
                   headers,
                   body: JSON.stringify({
                     event: "payment.confirmed",
+                    token: productLowtrackId,
+                    click_id: productLowtrackId,
                     orderId: tx.id,
+                    transaction_id: tx.id,
                     amount: Number(tx.amount_mzn),
+                    value: Number(tx.amount_mzn),
                     netAmount: Number(tx.net_mzn),
+                    status: "paid",
                     customer: { name: tx.customer_name, phone: tx.customer_phone, email: tx.customer_email },
                     product: productName,
+                    product_token: productLowtrackId,
                     createdAt: tx.created_at,
                   }),
                 }).catch(() => {});
