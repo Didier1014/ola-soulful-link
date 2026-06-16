@@ -601,11 +601,11 @@ function PillDialog({ open, pillKey, config, onClose, onSave }: {
           {pillKey === "pagamento" && (
             <>
               <Label>Métodos aceites</Label>
-              {(["mpesa", "emola", "rlx"] as const).map(m => (
+              {(["mpesa", "emola"] as const).map(m => (
                 <label key={m} className="flex items-center gap-2 text-sm">
                   <input type="checkbox" checked={c.methods?.[m] ?? true}
                     onChange={(e) => setC({ ...c, methods: { ...(c.methods || {}), [m]: e.target.checked } })} />
-                  {m === "mpesa" ? "M-Pesa" : m === "emola" ? "e-Mola" : "RLX Gateway"}
+                  {m === "mpesa" ? "M-Pesa" : "e-Mola"}
                 </label>
               ))}
               <Label>Valor mínimo (MZN)</Label>
