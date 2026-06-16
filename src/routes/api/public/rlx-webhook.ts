@@ -112,25 +112,46 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
               if (meta.notifications_enabled === false) notificationsEnabled = false;
             } catch {}
 
+            // Read merchant integration bundle (push_custom, pushcut, utmify, mozesms)
+            const { data: bundle } = await supabaseAdmin
+              .from("integration_settings")
+              .select("push_custom, pushcut, utmify, mozesms")
+              .eq("user_id", tx.user_id)
+              .eq("integration_key", "_bundle")
+              .maybeSingle();
+
+            let productName: string | null = null;
+            let productUtmifyId: string | null = null;
+            if (tx.product_id) {
+              const { data: prod } = await supabaseAdmin
+                .from("products").select("name,utimify_id").eq("id", tx.product_id).maybeSingle();
+              productName = prod?.name ?? null;
+              productUtmifyId = prod?.utimify_id ?? null;
+            }
+
             if (notificationsEnabled) {
-              let productName: string | null = null;
-              let productUtmifyId: string | null = null;
-              if (tx.product_id) {
-                const { data: prod } = await supabaseAdmin
-                  .from("products").select("name,utimify_id").eq("id", tx.product_id).maybeSingle();
-                productName = prod?.name ?? null;
-                productUtmifyId = prod?.utimify_id ?? null;
-              }
+
+
+              // Format value in chosen currency from push_custom override (fallback to user meta currency)
+              const pushCurrency = (bundle?.push_custom?.currency as string) || currency;
+              const formattedAmount = Number(tx.amount_mzn).toLocaleString("pt-MZ", { style: "currency", currency: pushCurrency });
+              const fillVars = (s: string) => s
+                .replaceAll("{valor}", formattedAmount)
+                .replaceAll("{produto}", productName ?? "")
+                .replaceAll("{cliente}", tx.customer_name ?? "Cliente");
+
+              const customTitle = (bundle?.push_custom?.title as string) || "💰 Nova venda aprovada!";
+              const customBody = (bundle?.push_custom?.body as string) || `{valor} — {cliente}`;
 
               await supabaseAdmin.from("notifications").insert({
                 user_id: tx.user_id,
                 type: "sale",
-                title: "Nova venda",
-                message: `Pagamento de ${Number(tx.amount_mzn).toLocaleString("pt-MZ", { style: "currency", currency })} recebido`,
+                title: fillVars(customTitle),
+                message: fillVars(customBody),
                 data: {
                   transaction_id: tx.id,
                   amount_mzn: Number(tx.amount_mzn),
-                  currency,
+                  currency: pushCurrency,
                   customer_name: tx.customer_name ?? null,
                   product_name: productName,
                 },
@@ -138,25 +159,54 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
 
               // 📲 Send PWA push notification
               const { sendPushToUser } = await import("@/lib/push.functions");
-              const formattedAmount = Number(tx.amount_mzn).toLocaleString("pt-MZ", { style: "currency", currency });
               sendPushToUser(
                 supabaseAdmin, tx.user_id,
-                "Nova venda!",
-                `${formattedAmount} — ${tx.customer_name || "Cliente"}${productName ? ` — ${productName}` : ""}`,
+                fillVars(customTitle),
+                fillVars(customBody),
                 "/dashboard/transactions",
               ).catch(() => {});
+
+              // 📱 PUSHcut webhook
+              const pushcutUrl = bundle?.pushcut?.enabled ? (bundle?.pushcut?.webhook_url as string) : null;
+              if (pushcutUrl) {
+                fetch(pushcutUrl, {
+                  method: "POST",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify({ title: fillVars(customTitle), text: fillVars(customBody), input: String(tx.id) }),
+                }).catch(() => {});
+              }
+
+              // 📨 MozeSMS para o cliente
+              const sms = bundle?.mozesms;
+              if (sms?.enabled && tx.customer_phone && sms?.template) {
+                const msg = String(sms.template)
+                  .replaceAll("{nome}", tx.customer_name ?? "Cliente")
+                  .replaceAll("{produto}", productName ?? "")
+                  .replaceAll("{valor}", formattedAmount)
+                  .replaceAll("{email}", tx.customer_email ?? "");
+                await supabaseAdmin.from("sms_logs").insert({
+                  phone: tx.customer_phone, message: `[${sms.sender_id || "RedoxPay"}] ${msg}`, status: "queued",
+                  user_id: tx.user_id, transaction_id: tx.id,
+                } as any).catch(() => {});
+
+              }
             }
 
-            // 🔗 Send sale data to Utmify
+
+            // 🔗 Send sale data to Utmify (new bundle takes precedence, legacy key as fallback)
             try {
-              const { data: utmifyCfg } = await supabaseAdmin
-                .from("integration_settings")
-                .select("settings")
-                .eq("user_id", tx.user_id)
-                .eq("integration_key", "utimify")
-                .maybeSingle();
-              const utmifyToken = utmifyCfg?.settings?.api_token as string | undefined;
+              let utmifyToken = bundle?.utmify?.enabled ? (bundle?.utmify?.api_token as string | undefined) : undefined;
+              if (!utmifyToken) {
+                const { data: utmifyCfg } = await supabaseAdmin
+                  .from("integration_settings")
+                  .select("settings")
+                  .eq("user_id", tx.user_id)
+                  .eq("integration_key", "utimify")
+                  .maybeSingle();
+                utmifyToken = utmifyCfg?.settings?.api_token as string | undefined;
+              }
               if (utmifyToken) {
+
                 const body = {
                   status: "paid",
                   orderId: tx.id,
