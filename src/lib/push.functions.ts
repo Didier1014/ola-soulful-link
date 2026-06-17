@@ -11,6 +11,20 @@ export const getVapidPublicKey = createServerFn({ method: "GET" })
     return { key };
   });
 
+export const hasInvalidPushSubscription = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id,last_error,invalidated_at,status")
+      .eq("user_id", context.userId)
+      .eq("status", "invalid")
+      .limit(1)
+      .maybeSingle();
+    return { invalid: Boolean(data?.id), reason: data?.last_error ?? null };
+  });
+
 export const subscribePush = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -31,6 +45,9 @@ export const subscribePush = createServerFn({ method: "POST" })
           endpoint: data.endpoint,
           p256dh: data.p256dh,
           auth: data.auth,
+          status: "active",
+          last_error: null,
+          invalidated_at: null,
         },
         { onConflict: "endpoint" },
       );
@@ -121,9 +138,12 @@ export async function sendPushToUser(
     subject: process.env.VAPID_SUBJECT || "mailto:admin@redoxpay.com",
   };
   const payload = JSON.stringify({ title, body, url });
-  async function removeSubscription(endpoint: string) {
+  async function invalidateSubscription(endpoint: string, reason: string) {
     try {
-      await supabaseAdmin.from("push_subscriptions").delete().eq("endpoint", endpoint);
+      await supabaseAdmin
+        .from("push_subscriptions")
+        .update({ status: "invalid", last_error: reason, invalidated_at: new Date().toISOString() })
+        .eq("endpoint", endpoint);
     } catch {}
     try {
       const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
@@ -143,8 +163,9 @@ export async function sendPushToUser(
       attempts.push({ endpoint: sub.endpoint.slice(0, 80), status: res.status, ok: res.status >= 200 && res.status < 300, body: (res.body || "").slice(0, 300) });
       console.log(`[push] user=${userId} ep=${sub.endpoint.slice(0, 40)}... → HTTP ${res.status} ${(res.body || "").slice(0, 200)}`);
       if (res.status === 404 || res.status === 410 || (res.status === 400 && /VapidPkHashMismatch/i.test(res.body || ""))) {
-        // Gone or subscribed with an old VAPID public key — remove and force re-subscribe.
-        await removeSubscription(sub.endpoint);
+        // Gone or subscribed with an old VAPID public key — mark as invalid so the UI can prompt re-subscription.
+        const reason = res.status === 410 ? "gone_410" : res.status === 404 ? "not_found_404" : "vapid_mismatch";
+        await invalidateSubscription(sub.endpoint, reason);
         failed++;
         continue;
       }
