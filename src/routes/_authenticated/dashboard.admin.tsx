@@ -259,7 +259,8 @@ function AdminPage() {
                       || (p.city?.toLowerCase() ?? "").includes(q);
                   })
                   .map((p: any) => (
-                    <div key={p.id} className="grid grid-cols-12 px-4 py-3 items-center text-sm hover:bg-secondary/30 transition-colors">
+                    <button key={p.id} onClick={() => setSelectedUser(p)}
+                      className="w-full grid grid-cols-12 px-4 py-3 items-center text-sm hover:bg-secondary/30 transition-colors text-left">
                       <div className="col-span-5 flex items-center gap-3 min-w-0">
                         <div className="h-9 w-9 rounded-lg flex items-center justify-center text-xs font-bold shrink-0" style={{ background: `${RUBY}10`, color: RUBY }}>
                           {(p.full_name || p.business_name || "U").charAt(0).toUpperCase()}
@@ -271,8 +272,11 @@ function AdminPage() {
                       </div>
                       <div className="col-span-3 text-xs text-muted-foreground truncate">{p.phone || "—"}</div>
                       <div className="col-span-2 text-right font-mono font-semibold">{fmtMT(Number(p.balance_mzn ?? 0))}</div>
-                      <div className="col-span-2 text-right text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString("pt-MZ")}</div>
-                    </div>
+                      <div className="col-span-2 text-right text-xs text-muted-foreground flex items-center justify-end gap-1">
+                        {new Date(p.created_at).toLocaleDateString("pt-MZ")}
+                        <ChevronRight className="h-3 w-3" />
+                      </div>
+                    </button>
                   ))}
                 {!profiles.data?.length && <p className="p-8 text-center text-sm text-muted-foreground">Nenhum utilizador.</p>}
               </div>
