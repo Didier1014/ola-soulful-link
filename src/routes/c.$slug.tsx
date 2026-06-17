@@ -211,15 +211,29 @@ function CheckoutPage() {
   // Redirect automático para a página de obrigado (ou link digital) ao confirmar pagamento
   useEffect(() => {
     if (modal?.status !== "paid" || !modal.id) return;
+    // 🎯 Fire Meta Pixel Purchase event
+    const w = window as any;
+    if (product?.pixel_id && w.fbq && !pixelFiredRef.current.purchase) {
+      try {
+        w.fbq("track", "Purchase", {
+          value: Number(product.price_mzn),
+          currency: "MZN",
+          content_ids: [product.id],
+          content_name: product.name,
+          content_type: "product",
+          transaction_id: modal.id,
+        });
+      } catch {}
+      pixelFiredRef.current.purchase = true;
+    }
     const target = modal.delivery_url
       ? modal.delivery_url
       : `/obrigado?tx_id=${modal.id}&slug=${slug}`;
     const t = setTimeout(() => {
-      if (modal.delivery_url) window.location.href = target;
-      else window.location.href = target;
+      window.location.href = target;
     }, 1500);
     return () => clearTimeout(t);
-  }, [modal?.status, modal?.id, modal?.delivery_url, slug]);
+  }, [modal?.status, modal?.id, modal?.delivery_url, slug, product?.pixel_id, product?.id, product?.name, product?.price_mzn]);
 
   if (isLoading) return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6" style={{ background: "linear-gradient(135deg, #f9fafc 0%, #f1f5f9 100%)" }}>
