@@ -83,7 +83,7 @@ function Hero() {
         <span className="text-gradient-red">Moçambique</span> com rapidez e segurança
       </h1>
       <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-        Aceite M-Pesa e e-Mola no seu site, app, link ou QR Code. Liquidação em tempo real, taxas justas e um painel inteligente.
+        Aqui a sua escala é a nossa prioridade. Aceitamos pagamentos via M-Pesa e e-Mola no seu site, app ou link, com 98% de conversão.
       </p>
       <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
         <Link to="/auth">
