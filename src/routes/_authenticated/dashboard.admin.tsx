@@ -192,9 +192,10 @@ function AdminPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+              <Kpi label="Lucro hoje" value={fmtMT(d.profit_today_mzn)} icon={DollarSign} accent />
               <Kpi label="Volume pago" value={fmtMT(d.volume_mzn)} icon={TrendingUp} accent />
-              <Kpi label="Lucro plataforma" value={fmtMT(d.profit_mzn)} icon={DollarSign} accent />
+              <Kpi label="Lucro total" value={fmtMT(d.profit_mzn)} icon={DollarSign} accent />
               <Kpi label="Saldo utilizadores" value={fmtMT(d.user_balance_mzn)} icon={Wallet} />
               <Kpi label="Saques pendentes" value={fmtMT(d.pending_withdrawals_mzn)} icon={AlertTriangle} warn />
             </div>
