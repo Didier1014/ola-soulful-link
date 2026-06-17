@@ -77,6 +77,9 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       return d.toISOString().slice(0, 10);
     });
 
+    const today = new Date().toISOString().slice(0, 10);
+    const profitToday = revenueGrowth[today] || 0;
+
     return {
       profiles: profiles ?? 0,
       transactions: tx ?? 0,
@@ -84,6 +87,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       withdrawals: withdrawals ?? 0,
       volume_mzn: totalVolume,
       profit_mzn: totalProfit,
+      profit_today_mzn: profitToday,
       user_balance_mzn: totalBalance,
       pending_withdrawals_mzn: pendingWd,
       total_withdrawals_mzn: totalWd,
