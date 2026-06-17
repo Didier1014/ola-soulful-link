@@ -146,6 +146,8 @@ async function processWebhook(request: Request) {
               .eq("integration_key", "_bundle")
               .maybeSingle();
 
+            const { convertAmount } = await import("@/lib/currency.functions");
+
             let productName: string | null = null;
             let productUtmifyId: string | null = null;
             let productLowtrackId: string | null = null;
@@ -235,8 +237,11 @@ async function processWebhook(request: Request) {
                 utmifyToken = utmifyCfg?.settings?.api_token as string | undefined;
               }
               if (utmifyToken) {
-                const amountCents = Math.round(Number(tx.amount_mzn) * 100);
-                const netCents = Math.round(Number(tx.net_mzn || 0) * 100);
+                const utmifyCurrency = (bundle?.utmify?.currency as string) || "BRL";
+                const convertedAmount = await convertAmount(Number(tx.amount_mzn), "MZN", utmifyCurrency);
+                const convertedNet = await convertAmount(Number(tx.net_mzn || 0), "MZN", utmifyCurrency);
+                const amountCents = Math.round(convertedAmount * 100);
+                const netCents = Math.round(convertedNet * 100);
                 const feeCents = Math.max(0, amountCents - netCents);
                 const nowIso = new Date().toISOString().replace("T", " ").slice(0, 19);
                 const createdIso = new Date(tx.created_at).toISOString().replace("T", " ").slice(0, 19);
@@ -310,13 +315,16 @@ async function processWebhook(request: Request) {
                 const headers: Record<string, string> = { "Content-Type": "application/json" };
                 if (lowtrackToken) headers["Authorization"] = `Bearer ${lowtrackToken}`;
 
+                const lowtrackCurrency = (lowtrackCfg?.settings?.currency as string) || "BRL";
+                const ltAmount = Math.round((await convertAmount(Number(tx.amount_mzn), "MZN", lowtrackCurrency)) * 100) / 100;
+
                 const body = {
                   event: "sale.approved",
                   status: "paid",
                   transaction_id: String(tx.id),
-                  amount: Number(tx.amount_mzn),
-                  sale_amount: Number(tx.amount_mzn),
-                  currency: "MZN",
+                  amount: ltAmount,
+                  sale_amount: ltAmount,
+                  currency: lowtrackCurrency,
                   product_id: productLowtrackId || undefined,
                   offer_id: productLowtrackId || undefined,
                   product_name: productName || undefined,

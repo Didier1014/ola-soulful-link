@@ -25,14 +25,14 @@ export const Route = createFileRoute("/_authenticated/dashboard/integrations")({
 interface Bundle {
   push_custom: { title?: string; body?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
   pushcut: { enabled?: boolean; webhook_url?: string };
-  utmify: { enabled?: boolean; api_token?: string };
+  utmify: { enabled?: boolean; api_token?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
   mozesms: { enabled?: boolean; sender_id?: string; template?: string; test_number?: string };
 }
 
 const DEFAULT_BUNDLE: Bundle = {
   push_custom: { title: "💰 Nova venda aprovada!", body: "{valor} — {cliente}", currency: "MZN" },
   pushcut: { enabled: false, webhook_url: "" },
-  utmify: { enabled: false, api_token: "" },
+  utmify: { enabled: false, api_token: "", currency: "BRL" },
   mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Obrigado!", test_number: "" },
 };
 
@@ -50,7 +50,7 @@ function IntegrationsPage() {
   const { data } = useQuery({ queryKey: ["bundle"], queryFn: () => fetchBundle() });
   const { data: legacy } = useQuery({ queryKey: ["legacy-integrations"], queryFn: () => fetchLegacy() });
   const [b, setB] = useState<Bundle>(DEFAULT_BUNDLE);
-  const [lowtrack, setLowtrack] = useState<{ enabled: boolean; webhook_url: string; api_token: string }>({ enabled: false, webhook_url: "", api_token: "" });
+  const [lowtrack, setLowtrack] = useState<{ enabled: boolean; webhook_url: string; api_token: string; currency: "MZN" | "BRL" | "USD" | "EUR" }>({ enabled: false, webhook_url: "", api_token: "", currency: "BRL" });
 
   useEffect(() => {
     if (data) {
@@ -70,6 +70,7 @@ function IntegrationsPage() {
         enabled: row.settings.enabled !== false,
         webhook_url: row.settings.webhook_url || "",
         api_token: row.settings.api_token || "",
+        currency: (row.settings.currency as any) || "BRL",
       });
     }
   }, [legacy]);
@@ -233,6 +234,17 @@ function IntegrationsPage() {
         <Input type="password" value={b.utmify.api_token || ""}
           onChange={(e) => setB({ ...b, utmify: { ...b.utmify, api_token: e.target.value } })}
           placeholder="utm_..." />
+        <Label>Moeda da dashboard UTMify</Label>
+        <Select value={b.utmify.currency || "BRL"} onValueChange={(v: any) => setB({ ...b, utmify: { ...b.utmify, currency: v } })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="MZN">Metical (MZN)</SelectItem>
+            <SelectItem value="BRL">Real (BRL)</SelectItem>
+            <SelectItem value="USD">Dólar (USD)</SelectItem>
+            <SelectItem value="EUR">Euro (EUR)</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground -mt-1">O valor em MZN será convertido automaticamente para esta moeda antes de enviar à UTMify.</p>
         <Button variant="outline" size="sm"
           disabled={!b.utmify.api_token}
           onClick={async () => {
@@ -261,6 +273,17 @@ function IntegrationsPage() {
           onChange={(e) => setLowtrack({ ...lowtrack, api_token: e.target.value })}
           placeholder="lt_..." />
         <p className="text-xs text-muted-foreground -mt-1">Enviado como <code>Authorization: Bearer …</code> no postback.</p>
+        <Label>Moeda da dashboard LowTrack</Label>
+        <Select value={lowtrack.currency || "BRL"} onValueChange={(v: any) => setLowtrack({ ...lowtrack, currency: v })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="MZN">Metical (MZN)</SelectItem>
+            <SelectItem value="BRL">Real (BRL)</SelectItem>
+            <SelectItem value="USD">Dólar (USD)</SelectItem>
+            <SelectItem value="EUR">Euro (EUR)</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground -mt-1">O valor em MZN será convertido automaticamente para esta moeda antes de enviar ao LowTrack.</p>
         <Button variant="outline" size="sm"
           disabled={!lowtrack.webhook_url}
           onClick={async () => {
