@@ -53,27 +53,40 @@ export async function sendPushToUser(
   const sub = user?.user?.user_metadata?.push_subscription as
     | { endpoint: string; p256dh: string; auth: string }
     | undefined;
-  if (!sub) return { ok: false, reason: "no_subscription" };
+  if (!sub) {
+    console.log(`[push] user=${userId} no_subscription`);
+    return { ok: false, reason: "no_subscription" };
+  }
 
   const vapidPublic = process.env.VAPID_PUBLIC_KEY;
   const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
-  if (!vapidPublic || !vapidPrivate) return { ok: false, reason: "vapid_missing" };
-
-  const webpush = await import("web-push");
-  webpush.setVapidDetails(process.env.VAPID_SUBJECT || "mailto:admin@redoxpay.com", vapidPublic, vapidPrivate);
+  if (!vapidPublic || !vapidPrivate) {
+    console.log(`[push] vapid_missing`);
+    return { ok: false, reason: "vapid_missing" };
+  }
 
   try {
-    await webpush.sendNotification({
-      endpoint: sub.endpoint,
-      keys: { p256dh: sub.p256dh, auth: sub.auth },
-    }, JSON.stringify({ title, body, url }));
-    return { ok: true };
-  } catch (e: any) {
-    const meta = user?.user?.user_metadata ?? {};
-    const cleaned = Object.fromEntries(
-      Object.entries(meta).filter(([k]) => k !== "push_subscription")
+    const { sendWebPushNotification } = await import("@/lib/webpush.server");
+    const res = await sendWebPushNotification(
+      sub,
+      JSON.stringify({ title, body, url }),
+      {
+        publicKey: vapidPublic,
+        privateKey: vapidPrivate,
+        subject: process.env.VAPID_SUBJECT || "mailto:admin@redoxpay.com",
+      },
     );
-    await supabaseAdmin.auth.admin.updateUserById(userId, { user_metadata: cleaned });
-    return { ok: false, reason: `send_failed:${e?.statusCode ?? e?.message ?? "unknown"}` };
+    console.log(`[push] user=${userId} → HTTP ${res.status} ${res.body.slice(0, 200)}`);
+    if (res.status === 404 || res.status === 410) {
+      const meta = user?.user?.user_metadata ?? {};
+      const cleaned = Object.fromEntries(Object.entries(meta).filter(([k]) => k !== "push_subscription"));
+      await supabaseAdmin.auth.admin.updateUserById(userId, { user_metadata: cleaned });
+      return { ok: false, reason: `gone:${res.status}` };
+    }
+    if (res.status >= 200 && res.status < 300) return { ok: true };
+    return { ok: false, reason: `http:${res.status}` };
+  } catch (e: any) {
+    console.log(`[push] user=${userId} send_failed`, e?.message ?? e);
+    return { ok: false, reason: `send_failed:${e?.message ?? "unknown"}` };
   }
 }
