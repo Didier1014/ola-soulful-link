@@ -3,11 +3,12 @@ import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listNotifications, markNotificationRead, markAllNotificationsRead } from "@/lib/notifications.functions";
+import { listNotifications, markNotificationRead, markAllNotificationsRead, sendTestNotification } from "@/lib/notifications.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCheck, Settings2 } from "lucide-react";
+import { CheckCheck, Settings2, Bell, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard/notifications")({
   component: NotificationsPage,
