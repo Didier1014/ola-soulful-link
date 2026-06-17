@@ -8,7 +8,7 @@ async function logIntegrationCall(
   opts: {
     userId: string;
     txId: string;
-    provider: "utmify" | "lowtrack" | "pushcut";
+    provider: "webpush" | "utmify" | "lowtrack" | "pushcut";
     statusCode?: number | null;
     ok?: boolean;
     payload?: any;
@@ -35,6 +35,40 @@ async function logIntegrationCall(
   }
 }
 
+async function hasSuccessfulIntegration(supabaseAdmin: any, userId: string, txId: string, provider: string) {
+  const { data } = await supabaseAdmin
+    .from("integration_logs")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("transaction_id", txId)
+    .eq("provider", provider)
+    .eq("ok", true)
+    .limit(1)
+    .maybeSingle();
+  return Boolean(data?.id);
+}
+
+async function postJsonWithTimeout(
+  url: string,
+  init: { headers?: Record<string, string>; body: any },
+  timeoutMs = 4500,
+) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: init.headers,
+      body: JSON.stringify(init.body),
+      signal: controller.signal,
+    });
+    const text = await res.text().catch(() => "");
+    return { status: res.status, ok: res.ok, text };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 
 export async function notifyNewSale(supabaseAdmin: any, txId: string) {
   const { data: tx } = await supabaseAdmin
@@ -45,6 +79,11 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
   if (!tx) return;
 
   const userId = tx.user_id;
+  console.log(`[sale:${tx.id}] notifyNewSale start user=${userId} status=${tx.status}`);
+  if (tx.status !== "paid") {
+    console.log(`[sale:${tx.id}] skipped — status is ${tx.status}`);
+    return;
+  }
 
   // Read merchant preferences
   let currency = "MZN";
@@ -98,7 +137,7 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
     const title = fillVars(customTitle);
     const body = fillVars(customBody);
 
-    // In-app notification (idempotent gate — first writer wins)
+    // In-app notification (idempotent; does NOT gate push/tracking)
     let wasInserted = false;
     try {
       const { data: existing } = await supabaseAdmin
@@ -123,36 +162,55 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
           },
         });
         if (!insErr) wasInserted = true;
+        else console.log(`[sale:${tx.id}][notification] insert error`, insErr.message);
+      } else {
+        console.log(`[sale:${tx.id}][notification] already exists`);
       }
     } catch (e) {
       console.log("[notifyNewSale] in-app insert failed", e);
     }
-
-    if (!wasInserted) {
-      console.log(`[sale:${tx.id}] already notified — skipping push/utmify/lowtrack`);
-      return;
-    }
+    if (wasInserted) console.log(`[sale:${tx.id}][notification] inserted`);
 
     // Web push
     try {
-      const { sendPushToUser } = await import("@/lib/push.functions");
-      const r = await sendPushToUser(supabaseAdmin, userId, title, body, "/dashboard/transactions");
-      if (!r.ok) console.log("[notifyNewSale] push not sent:", r.reason);
+      if (await hasSuccessfulIntegration(supabaseAdmin, userId, tx.id, "webpush")) {
+        console.log(`[sale:${tx.id}][webpush] already sent — skipping`);
+      } else {
+        console.log(`[sale:${tx.id}][webpush] dispatching user=${userId}`);
+        const { sendPushToUser } = await import("@/lib/push.functions");
+        const r = await sendPushToUser(supabaseAdmin, userId, title, body, "/dashboard/transactions");
+        await logIntegrationCall(supabaseAdmin, {
+          userId,
+          txId: tx.id,
+          provider: "webpush",
+          ok: r.ok,
+          payload: { title, body, url: "/dashboard/transactions" },
+          response: JSON.stringify(r),
+          error: r.ok ? null : r.reason ?? "push_failed",
+        });
+        if (!r.ok) console.log(`[sale:${tx.id}][webpush] not sent:`, r.reason);
+      }
     } catch (e) {
-      console.log("[notifyNewSale] push error", e);
+      const err = String((e as any)?.message ?? e);
+      await logIntegrationCall(supabaseAdmin, { userId, txId: tx.id, provider: "webpush", ok: false, payload: { title, body }, error: err });
+      console.log(`[sale:${tx.id}][webpush] error`, e);
     }
 
     // PUSHcut
     try {
       const pushcutUrl = bundle?.pushcut?.enabled ? (bundle?.pushcut?.webhook_url as string) : null;
       if (pushcutUrl) {
-        fetch(pushcutUrl, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ title, text: body, input: String(tx.id) }),
-        }).catch(() => {});
+        if (await hasSuccessfulIntegration(supabaseAdmin, userId, tx.id, "pushcut")) {
+          console.log(`[sale:${tx.id}][pushcut] already sent — skipping`);
+        } else {
+          const payload = { title, text: body, input: String(tx.id) };
+          const r = await postJsonWithTimeout(pushcutUrl, { headers: { "content-type": "application/json" }, body: payload });
+          await logIntegrationCall(supabaseAdmin, { userId, txId: tx.id, provider: "pushcut", statusCode: r.status, ok: r.ok, payload, response: r.text });
+        }
       }
-    } catch {}
+    } catch (e) {
+      await logIntegrationCall(supabaseAdmin, { userId, txId: tx.id, provider: "pushcut", ok: false, error: String((e as any)?.message ?? e) });
+    }
   }
 
   // ---------- Utmify ----------
@@ -168,6 +226,9 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
       utmifyToken = utmifyCfg?.settings?.api_token as string | undefined;
     }
     if (utmifyToken) {
+      if (await hasSuccessfulIntegration(supabaseAdmin, userId, tx.id, "utmify")) {
+        console.log(`[sale:${tx.id}][utmify] already sent — skipping`);
+      } else {
       const utmifyCurrency = (bundle?.utmify?.currency as string) || "BRL";
       const convertedAmount = await convertAmount(Number(tx.amount_mzn), "MZN", utmifyCurrency);
       const convertedNet = await convertAmount(Number(tx.net_mzn || 0), "MZN", utmifyCurrency);
@@ -219,28 +280,22 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
         },
         isTest: false,
       };
-      fetch("https://api.utmify.com.br/api-credentials/orders", {
-        method: "POST",
+      console.log(`[sale:${tx.id}][utmify] dispatching orderId=${utmifyBody.orderId}`);
+      const r = await postJsonWithTimeout("https://api.utmify.com.br/api-credentials/orders", {
         headers: { "Content-Type": "application/json", "x-api-token": utmifyToken },
-        body: JSON.stringify(utmifyBody),
-      })
-        .then(async (r) => {
-          const t = await r.text().catch(() => "");
-          await logIntegrationCall(supabaseAdmin, {
-            userId, txId: tx.id, provider: "utmify",
-            statusCode: r.status, ok: r.ok, payload: utmifyBody, response: t,
-          });
-        })
-        .catch(async (e) => {
-          await logIntegrationCall(supabaseAdmin, {
-            userId, txId: tx.id, provider: "utmify",
-            payload: utmifyBody, error: String(e?.message ?? e),
-          });
-        });
-
+        body: utmifyBody,
+      });
+      await logIntegrationCall(supabaseAdmin, {
+        userId, txId: tx.id, provider: "utmify",
+        statusCode: r.status, ok: r.ok, payload: utmifyBody, response: r.text,
+      });
+      }
+    } else {
+      console.log(`[sale:${tx.id}][utmify] not configured/enabled`);
     }
   } catch (e) {
-    console.log("[notifyNewSale] utmify error", e);
+    await logIntegrationCall(supabaseAdmin, { userId, txId: tx.id, provider: "utmify", ok: false, error: String((e as any)?.message ?? e) });
+    console.log(`[sale:${tx.id}][utmify] error`, e);
   }
 
   // ---------- LowTrack ----------
@@ -255,11 +310,15 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
     const lowtrackEnabled = lowtrackCfg?.settings?.enabled !== false;
     const lowtrackToken = lowtrackCfg?.settings?.api_token as string | undefined;
     if (lowtrackUrl && lowtrackEnabled) {
+      if (await hasSuccessfulIntegration(supabaseAdmin, userId, tx.id, "lowtrack")) {
+        console.log(`[sale:${tx.id}][lowtrack] already sent — skipping`);
+      } else {
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (lowtrackToken) headers["Authorization"] = `Bearer ${lowtrackToken}`;
       const lowtrackCurrency = (lowtrackCfg?.settings?.currency as string) || "BRL";
       const ltAmount =
         Math.round((await convertAmount(Number(tx.amount_mzn), "MZN", lowtrackCurrency)) * 100) / 100;
+      const trk = (tx.metadata as any)?.tracking || {};
       const ltBody = {
         event: "sale.approved",
         status: "paid",
@@ -275,26 +334,32 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
           phone: tx.customer_phone || "",
           email: tx.customer_email || "",
         },
+        tracking: {
+          src: trk.src ?? null,
+          sck: trk.sck ?? null,
+          utm_source: trk.utm_source ?? null,
+          utm_campaign: trk.utm_campaign ?? null,
+          utm_medium: trk.utm_medium ?? null,
+          utm_content: trk.utm_content ?? null,
+          utm_term: trk.utm_term ?? null,
+          fbp: trk.fbp ?? null,
+          fbc: trk.fbc ?? null,
+        },
         created_at: tx.created_at,
       };
-      fetch(lowtrackUrl, { method: "POST", headers, body: JSON.stringify(ltBody) })
-        .then(async (r) => {
-          const t = await r.text().catch(() => "");
-          await logIntegrationCall(supabaseAdmin, {
-            userId, txId: tx.id, provider: "lowtrack",
-            statusCode: r.status, ok: r.ok,
-            payload: { url: lowtrackUrl, body: ltBody }, response: t,
-          });
-        })
-        .catch(async (e) => {
-          await logIntegrationCall(supabaseAdmin, {
-            userId, txId: tx.id, provider: "lowtrack",
-            payload: { url: lowtrackUrl, body: ltBody }, error: String(e?.message ?? e),
-          });
-        });
-
+      console.log(`[sale:${tx.id}][lowtrack] dispatching url=${lowtrackUrl}`);
+      const r = await postJsonWithTimeout(lowtrackUrl, { headers, body: ltBody });
+      await logIntegrationCall(supabaseAdmin, {
+        userId, txId: tx.id, provider: "lowtrack",
+        statusCode: r.status, ok: r.ok,
+        payload: { url: lowtrackUrl, body: ltBody }, response: r.text,
+      });
+      }
+    } else {
+      console.log(`[sale:${tx.id}][lowtrack] not configured/enabled`);
     }
   } catch (e) {
-    console.log("[notifyNewSale] lowtrack error", e);
+    await logIntegrationCall(supabaseAdmin, { userId, txId: tx.id, provider: "lowtrack", ok: false, error: String((e as any)?.message ?? e) });
+    console.log(`[sale:${tx.id}][lowtrack] error`, e);
   }
 }

@@ -17,6 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Bell, Sparkles, Webhook, TrendingUp, MessageSquare, Send, Save, Radar } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
+import { usePushNotifications } from "@/components/push-setup";
+import { sendTestNotification } from "@/lib/notifications.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/integrations")({
   component: IntegrationsPage,
@@ -46,6 +48,8 @@ function IntegrationsPage() {
   const tLowtrack = useServerFn(testLowtrack);
   const fetchLegacy = useServerFn(getIntegrationSettings);
   const saveLegacy = useServerFn(saveIntegrationSetting);
+  const { permission, loading: pushLoading, enable: enablePush } = usePushNotifications();
+  const sendServerTestPush = useServerFn(sendTestNotification);
 
   const { data } = useQuery({ queryKey: ["bundle"], queryFn: () => fetchBundle() });
   const { data: legacy } = useQuery({ queryKey: ["legacy-integrations"], queryFn: () => fetchLegacy() });
@@ -92,42 +96,16 @@ function IntegrationsPage() {
     if (typeof window === "undefined" || !("Notification" in window)) {
       toast.error("Notificações não suportadas neste browser"); return;
     }
-    const perm = await Notification.requestPermission();
-    if (perm === "granted") toast.success("Notificações activas neste dispositivo");
+    await enablePush();
+    if (Notification.permission === "granted") toast.success("Notificações push activas neste dispositivo");
     else toast.error("Permissão negada");
   }
 
   async function testNotification() {
-    if (typeof window === "undefined" || !("Notification" in window)) {
-      toast.error("Notificações não suportadas neste browser"); return;
-    }
-    let perm = Notification.permission;
-    if (perm === "default") perm = await Notification.requestPermission();
-    if (perm !== "granted") { toast.error("Permissão de notificações negada"); return; }
-
-    const title = b.push_custom.title || "💰 Nova venda aprovada!";
-    const currency = b.push_custom.currency || "MZN";
-    const valor = currency === "BRL" ? "R$ 100,00" : currency === "USD" ? "US$ 100.00" : currency === "EUR" ? "€ 100,00" : "100 MT";
-    const body = (b.push_custom.body || "{valor} — {cliente}")
-      .replaceAll("{valor}", valor)
-      .replaceAll("{cliente}", "Cliente Teste")
-      .replaceAll("{produto}", "Produto Teste");
-
     try {
-      if ("serviceWorker" in navigator) {
-        let reg = await navigator.serviceWorker.getRegistration();
-        if (!reg) {
-          try { reg = await navigator.serviceWorker.register("/sw.js"); } catch {}
-        }
-        if (reg) {
-          await navigator.serviceWorker.ready;
-          await reg.showNotification(title, { body, icon: "/favicon.ico", badge: "/favicon.ico", tag: "test-notif" });
-          toast.success("Notificação de teste enviada");
-          return;
-        }
-      }
-      new Notification(title, { body, icon: "/favicon.ico" });
-      toast.success("Notificação de teste enviada");
+      const r = await sendServerTestPush();
+      if (r?.push_sent) toast.success("Push real de teste enviado pelo servidor");
+      else toast.error("Teste registado, mas push não foi enviado. Active as notificações push primeiro.");
     } catch (e: any) {
       toast.error(e?.message || "Falha ao enviar notificação");
     }
@@ -153,8 +131,8 @@ function IntegrationsPage() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={activatePush}><Bell className="h-4 w-4 mr-1" /> Ativar notificações</Button>
-          <Button variant="outline" onClick={testNotification}><Send className="h-4 w-4 mr-1" /> Notificação teste</Button>
+          <Button variant="outline" onClick={activatePush} disabled={pushLoading}><Bell className="h-4 w-4 mr-1" /> {permission === "granted" ? "Actualizar inscrição" : "Ativar notificações"}</Button>
+          <Button variant="outline" onClick={testNotification}><Send className="h-4 w-4 mr-1" /> Push real de teste</Button>
         </div>
       </Card>
 

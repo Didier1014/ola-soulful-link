@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -12,6 +13,13 @@ function calcFee(amount: number) {
 function normalizePhone(phone: string) {
   const d = phone.replace(/\D/g, "");
   return d.startsWith("258") ? d.slice(3) : d;
+}
+function getCurrentOrigin() {
+  const request = getRequest();
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
+  if (forwardedHost) return `${forwardedProto}://${forwardedHost}`;
+  return process.env.SITE_URL || new URL(request.url).origin;
 }
 
 export const getLinkBySlug = createServerFn({ method: "GET" })
@@ -36,6 +44,17 @@ export const payLink = createServerFn({ method: "POST" })
     customer_email: z.string().trim().email().max(160).optional().or(z.literal("")).default(""),
     customer_phone: z.string().trim().regex(/^\+?\d{8,15}$/, "Telefone inválido"),
     method: z.enum(["mpesa", "emola"]),
+    tracking: z.object({
+      src: z.string().max(200).optional(),
+      sck: z.string().max(200).optional(),
+      utm_source: z.string().max(200).optional(),
+      utm_campaign: z.string().max(200).optional(),
+      utm_medium: z.string().max(200).optional(),
+      utm_content: z.string().max(200).optional(),
+      utm_term: z.string().max(200).optional(),
+      fbp: z.string().max(200).optional(),
+      fbc: z.string().max(200).optional(),
+    }).partial().optional(),
   }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -47,26 +66,36 @@ export const payLink = createServerFn({ method: "POST" })
 
     const token = process.env.RLX_API_TOKEN;
     // Insert transaction FIRST with pending status
+    const trackingClean = data.tracking
+      ? Object.fromEntries(Object.entries(data.tracking).filter(([_, v]) => v != null && v !== ""))
+      : null;
     const { data: tx, error } = await supabaseAdmin.from("transactions").insert({
       user_id: link.user_id, customer_name: data.customer_name, customer_email: data.customer_email || null,
       customer_phone: data.customer_phone, method: data.method, amount_mzn: amount, fee_mzn: seller_fee, net_mzn: seller_net, status: "pending", external_ref: null,
+      metadata: trackingClean && Object.keys(trackingClean).length ? { tracking: trackingClean } : null,
     }).select().single();
     if (error) throw new Error(error.message);
 
     // Fire-and-forget — Vercel Hobby kills functions after 10s, processador demora 30-60s.
     if (token) {
       const phone = normalizePhone(data.customer_phone);
-      const webhookUrl = `${process.env.SITE_URL ?? "https://redoxpay.vercel.app"}/api/public/webhook-payment?tx_id=${tx.id}`;
+      const webhookUrl = `${getCurrentOrigin()}/api/public/webhook-payment?tx_id=${tx.id}`;
       fetch("https://checkout.rlxl.ink/api.php", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ action: "pay", phone, amount, nome_cliente: data.customer_name, webhook_url: webhookUrl }),
-      }).catch(() => {});
+      }).catch((e) => console.log(`[payment-link][sale:${tx.id}] RLX pay failed`, e));
     } else {
       await supabaseAdmin.from("transactions").update({ status: "paid", external_ref: `SIM-${Date.now()}` }).eq("id", tx.id);
       await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
       const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", link.user_id).maybeSingle();
       await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + seller_net }).eq("id", link.user_id);
+      try {
+        const { notifyNewSale } = await import("@/lib/sale-notify.server");
+        await notifyNewSale(supabaseAdmin, tx.id);
+      } catch (e) {
+        console.log(`[payment-link][sale:${tx.id}] notifyNewSale failed`, e);
+      }
     }
     return { id: tx.id, status: "pending" };
   });

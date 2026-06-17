@@ -20,6 +20,17 @@ function stripPhone(phone: string) {
   return d.startsWith("258") ? d.slice(3) : d;
 }
 
+function mapGatewayStatus(payload: Record<string, unknown>) {
+  const text = [payload.status, payload.event, payload.estado, payload.state, payload.message, payload.msg]
+    .filter(Boolean)
+    .map(String)
+    .join(" ")
+    .toLowerCase();
+  if (/success|paid|completed|approved|confirm|confirmado|aprovad|pago/.test(text)) return "paid";
+  if (/failed|error|cancel|reject|rejeitad|expirad|falh/.test(text)) return "failed";
+  return "pending";
+}
+
 export const Route = createFileRoute("/api/public/webhook-payment")({
   server: {
     handlers: {
@@ -75,14 +86,14 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
           }
         }
 
-        if (!tx) return new Response("ok");
+        if (!tx) {
+          console.log(`[webhook-payment] tx not found txid=${payload.txid || payload.partner_transaction_id || "-"} tx_id=${txIdFromUrl || "-"}`);
+          return new Response("ok");
+        }
 
-        const next =
-          payload.status === "success" || payload.status === "paid" || payload.event === "payment.success"
-            ? "paid"
-            : payload.status === "failed" || payload.event === "payment.failed"
-            ? "failed"
-            : "pending";
+        const next = mapGatewayStatus(payload as Record<string, unknown>);
+
+        console.log(`[webhook-payment][sale:${tx.id}] matched status=${tx.status} next=${next}`);
 
         if (next !== tx.status) {
           const updates: Record<string, unknown> = { status: next };
@@ -109,8 +120,14 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
               .update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + sellerNet })
               .eq("id", tx.user_id);
 
-            const { notifyNewSale } = await import("@/lib/sale-notify.server");
-            await notifyNewSale(supabaseAdmin, tx.id);
+            try {
+              console.log(`[webhook-payment][sale:${tx.id}] payment marked paid; dispatching sale side-effects`);
+              const { notifyNewSale } = await import("@/lib/sale-notify.server");
+              await notifyNewSale(supabaseAdmin, tx.id);
+              console.log(`[webhook-payment][sale:${tx.id}] sale side-effects finished`);
+            } catch (e) {
+              console.log(`[webhook-payment][sale:${tx.id}] notifyNewSale failed`, e);
+            }
 
             // Sale confirmation email to the producer
             try {
@@ -173,8 +190,22 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
             } catch (err: any) {
               console.error("[webhook] sale email failed:", err?.message || err);
             }
+          } else if (next !== "pending") {
+            const { error: statusErr } = await supabaseAdmin
+              .from("transactions")
+              .update(updates)
+              .eq("id", tx.id);
+            if (statusErr) console.log(`[webhook-payment][sale:${tx.id}] status update failed`, statusErr.message);
           }
 
+        } else if (next === "paid") {
+          try {
+            console.log(`[webhook-payment][sale:${tx.id}] already paid; ensuring sale side-effects`);
+            const { notifyNewSale } = await import("@/lib/sale-notify.server");
+            await notifyNewSale(supabaseAdmin, tx.id);
+          } catch (e) {
+            console.log(`[webhook-payment][sale:${tx.id}] notifyNewSale retry failed`, e);
+          }
         }
         return new Response("ok");
       },

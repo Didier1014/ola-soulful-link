@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle2, Loader2, Lock, Smartphone, Zap, AlertCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/l/$slug")({ component: LinkCheckout });
@@ -29,9 +29,25 @@ function LinkCheckout() {
   const [form, setForm] = useState({ customer_name: "", customer_email: "", customer_phone: "" });
   const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [done, setDone] = useState<{ id: string; status: string } | null>(null);
+  const trackingRef = useRef<Record<string, string>>({});
+
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const t: Record<string, string> = {};
+      ["utm_source","utm_campaign","utm_medium","utm_content","utm_term","src","sck"].forEach((k) => {
+        const v = sp.get(k); if (v) t[k] = v;
+      });
+      const cookie = document.cookie || "";
+      const fbp = cookie.match(/_fbp=([^;]+)/)?.[1]; if (fbp) t.fbp = fbp;
+      const fbc = cookie.match(/_fbc=([^;]+)/)?.[1] || (sp.get("fbclid") ? `fb.1.${Date.now()}.${sp.get("fbclid")}` : null);
+      if (fbc) t.fbc = fbc;
+      trackingRef.current = t;
+    } catch {}
+  }, []);
 
   const m = useMutation({
-    mutationFn: () => pay({ data: { link_id: link!.id, method, ...form } }),
+    mutationFn: () => pay({ data: { link_id: link!.id, method, ...form, tracking: trackingRef.current } }),
     onSuccess: (r) => {
       setDone(r);
       if (r.status === "paid") toast.success("Pagamento confirmado!");

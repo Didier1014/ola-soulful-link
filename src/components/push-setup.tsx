@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { subscribePush, unsubscribePush } from "@/lib/push.functions";
-
-const VAPID_PUBLIC_KEY = "BLcrtjTjC39GxJQAa-9PZOVdOkoSIhfr6xaEhXlkbW_-aIPnghqwYkiI-u89fJAvmG37T7LxEzAcmbpjlVQuJ1Q";
+import { getVapidPublicKey, subscribePush, unsubscribePush } from "@/lib/push.functions";
 
 function urlBase64ToUint8Array(base64: string) {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
@@ -13,9 +11,11 @@ function urlBase64ToUint8Array(base64: string) {
 
 export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">("unsupported");
+  const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
   const sub = useServerFn(subscribePush);
   const unsub = useServerFn(unsubscribePush);
+  const fetchVapidKey = useServerFn(getVapidPublicKey);
   const swRef = useRef<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
@@ -24,7 +24,11 @@ export function usePushNotifications() {
       return;
     }
     setPermission(Notification.permission);
-    navigator.serviceWorker.register("/sw.js").then((reg) => { swRef.current = reg; }).catch(() => {});
+    navigator.serviceWorker.register("/sw.js").then(async (reg) => {
+      swRef.current = reg;
+      const current = await reg.pushManager.getSubscription().catch(() => null);
+      setSubscribed(Boolean(current));
+    }).catch(() => {});
   }, []);
 
   const enable = async () => {
@@ -37,11 +41,15 @@ export function usePushNotifications() {
 
       const reg = swRef.current || await navigator.serviceWorker.register("/sw.js");
       swRef.current = reg;
+      const { key } = await fetchVapidKey();
+      const existing = await reg.pushManager.getSubscription();
+      if (existing) await existing.unsubscribe().catch(() => {});
       const pushSub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        applicationServerKey: urlBase64ToUint8Array(key),
       });
       await sub({ data: { endpoint: pushSub.endpoint, p256dh: arrayBufferToBase64(pushSub.getKey("p256dh")!), auth: arrayBufferToBase64(pushSub.getKey("auth")!) } });
+      setSubscribed(true);
     } catch { /* user denied or error */ }
     setLoading(false);
   };
@@ -53,12 +61,13 @@ export function usePushNotifications() {
       const pushSub = await reg.pushManager.getSubscription();
       if (pushSub) await pushSub.unsubscribe();
       await unsub();
+      setSubscribed(false);
       setPermission("denied");
     } catch { /* ignore */ }
     setLoading(false);
   };
 
-  return { permission, loading, enable, disable };
+  return { permission, subscribed, loading, enable, disable };
 }
 
 function arrayBufferToBase64(buf: ArrayBuffer) {
@@ -69,7 +78,7 @@ function arrayBufferToBase64(buf: ArrayBuffer) {
 }
 
 export function PushToggle() {
-  const { permission, loading, enable, disable } = usePushNotifications();
+  const { permission, subscribed, loading, enable, disable } = usePushNotifications();
 
   if (permission === "unsupported") return <p className="text-xs text-muted-foreground">Navegador não suporta notificações push.</p>;
   if (loading) return <p className="text-xs text-muted-foreground">A configurar...</p>;
@@ -83,10 +92,10 @@ export function PushToggle() {
         </p>
       </div>
       <button
-        onClick={permission === "granted" ? disable : enable}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${permission === "granted" ? "bg-emerald-500" : "bg-secondary"}`}
+        onClick={permission === "granted" && subscribed ? disable : enable}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${permission === "granted" && subscribed ? "bg-emerald-500" : "bg-secondary"}`}
       >
-        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${permission === "granted" ? "translate-x-6" : "translate-x-1"}`} />
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${permission === "granted" && subscribed ? "translate-x-6" : "translate-x-1"}`} />
       </button>
     </div>
   );
