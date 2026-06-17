@@ -98,7 +98,8 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
     const title = fillVars(customTitle);
     const body = fillVars(customBody);
 
-    // In-app notification (idempotent: skip if one already exists for this tx)
+    // In-app notification (idempotent gate — first writer wins)
+    let wasInserted = false;
     try {
       const { data: existing } = await supabaseAdmin
         .from("notifications")
@@ -108,7 +109,7 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
         .contains("data", { transaction_id: tx.id })
         .maybeSingle();
       if (!existing) {
-        await supabaseAdmin.from("notifications").insert({
+        const { error: insErr } = await supabaseAdmin.from("notifications").insert({
           user_id: userId,
           type: "sale",
           title,
@@ -121,9 +122,15 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
             product_name: productName,
           },
         });
+        if (!insErr) wasInserted = true;
       }
     } catch (e) {
       console.log("[notifyNewSale] in-app insert failed", e);
+    }
+
+    if (!wasInserted) {
+      console.log(`[sale:${tx.id}] already notified — skipping push/utmify/lowtrack`);
+      return;
     }
 
     // Web push

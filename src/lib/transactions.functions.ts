@@ -253,6 +253,42 @@ export const listMyTransactions = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("transactions").select("*").order("created_at", { ascending: false }).limit(200);
     if (error) throw new Error(error.message);
+
+    // Safety net: trigger sale notifications for any paid tx that hasn't
+    // been notified yet (covers cases where the webhook path failed to
+    // deliver the push). notifyNewSale is idempotent — duplicates no-op.
+    try {
+      const paid = (data ?? []).filter((t: any) => t.status === "paid").slice(0, 20);
+      if (paid.length) {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: notified } = await supabaseAdmin
+          .from("notifications")
+          .select("data")
+          .eq("user_id", context.userId)
+          .eq("type", "sale")
+          .order("created_at", { ascending: false })
+          .limit(200);
+        const notifiedSet = new Set(
+          (notified ?? []).map((n: any) => n?.data?.transaction_id).filter(Boolean),
+        );
+        const missing = paid.filter((t: any) => !notifiedSet.has(t.id));
+        if (missing.length) {
+          console.log(`[listMyTransactions] dispatching ${missing.length} pending sale notifications for user=${context.userId}`);
+          const { notifyNewSale } = await import("@/lib/sale-notify.server");
+          // Fire and forget — don't block the list response
+          Promise.all(
+            missing.map((t: any) =>
+              notifyNewSale(supabaseAdmin, t.id).catch((e) =>
+                console.log(`[listMyTransactions] notifyNewSale(${t.id}) failed`, e),
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      console.log("[listMyTransactions] safety-net error", e);
+    }
+
     return data ?? [];
   });
 
