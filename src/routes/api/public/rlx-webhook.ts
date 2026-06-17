@@ -306,7 +306,7 @@ async function processWebhook(request: Request) {
               const lowtrackUrl = lowtrackCfg?.settings?.webhook_url as string | undefined;
               const lowtrackEnabled = lowtrackCfg?.settings?.enabled !== false;
               const lowtrackToken = lowtrackCfg?.settings?.api_token as string | undefined;
-              if (lowtrackUrl && lowtrackEnabled && lowtrackToken) {
+              if (lowtrackUrl && lowtrackEnabled) {
                 const headers: Record<string, string> = {
                   "Content-Type": "application/json",
                   "Authorization": `Bearer ${lowtrackToken}`,
