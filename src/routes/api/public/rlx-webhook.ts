@@ -146,6 +146,8 @@ async function processWebhook(request: Request) {
               .eq("integration_key", "_bundle")
               .maybeSingle();
 
+            const { convertAmount } = await import("@/lib/currency.functions");
+
             let productName: string | null = null;
             let productUtmifyId: string | null = null;
             let productLowtrackId: string | null = null;
