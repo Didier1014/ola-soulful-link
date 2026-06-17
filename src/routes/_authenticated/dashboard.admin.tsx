@@ -391,15 +391,16 @@ function AdminPage() {
         {tab === "products" && (
           <Card className="rounded-2xl overflow-hidden">
             <div className="grid grid-cols-12 px-4 py-3 text-[10px] uppercase tracking-wider font-bold text-muted-foreground border-b border-border bg-secondary/40">
-              <div className="col-span-6">Produto</div>
+              <div className="col-span-4">Produto</div>
               <div className="col-span-3">Vendedor</div>
-              <div className="col-span-2 text-right">Preço</div>
+              <div className="col-span-3">Entrega</div>
+              <div className="col-span-1 text-right">Preço</div>
               <div className="col-span-1 text-right">Status</div>
             </div>
             <div className="divide-y divide-border">
               {(prods.data ?? []).map((p: any) => (
                 <div key={p.id} className="grid grid-cols-12 px-4 py-3 items-center text-sm hover:bg-secondary/30 transition-colors">
-                  <div className="col-span-6 flex items-center gap-3 min-w-0">
+                  <div className="col-span-4 flex items-center gap-3 min-w-0">
                     {p.cover_url ? (
                       <img src={p.cover_url} alt={p.name} className="h-10 w-10 rounded-lg object-cover shrink-0" />
                     ) : (
@@ -407,12 +408,30 @@ function AdminPage() {
                         {p.name.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <p className="font-medium truncate">{p.name}</p>
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{p.name}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase">{p.product_type || "external"}</p>
+                    </div>
                   </div>
                   <div className="col-span-3 text-xs text-muted-foreground truncate">
                     {(p as any).profiles?.business_name || (p as any).profiles?.full_name || "—"}
                   </div>
-                  <div className="col-span-2 text-right font-mono font-semibold">{fmtMT(Number(p.price_mzn))}</div>
+                  <div className="col-span-3 flex items-center gap-2 min-w-0">
+                    {p.delivery_url && (
+                      <a href={p.delivery_url} target="_blank" rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary hover:bg-secondary/70 truncate max-w-[180px]">
+                        <ExternalLink className="h-3 w-3 shrink-0" /><span className="truncate">{p.delivery_url}</span>
+                      </a>
+                    )}
+                    {p.digital_file_path && (
+                      <button onClick={() => openDigital(p.digital_file_path)}
+                        className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20">
+                        <FileDown className="h-3 w-3" /> Ficheiro
+                      </button>
+                    )}
+                    {!p.delivery_url && !p.digital_file_path && <span className="text-[11px] text-muted-foreground">—</span>}
+                  </div>
+                  <div className="col-span-1 text-right font-mono font-semibold">{fmtMT(Number(p.price_mzn))}</div>
                   <div className="col-span-1 text-right">
                     {p.active
                       ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">●</span>
@@ -424,6 +443,70 @@ function AdminPage() {
             </div>
           </Card>
         )}
+
+        <Sheet open={!!selectedUser} onOpenChange={(o) => !o && setSelectedUser(null)}>
+          <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center text-sm font-bold" style={{ background: `${RUBY}10`, color: RUBY }}>
+                  {(selectedUser?.full_name || selectedUser?.business_name || "U").charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div className="text-base">{selectedUser?.full_name || selectedUser?.business_name || "Utilizador"}</div>
+                  <div className="text-xs font-normal text-muted-foreground">{selectedUser?.phone || "—"} · Saldo: {fmtMT(Number(selectedUser?.balance_mzn ?? 0))}</div>
+                </div>
+              </SheetTitle>
+              <SheetDescription>Produtos e ficheiros de entrega</SheetDescription>
+            </SheetHeader>
+            <div className="mt-5 space-y-2">
+              {userProducts.isLoading && <p className="text-sm text-muted-foreground">A carregar…</p>}
+              {!userProducts.isLoading && !userProducts.data?.length && (
+                <p className="text-sm text-muted-foreground p-8 text-center border border-dashed border-border rounded-xl">Este utilizador ainda não tem produtos.</p>
+              )}
+              {(userProducts.data ?? []).map((p: any) => (
+                <div key={p.id} className="p-3 rounded-xl border border-border bg-card">
+                  <div className="flex items-start gap-3">
+                    {p.cover_url ? (
+                      <img src={p.cover_url} alt={p.name} className="h-12 w-12 rounded-lg object-cover shrink-0" />
+                    ) : (
+                      <div className="h-12 w-12 rounded-lg flex items-center justify-center text-xs font-bold shrink-0" style={{ background: `${RUBY}10`, color: RUBY }}>
+                        {p.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="font-medium text-sm truncate">{p.name}</p>
+                        <p className="font-mono font-bold text-sm shrink-0">{fmtMT(Number(p.price_mzn))}</p>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground uppercase">{p.product_type || "external"} · {p.active ? "Activo" : "Inactivo"}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <a href={`/c/${p.slug}`} target="_blank" rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary hover:bg-secondary/70">
+                          <ExternalLink className="h-3 w-3" /> Checkout
+                        </a>
+                        {p.delivery_url && (
+                          <a href={p.delivery_url} target="_blank" rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 max-w-full truncate">
+                            <ExternalLink className="h-3 w-3 shrink-0" /><span className="truncate">{p.delivery_url}</span>
+                          </a>
+                        )}
+                        {p.digital_file_path && (
+                          <button onClick={() => openDigital(p.digital_file_path)}
+                            className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20">
+                            <FileDown className="h-3 w-3" /> Ver ficheiro
+                          </button>
+                        )}
+                        {!p.delivery_url && !p.digital_file_path && (
+                          <span className="text-[11px] text-muted-foreground">Sem entrega configurada</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SheetContent>
+        </Sheet>
       </main>
     </div>
   );
