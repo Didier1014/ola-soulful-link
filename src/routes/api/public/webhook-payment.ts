@@ -135,6 +135,8 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
               .eq("integration_key", "_bundle")
               .maybeSingle();
 
+            const { convertAmount } = await import("@/lib/currency.functions");
+
             const { error: notificationError } = await supabaseAdmin.from("notifications").insert({
               user_id: tx.user_id,
               type: "sale",
