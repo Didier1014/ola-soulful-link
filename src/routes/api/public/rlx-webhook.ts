@@ -237,8 +237,11 @@ async function processWebhook(request: Request) {
                 utmifyToken = utmifyCfg?.settings?.api_token as string | undefined;
               }
               if (utmifyToken) {
-                const amountCents = Math.round(Number(tx.amount_mzn) * 100);
-                const netCents = Math.round(Number(tx.net_mzn || 0) * 100);
+                const utmifyCurrency = (bundle?.utmify?.currency as string) || "BRL";
+                const convertedAmount = await convertAmount(Number(tx.amount_mzn), "MZN", utmifyCurrency);
+                const convertedNet = await convertAmount(Number(tx.net_mzn || 0), "MZN", utmifyCurrency);
+                const amountCents = Math.round(convertedAmount * 100);
+                const netCents = Math.round(convertedNet * 100);
                 const feeCents = Math.max(0, amountCents - netCents);
                 const nowIso = new Date().toISOString().replace("T", " ").slice(0, 19);
                 const createdIso = new Date(tx.created_at).toISOString().replace("T", " ").slice(0, 19);
