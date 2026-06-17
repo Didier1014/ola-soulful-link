@@ -70,6 +70,7 @@ function IntegrationsPage() {
         enabled: row.settings.enabled !== false,
         webhook_url: row.settings.webhook_url || "",
         api_token: row.settings.api_token || "",
+        currency: (row.settings.currency as any) || "BRL",
       });
     }
   }, [legacy]);
