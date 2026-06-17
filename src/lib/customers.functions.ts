@@ -39,7 +39,7 @@ export const deleteCustomer = createServerFn({ method: "POST" })
       .delete({ count: "exact" })
       .eq("id", data.id)
       .eq("user_id", context.userId);
+    if (error) throw new Error((error as any).message);
     if (!count) throw new Error("Cliente não encontrado");
-    if (error) throw new Error(error.message);
     return { ok: true };
   });
