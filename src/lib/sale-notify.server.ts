@@ -219,9 +219,18 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
       })
         .then(async (r) => {
           const t = await r.text().catch(() => "");
-          console.log("[Utmify] →", r.status, t.slice(0, 200));
+          await logIntegrationCall(supabaseAdmin, {
+            userId, txId: tx.id, provider: "utmify",
+            statusCode: r.status, ok: r.ok, payload: utmifyBody, response: t,
+          });
         })
-        .catch((e) => console.log("[Utmify] error", e));
+        .catch(async (e) => {
+          await logIntegrationCall(supabaseAdmin, {
+            userId, txId: tx.id, provider: "utmify",
+            payload: utmifyBody, error: String(e?.message ?? e),
+          });
+        });
+
     }
   } catch (e) {
     console.log("[notifyNewSale] utmify error", e);
