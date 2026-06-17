@@ -493,6 +493,10 @@ function AdminPage() {
                         <p className="font-mono font-bold text-sm shrink-0">{fmtMT(Number(p.price_mzn))}</p>
                       </div>
                       <p className="text-[11px] text-muted-foreground uppercase">{p.product_type || "external"} · {p.active ? "Activo" : "Inactivo"}</p>
+                      <p className="text-[11px] mt-1">
+                        <span className="font-bold" style={{ color: p.sales_count > 0 ? RUBY : undefined }}>{fmt(Number(p.sales_count ?? 0))} venda{p.sales_count === 1 ? "" : "s"}</span>
+                        {p.sales_count > 0 && <span className="text-muted-foreground"> · {fmtMT(Number(p.sales_total_mzn ?? 0))}</span>}
+                      </p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         <a href={`/c/${p.slug}`} target="_blank" rel="noreferrer"
                           className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary hover:bg-secondary/70">
