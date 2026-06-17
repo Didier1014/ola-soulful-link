@@ -30,11 +30,13 @@ export const markNotificationRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+    const { error, count } = await context.supabase
       .from("notifications")
-      .update({ read: true })
-      .eq("id", data.id);
+      .update({ read: true }, { count: "exact" })
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
+    if (!count) throw new Error("Notificação não encontrada");
     return { ok: true };
   });
 
