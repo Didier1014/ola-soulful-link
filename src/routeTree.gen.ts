@@ -35,6 +35,7 @@ import { Route as AuthenticatedDashboardPaymentLinksRouteImport } from './routes
 import { Route as AuthenticatedDashboardNotificationsRouteImport } from './routes/_authenticated/dashboard.notifications'
 import { Route as AuthenticatedDashboardNewTransactionRouteImport } from './routes/_authenticated/dashboard.new-transaction'
 import { Route as AuthenticatedDashboardIntegrationsRouteImport } from './routes/_authenticated/dashboard.integrations'
+import { Route as AuthenticatedDashboardIntegrationLogsRouteImport } from './routes/_authenticated/dashboard.integration-logs'
 import { Route as AuthenticatedDashboardCustomersRouteImport } from './routes/_authenticated/dashboard.customers'
 import { Route as AuthenticatedDashboardApiRouteImport } from './routes/_authenticated/dashboard.api'
 import { Route as AuthenticatedDashboardAdminRouteImport } from './routes/_authenticated/dashboard.admin'
@@ -189,6 +190,12 @@ const AuthenticatedDashboardIntegrationsRoute =
     path: '/dashboard/integrations',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardIntegrationLogsRoute =
+  AuthenticatedDashboardIntegrationLogsRouteImport.update({
+    id: '/dashboard/integration-logs',
+    path: '/dashboard/integration-logs',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardCustomersRoute =
   AuthenticatedDashboardCustomersRouteImport.update({
     id: '/dashboard/customers',
@@ -266,6 +273,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/admin': typeof AuthenticatedDashboardAdminRoute
   '/dashboard/api': typeof AuthenticatedDashboardApiRoute
   '/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
+  '/dashboard/integration-logs': typeof AuthenticatedDashboardIntegrationLogsRoute
   '/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
   '/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
   '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
@@ -304,6 +312,7 @@ export interface FileRoutesByTo {
   '/dashboard/admin': typeof AuthenticatedDashboardAdminRoute
   '/dashboard/api': typeof AuthenticatedDashboardApiRoute
   '/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
+  '/dashboard/integration-logs': typeof AuthenticatedDashboardIntegrationLogsRoute
   '/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
   '/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
   '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
@@ -344,6 +353,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/admin': typeof AuthenticatedDashboardAdminRoute
   '/_authenticated/dashboard/api': typeof AuthenticatedDashboardApiRoute
   '/_authenticated/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
+  '/_authenticated/dashboard/integration-logs': typeof AuthenticatedDashboardIntegrationLogsRoute
   '/_authenticated/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
   '/_authenticated/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
   '/_authenticated/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
@@ -384,6 +394,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/dashboard/api'
     | '/dashboard/customers'
+    | '/dashboard/integration-logs'
     | '/dashboard/integrations'
     | '/dashboard/new-transaction'
     | '/dashboard/notifications'
@@ -422,6 +433,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/dashboard/api'
     | '/dashboard/customers'
+    | '/dashboard/integration-logs'
     | '/dashboard/integrations'
     | '/dashboard/new-transaction'
     | '/dashboard/notifications'
@@ -461,6 +473,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/admin'
     | '/_authenticated/dashboard/api'
     | '/_authenticated/dashboard/customers'
+    | '/_authenticated/dashboard/integration-logs'
     | '/_authenticated/dashboard/integrations'
     | '/_authenticated/dashboard/new-transaction'
     | '/_authenticated/dashboard/notifications'
@@ -694,6 +707,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardIntegrationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard/integration-logs': {
+      id: '/_authenticated/dashboard/integration-logs'
+      path: '/dashboard/integration-logs'
+      fullPath: '/dashboard/integration-logs'
+      preLoaderRoute: typeof AuthenticatedDashboardIntegrationLogsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard/customers': {
       id: '/_authenticated/dashboard/customers'
       path: '/dashboard/customers'
@@ -793,6 +813,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardAdminRoute: typeof AuthenticatedDashboardAdminRoute
   AuthenticatedDashboardApiRoute: typeof AuthenticatedDashboardApiRoute
   AuthenticatedDashboardCustomersRoute: typeof AuthenticatedDashboardCustomersRoute
+  AuthenticatedDashboardIntegrationLogsRoute: typeof AuthenticatedDashboardIntegrationLogsRoute
   AuthenticatedDashboardIntegrationsRoute: typeof AuthenticatedDashboardIntegrationsRoute
   AuthenticatedDashboardNewTransactionRoute: typeof AuthenticatedDashboardNewTransactionRoute
   AuthenticatedDashboardNotificationsRoute: typeof AuthenticatedDashboardNotificationsRouteWithChildren
@@ -812,6 +833,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardAdminRoute: AuthenticatedDashboardAdminRoute,
   AuthenticatedDashboardApiRoute: AuthenticatedDashboardApiRoute,
   AuthenticatedDashboardCustomersRoute: AuthenticatedDashboardCustomersRoute,
+  AuthenticatedDashboardIntegrationLogsRoute:
+    AuthenticatedDashboardIntegrationLogsRoute,
   AuthenticatedDashboardIntegrationsRoute:
     AuthenticatedDashboardIntegrationsRoute,
   AuthenticatedDashboardNewTransactionRoute:
