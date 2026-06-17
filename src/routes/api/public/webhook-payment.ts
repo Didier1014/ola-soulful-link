@@ -118,12 +118,22 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
 
             let productName: string | null = null;
             let productUtmifyId: string | null = null;
+            let productLowtrackId: string | null = null;
             if (tx.product_id) {
               const { data: prod } = await supabaseAdmin
-                .from("products").select("name,utimify_id").eq("id", tx.product_id).maybeSingle();
+                .from("products").select("name,utimify_id,lawtracker_id").eq("id", tx.product_id).maybeSingle();
               productName = prod?.name ?? null;
               productUtmifyId = prod?.utimify_id ?? null;
+              productLowtrackId = prod?.lawtracker_id ?? null;
             }
+
+            // Read merchant integration bundle (utmify, lowtrack via legacy)
+            const { data: bundle } = await supabaseAdmin
+              .from("integration_settings")
+              .select("utmify")
+              .eq("user_id", tx.user_id)
+              .eq("integration_key", "_bundle")
+              .maybeSingle();
 
             const { error: notificationError } = await supabaseAdmin.from("notifications").insert({
               user_id: tx.user_id,
