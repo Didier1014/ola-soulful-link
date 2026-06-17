@@ -385,6 +385,7 @@ export type Database = {
           external_ref: string | null
           fee_mzn: number
           id: string
+          metadata: Json | null
           method: string
           net_mzn: number
           product_id: string | null
@@ -401,6 +402,7 @@ export type Database = {
           external_ref?: string | null
           fee_mzn?: number
           id?: string
+          metadata?: Json | null
           method: string
           net_mzn?: number
           product_id?: string | null
@@ -417,6 +419,7 @@ export type Database = {
           external_ref?: string | null
           fee_mzn?: number
           id?: string
+          metadata?: Json | null
           method?: string
           net_mzn?: number
           product_id?: string | null
