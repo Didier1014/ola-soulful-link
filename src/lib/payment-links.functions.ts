@@ -112,8 +112,13 @@ export const toggleLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), active: z.boolean() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("payment_links").update({ active: data.active }).eq("id", data.id);
+    const { error, count } = await context.supabase
+      .from("payment_links")
+      .update({ active: data.active }, { count: "exact" })
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
+    if (!count) throw new Error("Link não encontrado");
     return { ok: true };
   });
 
@@ -121,7 +126,12 @@ export const deleteLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("payment_links").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
+    const { error, count } = await context.supabase
+      .from("payment_links")
+      .delete({ count: "exact" })
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    if (error) throw new Error((error as any).message);
+    if (!count) throw new Error("Link não encontrado");
     return { ok: true };
   });
