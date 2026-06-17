@@ -46,7 +46,7 @@ function WdPage() {
       const { data } = await supabase.auth.getUser();
       const uid = data?.user?.id;
       if (!uid) return;
-      ch = supabase.channel(`my-wd-${uid}`)
+      ch = supabase.channel(`user:${uid}:withdrawals`, { config: { private: true } })
         .on("postgres_changes", { event: "*", schema: "public", table: "withdrawals", filter: `user_id=eq.${uid}` }, () => {
           qc.invalidateQueries({ queryKey: ["my-withdrawals"] });
           qc.invalidateQueries({ queryKey: ["stats"] });
