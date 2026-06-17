@@ -86,22 +86,29 @@ function AdminPage() {
   });
 
   useEffect(() => {
-    const channel = supabase
-      .channel("admin-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "withdrawals" }, () => {
-        qc.invalidateQueries({ queryKey: ["admin_wd"] });
-        qc.invalidateQueries({ queryKey: ["admin_overview"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, () => {
-        qc.invalidateQueries({ queryKey: ["admin_tx"] });
-        qc.invalidateQueries({ queryKey: ["admin_overview"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () => {
-        qc.invalidateQueries({ queryKey: ["notifications"] });
-        qc.invalidateQueries({ queryKey: ["notifications", "unread"] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    let cancelled = false;
+    let channel: any = null;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      const uid = data.user?.id;
+      if (!uid || cancelled) return;
+      channel = supabase
+        .channel(`admin:${uid}:live`, { config: { private: true } })
+        .on("postgres_changes", { event: "*", schema: "public", table: "withdrawals" }, () => {
+          qc.invalidateQueries({ queryKey: ["admin_wd"] });
+          qc.invalidateQueries({ queryKey: ["admin_overview"] });
+        })
+        .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, () => {
+          qc.invalidateQueries({ queryKey: ["admin_tx"] });
+          qc.invalidateQueries({ queryKey: ["admin_overview"] });
+        })
+        .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () => {
+          qc.invalidateQueries({ queryKey: ["notifications"] });
+          qc.invalidateQueries({ queryKey: ["notifications", "unread"] });
+        })
+        .subscribe();
+    })();
+    return () => { cancelled = true; if (channel) supabase.removeChannel(channel); };
   }, [qc]);
 
   const isAdmin = !overview.error;
