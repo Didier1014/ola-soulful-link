@@ -36,6 +36,17 @@ const checkoutSchema = z.object({
   customer_email: z.string().trim().email().max(160).optional().or(z.literal("")).default(""),
   customer_phone: z.string().trim().regex(/^\+?\d{8,15}$/, "Telefone inválido"),
   method: z.enum(["mpesa", "emola", "card"]),
+  tracking: z.object({
+    src: z.string().max(200).optional(),
+    sck: z.string().max(200).optional(),
+    utm_source: z.string().max(200).optional(),
+    utm_campaign: z.string().max(200).optional(),
+    utm_medium: z.string().max(200).optional(),
+    utm_content: z.string().max(200).optional(),
+    utm_term: z.string().max(200).optional(),
+    fbp: z.string().max(200).optional(),
+    fbc: z.string().max(200).optional(),
+  }).partial().optional(),
 });
 
 // Taxa do vendedor: 15% + 15 MT; custo RLX oficial: 11.99% + 11.99 MT; margem = diferença.
