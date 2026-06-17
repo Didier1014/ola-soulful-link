@@ -309,13 +309,15 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
               if (lowtrackUrl && lowtrackEnabled) {
                 const headers: Record<string, string> = { "Content-Type": "application/json" };
                 if (lowtrackToken) headers["Authorization"] = `Bearer ${lowtrackToken}`;
+                const lowtrackCurrency = (lowtrackCfg?.settings?.currency as string) || "BRL";
+                const ltAmount = Math.round((await convertAmount(Number(tx.amount_mzn), "MZN", lowtrackCurrency)) * 100) / 100;
                 const body = {
                   event: "sale.approved",
                   status: "paid",
                   transaction_id: String(tx.id),
-                  amount: Number(tx.amount_mzn),
-                  sale_amount: Number(tx.amount_mzn),
-                  currency: "MZN",
+                  amount: ltAmount,
+                  sale_amount: ltAmount,
+                  currency: lowtrackCurrency,
                   product_id: productLowtrackId || undefined,
                   offer_id: productLowtrackId || undefined,
                   product_name: productName || undefined,
