@@ -55,9 +55,11 @@ function CheckoutPage() {
   const [form, setForm] = useState({ customer_name: "", customer_phone: "" });
   const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [modal, setModal] = useState<{ status: "processing" | "paid" | "failed" | "pending"; id?: string; delivery_url?: string | null } | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollRef = useRef<ENT_DEPRECATED_UNUSED, any>(null as any);
   const pollCountRef = useRef(0);
   const checkingRef = useRef(false);
+  const trackingRef = useRef<Record<string, string>>({});
+  const pixelFiredRef = useRef<{ pageview: boolean; init: boolean; purchase: boolean }>({ pageview: false, init: false, purchase: false });
 
   useEffect(() => {
     if (cardRef.current) {
