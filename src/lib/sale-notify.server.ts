@@ -20,7 +20,7 @@ async function logIntegrationCall(
   if (opts.error) console.log(`${tag} ERROR`, opts.error);
   else console.log(`${tag} → HTTP ${opts.statusCode} ok=${opts.ok}`, (opts.response || "").slice(0, 300));
   try {
-    await supabaseAdmin.from("integration_logs").insert({
+    const { error } = await supabaseAdmin.from("integration_logs").insert({
       user_id: opts.userId,
       transaction_id: opts.txId,
       provider: opts.provider,
@@ -30,8 +30,45 @@ async function logIntegrationCall(
       response_body: opts.response ?? null,
       error: opts.error ?? null,
     });
+    if (error) {
+      // 23505 = unique_violation against integration_logs_unique_success
+      // Means a concurrent attempt already logged ok=true for this (tx,provider).
+      // Treat as graceful "already sent" — not a real failure.
+      if ((error as any).code === "23505") {
+        console.log(`${tag} duplicate success log suppressed (concurrent send won the race)`);
+      } else {
+        console.log(`${tag} log insert failed`, (error as any).message);
+      }
+    }
   } catch (e) {
     console.log(`${tag} log insert failed`, e);
+  }
+}
+
+/**
+ * Per-sale processing lock to serialize concurrent webhooks for the same sale.
+ * First caller inserts the row and proceeds. Concurrent callers hit the PK
+ * conflict and skip — the winner writes the ok=true logs, so by the time the
+ * loser would have run, hasSuccessfulIntegration() short-circuits each channel.
+ * Returns true if we acquired the lock (caller should proceed).
+ */
+async function acquireSaleLock(supabaseAdmin: any, txId: string): Promise<boolean> {
+  try {
+    const { error } = await supabaseAdmin
+      .from("sale_processing_locks")
+      .insert({ transaction_id: txId });
+    if (!error) return true;
+    if ((error as any).code === "23505") {
+      console.log(`[sale:${txId}] lock already held — concurrent webhook in progress, skipping`);
+      return false;
+    }
+    // Unknown error — don't block delivery; per-channel unique index still
+    // protects against duplicate sends.
+    console.log(`[sale:${txId}] lock insert error (proceeding without lock):`, (error as any).message);
+    return true;
+  } catch (e) {
+    console.log(`[sale:${txId}] lock insert threw (proceeding without lock):`, e);
+    return true;
   }
 }
 
