@@ -154,6 +154,9 @@ export const createCheckout = createServerFn({ method: "POST" })
     const { seller_fee, seller_net } = calcFee(amount);
 
     // Insert transaction FIRST with pending status
+    const trackingClean = data.tracking
+      ? Object.fromEntries(Object.entries(data.tracking).filter(([_, v]) => v != null && v !== ""))
+      : null;
     const { data: tx, error: tErr } = await supabaseAdmin.from("transactions").insert({
       user_id: product.user_id,
       product_id: product.id,
@@ -166,6 +169,7 @@ export const createCheckout = createServerFn({ method: "POST" })
       net_mzn: seller_net,
       status: "pending",
       external_ref: null,
+      metadata: trackingClean && Object.keys(trackingClean).length ? { tracking: trackingClean } : null,
     }).select().single();
     if (tErr) throw new Error(tErr.message);
 
