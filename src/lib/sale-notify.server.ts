@@ -128,6 +128,9 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
   const gotLock = await acquireSaleLock(supabaseAdmin, tx.id);
   if (!gotLock) return;
 
+  try {
+
+
 
   // Read merchant preferences
   let currency = "MZN";
@@ -405,5 +408,18 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
   } catch (e) {
     await logIntegrationCall(supabaseAdmin, { userId, txId: tx.id, provider: "lowtrack", ok: false, error: String((e as any)?.message ?? e) });
     console.log(`[sale:${tx.id}][lowtrack] error`, e);
+  }
+  } finally {
+    // Always release the per-sale lock, even on error, so legitimate retries
+    // (sequential, after a failure) are not blocked by a stale lock row.
+    try {
+      await supabaseAdmin
+        .from("sale_processing_locks")
+        .delete()
+        .eq("transaction_id", tx.id);
+      console.log(`[sale:${tx.id}] lock released`);
+    } catch (e) {
+      console.log(`[sale:${tx.id}] lock release failed`, e);
+    }
   }
 }
