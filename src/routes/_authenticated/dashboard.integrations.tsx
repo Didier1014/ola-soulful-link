@@ -234,6 +234,17 @@ function IntegrationsPage() {
         <Input type="password" value={b.utmify.api_token || ""}
           onChange={(e) => setB({ ...b, utmify: { ...b.utmify, api_token: e.target.value } })}
           placeholder="utm_..." />
+        <Label>Moeda da dashboard UTMify</Label>
+        <Select value={b.utmify.currency || "BRL"} onValueChange={(v: any) => setB({ ...b, utmify: { ...b.utmify, currency: v } })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="MZN">Metical (MZN)</SelectItem>
+            <SelectItem value="BRL">Real (BRL)</SelectItem>
+            <SelectItem value="USD">Dólar (USD)</SelectItem>
+            <SelectItem value="EUR">Euro (EUR)</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground -mt-1">O valor em MZN será convertido automaticamente para esta moeda antes de enviar à UTMify.</p>
         <Button variant="outline" size="sm"
           disabled={!b.utmify.api_token}
           onClick={async () => {
