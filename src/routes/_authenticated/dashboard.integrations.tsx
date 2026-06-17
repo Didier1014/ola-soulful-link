@@ -131,6 +131,7 @@ function IntegrationsPage() {
             <p className="text-sm text-muted-foreground">Receba alertas de vendas no navegador ou no telemóvel (PWA)</p>
           </div>
         </div>
+        <PushReactivateBanner />
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={activatePush} disabled={pushLoading}><Bell className="h-4 w-4 mr-1" /> {permission === "granted" ? "Actualizar inscrição" : "Ativar notificações"}</Button>
           <Button variant="outline" onClick={testNotification}><Send className="h-4 w-4 mr-1" /> Push real de teste</Button>
