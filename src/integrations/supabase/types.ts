@@ -416,7 +416,10 @@ export type Database = {
           created_at: string
           endpoint: string
           id: string
+          invalidated_at: string | null
+          last_error: string | null
           p256dh: string
+          status: string
           user_id: string
         }
         Insert: {
@@ -424,7 +427,10 @@ export type Database = {
           created_at?: string
           endpoint: string
           id?: string
+          invalidated_at?: string | null
+          last_error?: string | null
           p256dh: string
+          status?: string
           user_id: string
         }
         Update: {
@@ -432,7 +438,10 @@ export type Database = {
           created_at?: string
           endpoint?: string
           id?: string
+          invalidated_at?: string | null
+          last_error?: string | null
           p256dh?: string
+          status?: string
           user_id?: string
         }
         Relationships: []
