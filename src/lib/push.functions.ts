@@ -121,6 +121,19 @@ export async function sendPushToUser(
     subject: process.env.VAPID_SUBJECT || "mailto:admin@redoxpay.com",
   };
   const payload = JSON.stringify({ title, body, url });
+  async function removeSubscription(endpoint: string) {
+    try {
+      await supabaseAdmin.from("push_subscriptions").delete().eq("endpoint", endpoint);
+    } catch {}
+    try {
+      const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
+      const meta = user?.user?.user_metadata ?? {};
+      if (meta?.push_subscription?.endpoint === endpoint) {
+        const cleaned = Object.fromEntries(Object.entries(meta).filter(([k]) => k !== "push_subscription"));
+        await supabaseAdmin.auth.admin.updateUserById(userId, { user_metadata: cleaned });
+      }
+    } catch {}
+  }
 
   let sent = 0, failed = 0;
   const attempts: Array<{ endpoint: string; status?: number; ok?: boolean; error?: string; body?: string }> = [];
@@ -129,11 +142,9 @@ export async function sendPushToUser(
       const res = await sendWebPushNotification(sub, payload, vapid);
       attempts.push({ endpoint: sub.endpoint.slice(0, 80), status: res.status, ok: res.status >= 200 && res.status < 300, body: (res.body || "").slice(0, 300) });
       console.log(`[push] user=${userId} ep=${sub.endpoint.slice(0, 40)}... → HTTP ${res.status} ${(res.body || "").slice(0, 200)}`);
-      if (res.status === 404 || res.status === 410) {
-        // Gone — remove this subscription
-        try {
-          await supabaseAdmin.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
-        } catch {}
+      if (res.status === 404 || res.status === 410 || (res.status === 400 && /VapidPkHashMismatch/i.test(res.body || ""))) {
+        // Gone or subscribed with an old VAPID public key — remove and force re-subscribe.
+        await removeSubscription(sub.endpoint);
         failed++;
         continue;
       }
