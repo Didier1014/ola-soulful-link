@@ -25,14 +25,14 @@ export const Route = createFileRoute("/_authenticated/dashboard/integrations")({
 interface Bundle {
   push_custom: { title?: string; body?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
   pushcut: { enabled?: boolean; webhook_url?: string };
-  utmify: { enabled?: boolean; api_token?: string };
+  utmify: { enabled?: boolean; api_token?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
   mozesms: { enabled?: boolean; sender_id?: string; template?: string; test_number?: string };
 }
 
 const DEFAULT_BUNDLE: Bundle = {
   push_custom: { title: "💰 Nova venda aprovada!", body: "{valor} — {cliente}", currency: "MZN" },
   pushcut: { enabled: false, webhook_url: "" },
-  utmify: { enabled: false, api_token: "" },
+  utmify: { enabled: false, api_token: "", currency: "BRL" },
   mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Obrigado!", test_number: "" },
 };
 
