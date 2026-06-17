@@ -261,13 +261,13 @@ export const listMyTransactions = createServerFn({ method: "GET" })
       const paid = (data ?? []).filter((t: any) => t.status === "paid").slice(0, 20);
       if (paid.length) {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const ids = paid.map((t: any) => t.id);
         const { data: notified } = await supabaseAdmin
           .from("notifications")
           .select("data")
           .eq("user_id", context.userId)
           .eq("type", "sale")
-          .in("data->>transaction_id", ids);
+          .order("created_at", { ascending: false })
+          .limit(200);
         const notifiedSet = new Set(
           (notified ?? []).map((n: any) => n?.data?.transaction_id).filter(Boolean),
         );
