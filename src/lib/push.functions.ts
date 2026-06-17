@@ -99,7 +99,8 @@ export async function sendPushToUser(
   const { data: rows, error: rowsErr } = await supabaseAdmin
     .from("push_subscriptions")
     .select("id,endpoint,p256dh,auth")
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .eq("status", "active");
   if (rowsErr) console.log(`[push] user=${userId} table read error`, rowsErr.message);
   if (rows && rows.length) subs.push(...rows);
 
