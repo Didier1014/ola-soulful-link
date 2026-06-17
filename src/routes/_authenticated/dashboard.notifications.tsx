@@ -101,7 +101,11 @@ function NotificationsPage() {
             {notifications.length} no total{unread > 0 && ` · ${unread} não lida${unread > 1 ? "s" : ""}`}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => doSendTest()} disabled={testing} className="gap-1.5">
+            {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
+            Testar venda
+          </Button>
           <Button variant="outline" size="sm" onClick={() => navigate({ to: "/dashboard/settings" })} className="gap-1.5">
             <Settings2 className="h-4 w-4" />
             Configurar
