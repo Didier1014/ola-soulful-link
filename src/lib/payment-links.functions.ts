@@ -135,12 +135,3 @@ export const deleteLink = createServerFn({ method: "POST" })
     if (!count) throw new Error("Link não encontrado");
     return { ok: true };
   });
-
-export const deleteLink = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("payment_links").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
-    return { ok: true };
-  });
