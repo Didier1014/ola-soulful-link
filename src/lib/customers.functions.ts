@@ -34,7 +34,12 @@ export const deleteCustomer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("customers").delete().eq("id", data.id);
+    const { error, count } = await context.supabase
+      .from("customers")
+      .delete({ count: "exact" })
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    if (!count) throw new Error("Cliente não encontrado");
     if (error) throw new Error(error.message);
     return { ok: true };
   });
