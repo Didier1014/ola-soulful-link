@@ -48,31 +48,32 @@ export async function sendPushToUser(
   title: string,
   body: string,
   url?: string,
-) {
+): Promise<{ ok: boolean; reason?: string }> {
   const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
   const sub = user?.user?.user_metadata?.push_subscription as
     | { endpoint: string; p256dh: string; auth: string }
     | undefined;
-  if (!sub) return;
+  if (!sub) return { ok: false, reason: "no_subscription" };
 
   const vapidPublic = process.env.VAPID_PUBLIC_KEY;
   const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
-  if (!vapidPublic || !vapidPrivate) return;
+  if (!vapidPublic || !vapidPrivate) return { ok: false, reason: "vapid_missing" };
 
   const webpush = await import("web-push");
-  webpush.setVapidDetails("mailto:admin@redoxpay.com", vapidPublic, vapidPrivate);
+  webpush.setVapidDetails(process.env.VAPID_SUBJECT || "mailto:admin@redoxpay.com", vapidPublic, vapidPrivate);
 
   try {
     await webpush.sendNotification({
       endpoint: sub.endpoint,
       keys: { p256dh: sub.p256dh, auth: sub.auth },
     }, JSON.stringify({ title, body, url }));
-  } catch {
-    // subscription expired — remove it from metadata
+    return { ok: true };
+  } catch (e: any) {
     const meta = user?.user?.user_metadata ?? {};
     const cleaned = Object.fromEntries(
       Object.entries(meta).filter(([k]) => k !== "push_subscription")
     );
     await supabaseAdmin.auth.admin.updateUserById(userId, { user_metadata: cleaned });
+    return { ok: false, reason: `send_failed:${e?.statusCode ?? e?.message ?? "unknown"}` };
   }
 }

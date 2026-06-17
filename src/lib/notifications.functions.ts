@@ -91,19 +91,30 @@ export const sendTestNotification = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const title = "💰 Nova venda aprovada!";
+    const message = "Pagamento de 500,00 MT recebido — Notificação de teste";
     const { error } = await supabaseAdmin.from("notifications").insert({
       user_id: context.userId,
       type: "sale",
-      title: "Nova venda",
-      message: "Pagamento de 500,00 MT recebido — Notificação de teste",
+      title,
+      message,
       data: {
         transaction_id: crypto.randomUUID(),
         amount_mzn: 500,
         currency: "MZN",
-        customer_name: "Teste",
+        customer_name: "Cliente Teste",
         product_name: "Produto Teste",
       },
     });
     if (error) throw new Error(error.message);
-    return { ok: true };
+    // Fire the real web push so the user sees a system notification
+    let pushSent = false;
+    try {
+      const { sendPushToUser } = await import("@/lib/push.functions");
+      const result = await sendPushToUser(supabaseAdmin, context.userId, title, message, "/dashboard/transactions");
+      pushSent = Boolean(result);
+    } catch (e) {
+      console.error("[sendTestNotification] push failed", e);
+    }
+    return { ok: true, push_sent: pushSent };
   });

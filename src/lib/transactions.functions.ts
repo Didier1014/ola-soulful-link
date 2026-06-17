@@ -355,3 +355,14 @@ export const createWithdrawal = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+export const listMyWithdrawals = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("withdrawals")
+      .select("id, amount_mzn, method, destination, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });

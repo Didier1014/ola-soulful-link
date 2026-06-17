@@ -3,11 +3,12 @@ import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listNotifications, markNotificationRead, markAllNotificationsRead } from "@/lib/notifications.functions";
+import { listNotifications, markNotificationRead, markAllNotificationsRead, sendTestNotification } from "@/lib/notifications.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCheck, Settings2 } from "lucide-react";
+import { CheckCheck, Settings2, Bell, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard/notifications")({
   component: NotificationsPage,
@@ -38,6 +39,7 @@ function NotificationsPage() {
   const fetchList = useServerFn(listNotifications);
   const markRead = useServerFn(markNotificationRead);
   const markAll = useServerFn(markAllNotificationsRead);
+  const sendTest = useServerFn(sendTestNotification);
 
   const { data: notifications = [] } = useQuery({
     queryKey: ["notifications"],
@@ -73,6 +75,21 @@ function NotificationsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
   });
 
+  const { mutate: doSendTest, isPending: testing } = useMutation({
+    mutationFn: () => sendTest(),
+    onSuccess: (r: any) => {
+      if (r?.push_sent) {
+        toast.success("Notificação enviada — confira o aviso do navegador");
+      } else {
+        toast.success("Notificação criada", {
+          description: "Active as notificações push em Configurar para receber alertas mesmo com o site fechado.",
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao testar"),
+  });
+
   const unread = notifications.filter(n => !n.read).length;
 
   return (
@@ -84,7 +101,11 @@ function NotificationsPage() {
             {notifications.length} no total{unread > 0 && ` · ${unread} não lida${unread > 1 ? "s" : ""}`}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => doSendTest()} disabled={testing} className="gap-1.5">
+            {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
+            Testar venda
+          </Button>
           <Button variant="outline" size="sm" onClick={() => navigate({ to: "/dashboard/settings" })} className="gap-1.5">
             <Settings2 className="h-4 w-4" />
             Configurar
