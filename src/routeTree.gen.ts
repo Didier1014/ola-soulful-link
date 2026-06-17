@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ObrigadoRouteImport } from './routes/obrigado'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -46,6 +47,11 @@ import { Route as ApiPublicNotificationsPollRouteImport } from './routes/api/pub
 import { Route as ApiPublicEmbedScriptRouteImport } from './routes/api/public/embed.script'
 import { Route as AuthenticatedDashboardNotificationsConfigRouteImport } from './routes/_authenticated/dashboard.notifications.config'
 
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -252,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -289,6 +296,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -328,6 +336,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -367,6 +376,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/obrigado'
     | '/reset-password'
+    | '/unsubscribe'
     | '/api/debug-notification'
     | '/c/$slug'
     | '/email/unsubscribe'
@@ -404,6 +414,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/obrigado'
     | '/reset-password'
+    | '/unsubscribe'
     | '/api/debug-notification'
     | '/c/$slug'
     | '/email/unsubscribe'
@@ -442,6 +453,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/obrigado'
     | '/reset-password'
+    | '/unsubscribe'
     | '/api/debug-notification'
     | '/c/$slug'
     | '/email/unsubscribe'
@@ -481,6 +493,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ObrigadoRoute: typeof ObrigadoRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   ApiDebugNotificationRoute: typeof ApiDebugNotificationRoute
   CSlugRoute: typeof CSlugRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -499,6 +512,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -823,6 +843,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ObrigadoRoute: ObrigadoRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   ApiDebugNotificationRoute: ApiDebugNotificationRoute,
   CSlugRoute: CSlugRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
