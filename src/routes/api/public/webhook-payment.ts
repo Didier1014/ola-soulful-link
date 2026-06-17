@@ -118,12 +118,22 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
 
             let productName: string | null = null;
             let productUtmifyId: string | null = null;
+            let productLowtrackId: string | null = null;
             if (tx.product_id) {
               const { data: prod } = await supabaseAdmin
-                .from("products").select("name,utimify_id").eq("id", tx.product_id).maybeSingle();
+                .from("products").select("name,utimify_id,lawtracker_id").eq("id", tx.product_id).maybeSingle();
               productName = prod?.name ?? null;
               productUtmifyId = prod?.utimify_id ?? null;
+              productLowtrackId = prod?.lawtracker_id ?? null;
             }
+
+            // Read merchant integration bundle (utmify, lowtrack via legacy)
+            const { data: bundle } = await supabaseAdmin
+              .from("integration_settings")
+              .select("utmify")
+              .eq("user_id", tx.user_id)
+              .eq("integration_key", "_bundle")
+              .maybeSingle();
 
             const { error: notificationError } = await supabaseAdmin.from("notifications").insert({
               user_id: tx.user_id,
@@ -208,35 +218,79 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
             }
 
 
+            // 🔗 Utmify (bundle takes precedence, legacy "utimify" as fallback)
             try {
-              const { data: utmifyCfg } = await supabaseAdmin
-                .from("integration_settings")
-                .select("settings")
-                .eq("user_id", tx.user_id)
-                .eq("integration_key", "utimify")
-                .maybeSingle();
-              const utmifyToken = utmifyCfg?.settings?.api_token as string | undefined;
+              let utmifyToken = bundle?.utmify?.enabled ? (bundle?.utmify?.api_token as string | undefined) : undefined;
+              if (!utmifyToken) {
+                const { data: utmifyCfg } = await supabaseAdmin
+                  .from("integration_settings")
+                  .select("settings")
+                  .eq("user_id", tx.user_id)
+                  .eq("integration_key", "utimify")
+                  .maybeSingle();
+                utmifyToken = utmifyCfg?.settings?.api_token as string | undefined;
+              }
               if (utmifyToken) {
+                const amountCents = Math.round(Number(tx.amount_mzn) * 100);
+                const netCents = Math.round(Number(tx.net_mzn || 0) * 100);
+                const feeCents = Math.max(0, amountCents - netCents);
+                const nowIso = new Date().toISOString().replace("T", " ").slice(0, 19);
+                const createdIso = new Date(tx.created_at).toISOString().replace("T", " ").slice(0, 19);
+                const trk = (tx.metadata as any)?.tracking || {};
                 const body = {
+                  orderId: String(tx.id),
+                  platform: "RedoxPay",
+                  paymentMethod: "pix",
                   status: "paid",
-                  orderId: tx.id,
+                  createdAt: createdIso,
+                  approvedDate: nowIso,
+                  refundedAt: null,
                   customer: {
                     name: tx.customer_name ?? "",
+                    email: tx.customer_email ?? "",
                     phone: tx.customer_phone ?? "",
+                    document: null,
+                    country: "MZ",
+                    ip: "0.0.0.0",
                   },
-                  products: productName
-                    ? [{ id: productUtmifyId ?? "", name: productName, quantity: 1, priceInCents: Math.round(Number(tx.amount_mzn) * 100) }]
-                    : [],
-                  createdAt: tx.created_at,
+                  products: [{
+                    id: productUtmifyId ?? String(tx.product_id ?? tx.id),
+                    name: productName ?? "Produto",
+                    planId: null,
+                    planName: null,
+                    quantity: 1,
+                    priceInCents: amountCents,
+                  }],
+                  trackingParameters: {
+                    src: trk.src ?? null,
+                    sck: trk.sck ?? null,
+                    utm_source: trk.utm_source ?? null,
+                    utm_campaign: trk.utm_campaign ?? null,
+                    utm_medium: trk.utm_medium ?? null,
+                    utm_content: trk.utm_content ?? null,
+                    utm_term: trk.utm_term ?? null,
+                  },
+                  commission: {
+                    totalPriceInCents: amountCents,
+                    gatewayFeeInCents: feeCents,
+                    userCommissionInCents: netCents,
+                  },
+                  isTest: false,
                 };
                 fetch("https://api.utmify.com.br/api-credentials/orders", {
                   method: "POST",
                   headers: { "Content-Type": "application/json", "x-api-token": utmifyToken },
                   body: JSON.stringify(body),
-                }).catch(() => {});
+                })
+                  .then(async (r) => {
+                    const t = await r.text().catch(() => "");
+                    console.log("[Utmify] →", r.status, t.slice(0, 200));
+                  })
+                  .catch((e) => console.log("[Utmify] error", e));
               }
             } catch {}
 
+            // 🔗 LowTrack postback
             try {
               const { data: lowtrackCfg } = await supabaseAdmin
                 .from("integration_settings")
@@ -245,20 +299,34 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
                 .eq("integration_key", "lowtrack")
                 .maybeSingle();
               const lowtrackUrl = lowtrackCfg?.settings?.webhook_url as string | undefined;
-              if (lowtrackUrl) {
-                fetch(lowtrackUrl, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    event: "payment.confirmed",
-                    orderId: tx.id,
-                    amount: Number(tx.amount_mzn),
-                    netAmount: Number(tx.net_mzn),
-                    customer: { name: tx.customer_name, phone: tx.customer_phone },
-                    product: productName,
-                    createdAt: tx.created_at,
-                  }),
-                }).catch(() => {});
+              const lowtrackEnabled = lowtrackCfg?.settings?.enabled !== false;
+              const lowtrackToken = lowtrackCfg?.settings?.api_token as string | undefined;
+              if (lowtrackUrl && lowtrackEnabled) {
+                const headers: Record<string, string> = { "Content-Type": "application/json" };
+                if (lowtrackToken) headers["Authorization"] = `Bearer ${lowtrackToken}`;
+                const body = {
+                  event: "sale.approved",
+                  status: "paid",
+                  transaction_id: String(tx.id),
+                  amount: Number(tx.amount_mzn),
+                  sale_amount: Number(tx.amount_mzn),
+                  currency: "MZN",
+                  product_id: productLowtrackId || undefined,
+                  offer_id: productLowtrackId || undefined,
+                  product_name: productName || undefined,
+                  customer: {
+                    name: tx.customer_name || "",
+                    phone: tx.customer_phone || "",
+                    email: tx.customer_email || "",
+                  },
+                  created_at: tx.created_at,
+                };
+                fetch(lowtrackUrl, { method: "POST", headers, body: JSON.stringify(body) })
+                  .then(async (r) => {
+                    const t = await r.text().catch(() => "");
+                    console.log("[LowTrack] →", r.status, t.slice(0, 200));
+                  })
+                  .catch((e) => console.log("[LowTrack] error", e));
               }
             } catch {}
           }
