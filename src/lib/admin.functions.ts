@@ -218,7 +218,30 @@ export const listAllProducts = createServerFn({ method: "GET" })
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
-      .from("products").select("*, profiles!inner(full_name, business_name)").order("created_at", { ascending: false }).limit(200);
+      .from("products").select("*, profiles!inner(full_name, business_name)").order("created_at", { ascending: false }).limit(500);
     if (error) throw new Error(error.message);
     return data ?? [];
+  });
+
+export const listUserProducts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }: { context: any; data: { user_id: string } }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: products, error } = await supabaseAdmin
+      .from("products").select("id,name,slug,price_mzn,cover_url,delivery_url,digital_file_path,product_type,active,created_at")
+      .eq("user_id", data.user_id).order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return products ?? [];
+  });
+
+export const getDigitalSignedUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }: { context: any; data: { path: string } }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from("product-digital").createSignedUrl(data.path, 60 * 60);
+    if (error) throw new Error(error.message);
+    return { url: signed?.signedUrl ?? null };
   });
