@@ -1,0 +1,1 @@
+DELETE FROM public.notifications WHERE type = 'withdrawal_request';
