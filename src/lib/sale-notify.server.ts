@@ -273,9 +273,19 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
       fetch(lowtrackUrl, { method: "POST", headers, body: JSON.stringify(ltBody) })
         .then(async (r) => {
           const t = await r.text().catch(() => "");
-          console.log("[LowTrack] →", r.status, t.slice(0, 200));
+          await logIntegrationCall(supabaseAdmin, {
+            userId, txId: tx.id, provider: "lowtrack",
+            statusCode: r.status, ok: r.ok,
+            payload: { url: lowtrackUrl, body: ltBody }, response: t,
+          });
         })
-        .catch((e) => console.log("[LowTrack] error", e));
+        .catch(async (e) => {
+          await logIntegrationCall(supabaseAdmin, {
+            userId, txId: tx.id, provider: "lowtrack",
+            payload: { url: lowtrackUrl, body: ltBody }, error: String(e?.message ?? e),
+          });
+        });
+
     }
   } catch (e) {
     console.log("[notifyNewSale] lowtrack error", e);
