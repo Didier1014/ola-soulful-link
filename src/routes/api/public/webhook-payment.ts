@@ -154,6 +154,60 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
               console.error("[webhook] push send failed:", err?.message || err);
             }
 
+            // Send "Sale approved" email to the producer
+            try {
+              const React = await import("react");
+              const { render } = await import("@react-email/components");
+              const { template: saleTpl } = await import("@/lib/email-templates/sale-confirmation");
+              const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(tx.user_id);
+              const producerEmail = userRes?.user?.email;
+              const producerName = (userRes?.user?.user_metadata as any)?.full_name || "Produtor";
+              if (producerEmail) {
+                const formattedAmount = Number(tx.amount_mzn).toLocaleString("pt-MZ", { style: "currency", currency });
+                const formattedNet = Number(sellerNet).toLocaleString("pt-MZ", { style: "currency", currency });
+                const data = {
+                  producerName,
+                  customerName: tx.customer_name || "Cliente",
+                  customerPhone: tx.customer_phone || "",
+                  productName: productName || "",
+                  amount: formattedAmount,
+                  netAmount: formattedNet,
+                  transactionId: tx.id,
+                  date: new Date().toLocaleString("pt-MZ"),
+                };
+                const element = React.createElement(saleTpl.component as any, data);
+                const html = await render(element);
+                const text = await render(element, { plainText: true });
+                const subject = typeof saleTpl.subject === "function" ? saleTpl.subject(data) : saleTpl.subject;
+                const messageId = crypto.randomUUID();
+                await supabaseAdmin.from("email_send_log").insert({
+                  message_id: messageId,
+                  template_name: "sale-confirmation",
+                  recipient_email: producerEmail,
+                  status: "pending",
+                });
+                await supabaseAdmin.rpc("enqueue_email", {
+                  queue_name: "transactional_emails",
+                  payload: {
+                    message_id: messageId,
+                    to: producerEmail,
+                    from: "RedoxPay <noreply@notify.www.redoxpay.site>",
+                    sender_domain: "notify.www.redoxpay.site",
+                    subject,
+                    html,
+                    text,
+                    purpose: "transactional",
+                    label: "sale-confirmation",
+                    idempotency_key: `sale-${tx.id}`,
+                    queued_at: new Date().toISOString(),
+                  },
+                });
+              }
+            } catch (err: any) {
+              console.error("[webhook] sale email failed:", err?.message || err);
+            }
+
+
             try {
               const { data: utmifyCfg } = await supabaseAdmin
                 .from("integration_settings")
