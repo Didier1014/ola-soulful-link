@@ -220,7 +220,27 @@ export const listAllProducts = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("products").select("*, profiles!inner(full_name, business_name)").order("created_at", { ascending: false }).limit(500);
     if (error) throw new Error(error.message);
-    return data ?? [];
+    const products = data ?? [];
+    const ids = products.map((p: any) => p.id);
+    const stats: Record<string, { count: number; total: number }> = {};
+    if (ids.length) {
+      const { data: txs } = await supabaseAdmin
+        .from("transactions")
+        .select("product_id, net_mzn")
+        .in("product_id", ids)
+        .eq("status", "paid");
+      for (const t of txs ?? []) {
+        const k = t.product_id as string;
+        if (!stats[k]) stats[k] = { count: 0, total: 0 };
+        stats[k].count += 1;
+        stats[k].total += Number(t.net_mzn ?? 0);
+      }
+    }
+    return products.map((p: any) => ({
+      ...p,
+      sales_count: stats[p.id]?.count ?? 0,
+      sales_total_mzn: stats[p.id]?.total ?? 0,
+    }));
   });
 
 export const listUserProducts = createServerFn({ method: "POST" })
@@ -232,7 +252,27 @@ export const listUserProducts = createServerFn({ method: "POST" })
       .from("products").select("id,name,slug,price_mzn,cover_url,delivery_url,digital_file_path,product_type,active,created_at")
       .eq("user_id", data.user_id).order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return products ?? [];
+    const list = products ?? [];
+    const ids = list.map((p: any) => p.id);
+    const stats: Record<string, { count: number; total: number }> = {};
+    if (ids.length) {
+      const { data: txs } = await supabaseAdmin
+        .from("transactions")
+        .select("product_id, net_mzn")
+        .in("product_id", ids)
+        .eq("status", "paid");
+      for (const t of txs ?? []) {
+        const k = t.product_id as string;
+        if (!stats[k]) stats[k] = { count: 0, total: 0 };
+        stats[k].count += 1;
+        stats[k].total += Number(t.net_mzn ?? 0);
+      }
+    }
+    return list.map((p: any) => ({
+      ...p,
+      sales_count: stats[p.id]?.count ?? 0,
+      sales_total_mzn: stats[p.id]?.total ?? 0,
+    }));
   });
 
 export const getDigitalSignedUrl = createServerFn({ method: "POST" })
