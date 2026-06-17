@@ -96,8 +96,9 @@ function SettingsPage() {
 
   async function testNotification() {
     try {
-      await sendTestNotification();
-      toast.success("Notificação de teste enviada!");
+      const r = await sendTestNotification();
+      if (r?.push_sent) toast.success("Push real de teste enviado!");
+      else toast.error("Teste registado, mas o push não foi enviado. Active as notificações push neste dispositivo.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao testar");
     }
