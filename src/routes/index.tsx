@@ -83,7 +83,7 @@ function Hero() {
         <span className="text-gradient-red">Moçambique</span> com rapidez e segurança
       </h1>
       <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-        Aceite M-Pesa e e-Mola no seu site, app, link ou QR Code. Liquidação em tempo real, taxas justas e um painel inteligente.
+        Aqui a sua escala é a nossa prioridade. Aceitamos pagamentos via M-Pesa e e-Mola no seu site, app ou link, com 98% de conversão.
       </p>
       <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
         <Link to="/auth">
@@ -250,7 +250,7 @@ function DashboardPreview() {
       <div className="text-center max-w-2xl mx-auto mb-12">
         <p className="text-sm uppercase tracking-widest text-primary-glow mb-3">Painel inteligente</p>
         <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Gestão completa do seu negócio</h2>
-        <p className="mt-4 text-muted-foreground">Vendas em tempo real, taxas, relatórios, estornos e antecipação de recebíveis.</p>
+        <p className="mt-4 text-muted-foreground">Vendas em tempo real, relatórios, estornos e antecipação de recebíveis. Taxa única e transparente: <span className="text-foreground font-semibold">15% + 15 MT</span> por transação aprovada — sem mensalidade, sem setup.</p>
       </div>
 
       <div className="relative rounded-3xl border border-white/10 bg-card/40 p-6 md:p-10 backdrop-blur">
