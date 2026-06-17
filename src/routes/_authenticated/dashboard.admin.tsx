@@ -5,16 +5,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdminOverview, listAllProfiles, listAllTransactions,
   listAllWithdrawals, listAllProducts, approveWithdrawal, rejectWithdrawal,
+  listUserProducts, getDigitalSignedUrl,
 } from "@/lib/admin.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Shield, Users, Receipt, Package, TrendingUp, AlertTriangle,
   ArrowUpDown, Wallet, DollarSign, CheckCircle2, XCircle, Search,
-  Activity, Zap, Clock,
+  Activity, Zap, Clock, ExternalLink, FileDown, ChevronRight,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/admin")({ component: AdminPage });
