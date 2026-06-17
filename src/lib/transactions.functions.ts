@@ -101,42 +101,16 @@ async function creditSellerIfPending(supabaseAdmin: any, txId: string, userId: s
   const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", userId).maybeSingle();
   await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + sellerNet }).eq("id", userId);
 
-  // Notify seller in real-time (in-app + web push)
+  // Fire all "new sale" side effects (in-app feed + web push + Utmify + LowTrack)
   try {
-    const { data: tx } = await supabaseAdmin
-      .from("transactions")
-      .select("id, amount_mzn, customer_name, product_id")
-      .eq("id", txId)
-      .maybeSingle();
-    let productName: string | undefined;
-    if (tx?.product_id) {
-      const { data: p } = await supabaseAdmin.from("products").select("name").eq("id", tx.product_id).maybeSingle();
-      productName = p?.name;
-    }
-    const amount = Number(tx?.amount_mzn ?? 0);
-    const customer = tx?.customer_name ?? "Cliente";
-    const title = "Nova venda aprovada";
-    const message = `Pagamento de ${amount.toLocaleString("pt-PT", { minimumFractionDigits: 2 })} MT recebido${productName ? ` — ${productName}` : ""}`;
-
-    await supabaseAdmin.from("notifications").insert({
-      user_id: userId,
-      type: "sale",
-      title,
-      message,
-      data: { transaction_id: txId, amount_mzn: amount, currency: "MZN", customer_name: customer, product_name: productName },
-    });
-
-    const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
-    if (user?.user?.user_metadata?.notifications_enabled !== false) {
-      const { sendPushToUser } = await import("@/lib/push.functions");
-      const r = await sendPushToUser(supabaseAdmin, userId, title, message, "/dashboard/transactions");
-      if (!r.ok) console.log("[creditSellerIfPending] push not sent:", r.reason);
-    }
+    const { notifyNewSale } = await import("@/lib/sale-notify.server");
+    await notifyNewSale(supabaseAdmin, txId);
   } catch (e) {
-    console.log("[creditSellerIfPending] notify error", e);
+    console.log("[creditSellerIfPending] notifyNewSale error", e);
   }
   return true;
 }
+
 
 export const createCheckout = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => checkoutSchema.parse(d))

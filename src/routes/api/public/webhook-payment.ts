@@ -109,64 +109,10 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
               .update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + sellerNet })
               .eq("id", tx.user_id);
 
-            let currency = "MZN";
-            try {
-              const { data: user } = await supabaseAdmin.auth.admin.getUserById(tx.user_id);
-              const meta = user?.user?.user_metadata ?? {};
-              if (meta.currency) currency = String(meta.currency);
-            } catch {}
+            const { notifyNewSale } = await import("@/lib/sale-notify.server");
+            await notifyNewSale(supabaseAdmin, tx.id);
 
-            let productName: string | null = null;
-            let productUtmifyId: string | null = null;
-            let productLowtrackId: string | null = null;
-            if (tx.product_id) {
-              const { data: prod } = await supabaseAdmin
-                .from("products").select("name,utimify_id,lawtracker_id").eq("id", tx.product_id).maybeSingle();
-              productName = prod?.name ?? null;
-              productUtmifyId = prod?.utimify_id ?? null;
-              productLowtrackId = prod?.lawtracker_id ?? null;
-            }
-
-            // Read merchant integration bundle (utmify, lowtrack via legacy)
-            const { data: bundle } = await supabaseAdmin
-              .from("integration_settings")
-              .select("utmify")
-              .eq("user_id", tx.user_id)
-              .eq("integration_key", "_bundle")
-              .maybeSingle();
-
-            const { convertAmount } = await import("@/lib/currency.functions");
-
-            const { error: notificationError } = await supabaseAdmin.from("notifications").insert({
-              user_id: tx.user_id,
-              type: "sale",
-              title: "Nova venda",
-              message: `Pagamento de ${Number(tx.amount_mzn).toLocaleString("pt-MZ", { style: "currency", currency })} recebido`,
-              data: {
-                transaction_id: tx.id,
-                amount_mzn: Number(tx.amount_mzn),
-                currency,
-                customer_name: tx.customer_name ?? null,
-                product_name: productName,
-              },
-            });
-            if (notificationError) console.error("[webhook] notification insert failed:", notificationError.message);
-
-            try {
-              const { sendPushToUser } = await import("@/lib/push.functions");
-              const formattedAmount = Number(tx.amount_mzn).toLocaleString("pt-MZ", { style: "currency", currency });
-              const pushRes = await sendPushToUser(
-                supabaseAdmin, tx.user_id,
-                "Nova venda!",
-                `${formattedAmount} — ${tx.customer_name || "Cliente"}${productName ? ` — ${productName}` : ""}`,
-                "/dashboard/transactions",
-              );
-              if (!pushRes.ok) console.log("[webhook] push not sent:", pushRes.reason);
-            } catch (err: any) {
-              console.error("[webhook] push send failed:", err?.message || err);
-            }
-
-            // Send "Sale approved" email to the producer
+            // Sale confirmation email to the producer
             try {
               const React = await import("react");
               const { render } = await import("@react-email/components");
@@ -174,6 +120,15 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
               const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(tx.user_id);
               const producerEmail = userRes?.user?.email;
               const producerName = (userRes?.user?.user_metadata as any)?.full_name || "Produtor";
+              let currency = "MZN";
+              const metaCur = (userRes?.user?.user_metadata as any)?.currency;
+              if (metaCur) currency = String(metaCur);
+              let productName: string | null = null;
+              if (tx.product_id) {
+                const { data: prod } = await supabaseAdmin
+                  .from("products").select("name").eq("id", tx.product_id).maybeSingle();
+                productName = prod?.name ?? null;
+              }
               if (producerEmail) {
                 const formattedAmount = Number(tx.amount_mzn).toLocaleString("pt-MZ", { style: "currency", currency });
                 const formattedNet = Number(sellerNet).toLocaleString("pt-MZ", { style: "currency", currency });
@@ -218,125 +173,8 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
             } catch (err: any) {
               console.error("[webhook] sale email failed:", err?.message || err);
             }
-
-
-            // 🔗 Utmify (bundle takes precedence, legacy "utimify" as fallback)
-            try {
-              let utmifyToken = bundle?.utmify?.enabled ? (bundle?.utmify?.api_token as string | undefined) : undefined;
-              if (!utmifyToken) {
-                const { data: utmifyCfg } = await supabaseAdmin
-                  .from("integration_settings")
-                  .select("settings")
-                  .eq("user_id", tx.user_id)
-                  .eq("integration_key", "utimify")
-                  .maybeSingle();
-                utmifyToken = utmifyCfg?.settings?.api_token as string | undefined;
-              }
-              if (utmifyToken) {
-                const utmifyCurrency = (bundle?.utmify?.currency as string) || "BRL";
-                const convertedAmount = await convertAmount(Number(tx.amount_mzn), "MZN", utmifyCurrency);
-                const convertedNet = await convertAmount(Number(tx.net_mzn || 0), "MZN", utmifyCurrency);
-                const amountCents = Math.round(convertedAmount * 100);
-                const netCents = Math.round(convertedNet * 100);
-                const feeCents = Math.max(0, amountCents - netCents);
-                const nowIso = new Date().toISOString().replace("T", " ").slice(0, 19);
-                const createdIso = new Date(tx.created_at).toISOString().replace("T", " ").slice(0, 19);
-                const trk = (tx.metadata as any)?.tracking || {};
-                const body = {
-                  orderId: String(tx.id),
-                  platform: "RedoxPay",
-                  paymentMethod: "pix",
-                  status: "paid",
-                  createdAt: createdIso,
-                  approvedDate: nowIso,
-                  refundedAt: null,
-                  customer: {
-                    name: tx.customer_name ?? "",
-                    email: tx.customer_email ?? "",
-                    phone: tx.customer_phone ?? "",
-                    document: null,
-                    country: "MZ",
-                    ip: "0.0.0.0",
-                  },
-                  products: [{
-                    id: productUtmifyId ?? String(tx.product_id ?? tx.id),
-                    name: productName ?? "Produto",
-                    planId: null,
-                    planName: null,
-                    quantity: 1,
-                    priceInCents: amountCents,
-                  }],
-                  trackingParameters: {
-                    src: trk.src ?? null,
-                    sck: trk.sck ?? null,
-                    utm_source: trk.utm_source ?? null,
-                    utm_campaign: trk.utm_campaign ?? null,
-                    utm_medium: trk.utm_medium ?? null,
-                    utm_content: trk.utm_content ?? null,
-                    utm_term: trk.utm_term ?? null,
-                  },
-                  commission: {
-                    totalPriceInCents: amountCents,
-                    gatewayFeeInCents: feeCents,
-                    userCommissionInCents: netCents,
-                  },
-                  isTest: false,
-                };
-                fetch("https://api.utmify.com.br/api-credentials/orders", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json", "x-api-token": utmifyToken },
-                  body: JSON.stringify(body),
-                })
-                  .then(async (r) => {
-                    const t = await r.text().catch(() => "");
-                    console.log("[Utmify] →", r.status, t.slice(0, 200));
-                  })
-                  .catch((e) => console.log("[Utmify] error", e));
-              }
-            } catch {}
-
-            // 🔗 LowTrack postback
-            try {
-              const { data: lowtrackCfg } = await supabaseAdmin
-                .from("integration_settings")
-                .select("settings")
-                .eq("user_id", tx.user_id)
-                .eq("integration_key", "lowtrack")
-                .maybeSingle();
-              const lowtrackUrl = lowtrackCfg?.settings?.webhook_url as string | undefined;
-              const lowtrackEnabled = lowtrackCfg?.settings?.enabled !== false;
-              const lowtrackToken = lowtrackCfg?.settings?.api_token as string | undefined;
-              if (lowtrackUrl && lowtrackEnabled) {
-                const headers: Record<string, string> = { "Content-Type": "application/json" };
-                if (lowtrackToken) headers["Authorization"] = `Bearer ${lowtrackToken}`;
-                const lowtrackCurrency = (lowtrackCfg?.settings?.currency as string) || "BRL";
-                const ltAmount = Math.round((await convertAmount(Number(tx.amount_mzn), "MZN", lowtrackCurrency)) * 100) / 100;
-                const body = {
-                  event: "sale.approved",
-                  status: "paid",
-                  transaction_id: String(tx.id),
-                  amount: ltAmount,
-                  sale_amount: ltAmount,
-                  currency: lowtrackCurrency,
-                  product_id: productLowtrackId || undefined,
-                  offer_id: productLowtrackId || undefined,
-                  product_name: productName || undefined,
-                  customer: {
-                    name: tx.customer_name || "",
-                    phone: tx.customer_phone || "",
-                    email: tx.customer_email || "",
-                  },
-                  created_at: tx.created_at,
-                };
-                fetch(lowtrackUrl, { method: "POST", headers, body: JSON.stringify(body) })
-                  .then(async (r) => {
-                    const t = await r.text().catch(() => "");
-                    console.log("[LowTrack] →", r.status, t.slice(0, 200));
-                  })
-                  .catch((e) => console.log("[LowTrack] error", e));
-              }
-            } catch {}
           }
+
         }
         return new Response("ok");
       },
