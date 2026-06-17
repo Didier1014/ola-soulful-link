@@ -322,23 +322,15 @@ function CheckoutPage() {
               <div className="flex items-center gap-3 pb-2">
                 <img src={product.cover_url} alt={product.name} className="h-20 w-20 rounded-xl object-cover border border-gray-100" />
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-base font-extrabold tracking-tight leading-tight text-gray-900 truncate">{product.name}</h1>
+                  <h1 className="text-lg font-extrabold tracking-tight leading-tight text-gray-900">{product.name}</h1>
                   {product.description && <p className="text-xs text-gray-400 truncate">{product.description}</p>}
-                  <div className="flex items-center gap-1 mt-0.5 text-[11px] font-medium" style={{ color: "#3b82f6" }}>
-                    <Heart className="h-3 w-3" fill="#3b82f6" />
-                    <span><PurchaseCounter /> compras</span>
-                  </div>
                 </div>
               </div>
             )}
             {!product.cover_url && (
               <div>
-                <h1 className="text-base font-extrabold tracking-tight text-gray-900">{product.name}</h1>
+                <h1 className="text-lg font-extrabold tracking-tight text-gray-900">{product.name}</h1>
                 {product.description && <p className="text-xs text-gray-400 mt-0.5">{product.description}</p>}
-                <div className="flex items-center gap-1 mt-1 text-[11px] font-medium" style={{ color: "#3b82f6" }}>
-                  <Heart className="h-3 w-3" fill="#3b82f6" />
-                  <span><PurchaseCounter /> compras</span>
-                </div>
               </div>
             )}
 
