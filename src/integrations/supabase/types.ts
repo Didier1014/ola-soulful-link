@@ -446,6 +446,21 @@ export type Database = {
         }
         Relationships: []
       }
+      sale_processing_locks: {
+        Row: {
+          locked_at: string
+          transaction_id: string
+        }
+        Insert: {
+          locked_at?: string
+          transaction_id: string
+        }
+        Update: {
+          locked_at?: string
+          transaction_id?: string
+        }
+        Relationships: []
+      }
       sms_logs: {
         Row: {
           created_at: string
