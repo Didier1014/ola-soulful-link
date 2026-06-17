@@ -15,9 +15,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as ApiDebugNotificationRouteImport } from './routes/api/debug-notification'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicWebhookPaymentRouteImport } from './routes/api/public/webhook-payment'
 import { Route as ApiPublicRlxWebhookRouteImport } from './routes/api/public/rlx-webhook'
 import { Route as AuthenticatedDashboardWithdrawalsRouteImport } from './routes/_authenticated/dashboard.withdrawals'
@@ -35,7 +37,11 @@ import { Route as AuthenticatedDashboardIntegrationsRouteImport } from './routes
 import { Route as AuthenticatedDashboardCustomersRouteImport } from './routes/_authenticated/dashboard.customers'
 import { Route as AuthenticatedDashboardApiRouteImport } from './routes/_authenticated/dashboard.api'
 import { Route as AuthenticatedDashboardAdminRouteImport } from './routes/_authenticated/dashboard.admin'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicNotificationsPollRouteImport } from './routes/api/public/notifications.poll'
 import { Route as ApiPublicEmbedScriptRouteImport } from './routes/api/public/embed.script'
 import { Route as AuthenticatedDashboardNotificationsConfigRouteImport } from './routes/_authenticated/dashboard.notifications.config'
@@ -69,6 +75,11 @@ const LSlugRoute = LSlugRouteImport.update({
   path: '/l/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CSlugRoute = CSlugRouteImport.update({
   id: '/c/$slug',
   path: '/c/$slug',
@@ -85,6 +96,11 @@ const AuthenticatedDashboardIndexRoute =
     path: '/dashboard/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhookPaymentRoute = ApiPublicWebhookPaymentRouteImport.update({
   id: '/api/public/webhook-payment',
   path: '/api/public/webhook-payment',
@@ -185,12 +201,34 @@ const AuthenticatedDashboardAdminRoute =
     path: '/dashboard/admin',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicNotificationsPollRoute =
   ApiPublicNotificationsPollRouteImport.update({
     id: '/api/public/notifications/poll',
@@ -216,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
   '/c/$slug': typeof CSlugRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/l/$slug': typeof LSlugRoute
   '/dashboard/admin': typeof AuthenticatedDashboardAdminRoute
   '/dashboard/api': typeof AuthenticatedDashboardApiRoute
@@ -234,11 +273,16 @@ export interface FileRoutesByFullPath {
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/api/public/webhook-payment': typeof ApiPublicWebhookPaymentRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -247,6 +291,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
   '/c/$slug': typeof CSlugRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/l/$slug': typeof LSlugRoute
   '/dashboard/admin': typeof AuthenticatedDashboardAdminRoute
   '/dashboard/api': typeof AuthenticatedDashboardApiRoute
@@ -265,11 +310,16 @@ export interface FileRoutesByTo {
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/api/public/webhook-payment': typeof ApiPublicWebhookPaymentRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -280,6 +330,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
   '/c/$slug': typeof CSlugRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/l/$slug': typeof LSlugRoute
   '/_authenticated/dashboard/admin': typeof AuthenticatedDashboardAdminRoute
   '/_authenticated/dashboard/api': typeof AuthenticatedDashboardApiRoute
@@ -298,11 +349,16 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/api/public/webhook-payment': typeof ApiPublicWebhookPaymentRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -313,6 +369,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/api/debug-notification'
     | '/c/$slug'
+    | '/email/unsubscribe'
     | '/l/$slug'
     | '/dashboard/admin'
     | '/dashboard/api'
@@ -331,11 +388,16 @@ export interface FileRouteTypes {
     | '/dashboard/withdrawals'
     | '/api/public/rlx-webhook'
     | '/api/public/webhook-payment'
+    | '/lovable/email/suppression'
     | '/dashboard/'
     | '/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -344,6 +406,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/api/debug-notification'
     | '/c/$slug'
+    | '/email/unsubscribe'
     | '/l/$slug'
     | '/dashboard/admin'
     | '/dashboard/api'
@@ -362,11 +425,16 @@ export interface FileRouteTypes {
     | '/dashboard/withdrawals'
     | '/api/public/rlx-webhook'
     | '/api/public/webhook-payment'
+    | '/lovable/email/suppression'
     | '/dashboard'
     | '/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   id:
     | '__root__'
     | '/'
@@ -376,6 +444,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/api/debug-notification'
     | '/c/$slug'
+    | '/email/unsubscribe'
     | '/l/$slug'
     | '/_authenticated/dashboard/admin'
     | '/_authenticated/dashboard/api'
@@ -394,11 +463,16 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/withdrawals'
     | '/api/public/rlx-webhook'
     | '/api/public/webhook-payment'
+    | '/lovable/email/suppression'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -409,12 +483,18 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiDebugNotificationRoute: typeof ApiDebugNotificationRoute
   CSlugRoute: typeof CSlugRoute
+  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   LSlugRoute: typeof LSlugRoute
   ApiPublicRlxWebhookRoute: typeof ApiPublicRlxWebhookRoute
   ApiPublicWebhookPaymentRoute: typeof ApiPublicWebhookPaymentRoute
+  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicEmbedScriptRoute: typeof ApiPublicEmbedScriptRoute
   ApiPublicNotificationsPollRoute: typeof ApiPublicNotificationsPollRoute
+  LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
+  LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -461,6 +541,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/c/$slug': {
       id: '/c/$slug'
       path: '/c/$slug'
@@ -481,6 +568,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/webhook-payment': {
       id: '/api/public/webhook-payment'
@@ -601,11 +695,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
       path: '/lovable/email/queue/process'
       fullPath: '/lovable/email/queue/process'
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/notifications/poll': {
@@ -703,12 +825,18 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ApiDebugNotificationRoute: ApiDebugNotificationRoute,
   CSlugRoute: CSlugRoute,
+  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   LSlugRoute: LSlugRoute,
   ApiPublicRlxWebhookRoute: ApiPublicRlxWebhookRoute,
   ApiPublicWebhookPaymentRoute: ApiPublicWebhookPaymentRoute,
+  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicEmbedScriptRoute: ApiPublicEmbedScriptRoute,
   ApiPublicNotificationsPollRoute: ApiPublicNotificationsPollRoute,
+  LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
+  LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
