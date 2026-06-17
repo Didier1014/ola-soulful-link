@@ -75,6 +75,7 @@ const bundleSchema = z.object({
   utmify: z.object({
     enabled: z.boolean().default(false),
     api_token: z.string().max(200).optional().default(""),
+    currency: z.enum(["MZN", "BRL", "USD", "EUR"]).default("BRL"),
   }).optional(),
   mozesms: z.object({
     enabled: z.boolean().default(false),
