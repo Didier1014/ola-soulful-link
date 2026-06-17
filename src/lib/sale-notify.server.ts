@@ -3,6 +3,39 @@
 // in-app notification + web push + Utmify + LowTrack.
 // Called from rlx-webhook, webhook-payment, and creditSellerIfPending (dashboard polling / immediate checkout).
 
+async function logIntegrationCall(
+  supabaseAdmin: any,
+  opts: {
+    userId: string;
+    txId: string;
+    provider: "utmify" | "lowtrack" | "pushcut";
+    statusCode?: number | null;
+    ok?: boolean;
+    payload?: any;
+    response?: string | null;
+    error?: string | null;
+  },
+) {
+  const tag = `[sale:${opts.txId}][${opts.provider}]`;
+  if (opts.error) console.log(`${tag} ERROR`, opts.error);
+  else console.log(`${tag} → HTTP ${opts.statusCode} ok=${opts.ok}`, (opts.response || "").slice(0, 300));
+  try {
+    await supabaseAdmin.from("integration_logs").insert({
+      user_id: opts.userId,
+      transaction_id: opts.txId,
+      provider: opts.provider,
+      status_code: opts.statusCode ?? null,
+      ok: opts.ok ?? null,
+      request_payload: opts.payload ?? null,
+      response_body: opts.response ?? null,
+      error: opts.error ?? null,
+    });
+  } catch (e) {
+    console.log(`${tag} log insert failed`, e);
+  }
+}
+
+
 export async function notifyNewSale(supabaseAdmin: any, txId: string) {
   const { data: tx } = await supabaseAdmin
     .from("transactions")
@@ -186,9 +219,18 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
       })
         .then(async (r) => {
           const t = await r.text().catch(() => "");
-          console.log("[Utmify] →", r.status, t.slice(0, 200));
+          await logIntegrationCall(supabaseAdmin, {
+            userId, txId: tx.id, provider: "utmify",
+            statusCode: r.status, ok: r.ok, payload: utmifyBody, response: t,
+          });
         })
-        .catch((e) => console.log("[Utmify] error", e));
+        .catch(async (e) => {
+          await logIntegrationCall(supabaseAdmin, {
+            userId, txId: tx.id, provider: "utmify",
+            payload: utmifyBody, error: String(e?.message ?? e),
+          });
+        });
+
     }
   } catch (e) {
     console.log("[notifyNewSale] utmify error", e);
@@ -231,9 +273,19 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
       fetch(lowtrackUrl, { method: "POST", headers, body: JSON.stringify(ltBody) })
         .then(async (r) => {
           const t = await r.text().catch(() => "");
-          console.log("[LowTrack] →", r.status, t.slice(0, 200));
+          await logIntegrationCall(supabaseAdmin, {
+            userId, txId: tx.id, provider: "lowtrack",
+            statusCode: r.status, ok: r.ok,
+            payload: { url: lowtrackUrl, body: ltBody }, response: t,
+          });
         })
-        .catch((e) => console.log("[LowTrack] error", e));
+        .catch(async (e) => {
+          await logIntegrationCall(supabaseAdmin, {
+            userId, txId: tx.id, provider: "lowtrack",
+            payload: { url: lowtrackUrl, body: ltBody }, error: String(e?.message ?? e),
+          });
+        });
+
     }
   } catch (e) {
     console.log("[notifyNewSale] lowtrack error", e);
