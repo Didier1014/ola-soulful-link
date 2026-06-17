@@ -328,7 +328,7 @@ export const createWithdrawal = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
 
-    // Notify all admins (in-app + push)
+    // Notify admins via push only (no in-app feed entry — admins consult /dashboard/admin)
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: admins } = await supabaseAdmin
@@ -341,12 +341,6 @@ export const createWithdrawal = createServerFn({ method: "POST" })
       const message = `${who} solicitou saque de ${fmt} MT via ${data.method.toUpperCase()}`;
       const ids = (admins ?? []).map((a: any) => a.user_id);
       if (ids.length) {
-        await supabaseAdmin.from("notifications").insert(
-          ids.map((uid: string) => ({
-            user_id: uid, type: "withdrawal_request", title, message,
-            data: { amount_mzn: data.amount_mzn, method: data.method, requester_id: context.userId },
-          }))
-        );
         const { sendPushToUser } = await import("@/lib/push.functions");
         await Promise.all(ids.map((uid: string) =>
           sendPushToUser(supabaseAdmin, uid, title, message, "/dashboard/admin").catch(() => {})
