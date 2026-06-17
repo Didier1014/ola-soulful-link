@@ -128,6 +128,9 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
   const gotLock = await acquireSaleLock(supabaseAdmin, tx.id);
   if (!gotLock) return;
 
+  try {
+
+
 
   // Read merchant preferences
   let currency = "MZN";
