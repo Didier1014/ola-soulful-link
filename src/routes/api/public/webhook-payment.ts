@@ -140,16 +140,19 @@ export const Route = createFileRoute("/api/public/webhook-payment")({
             });
             if (notificationError) console.error("[webhook] notification insert failed:", notificationError.message);
 
-            const { sendPushToUser } = await import("@/lib/push.functions");
-            const formattedAmount = Number(tx.amount_mzn).toLocaleString("pt-MZ", { style: "currency", currency });
-            sendPushToUser(
-              supabaseAdmin, tx.user_id,
-              "Nova venda!",
-              `${formattedAmount} — ${tx.customer_name || "Cliente"}${productName ? ` — ${productName}` : ""}`,
-              "/dashboard/transactions",
-            ).catch((err: any) => {
-              console.error("[webhook] push send failed:", err);
-            });
+            try {
+              const { sendPushToUser } = await import("@/lib/push.functions");
+              const formattedAmount = Number(tx.amount_mzn).toLocaleString("pt-MZ", { style: "currency", currency });
+              const pushRes = await sendPushToUser(
+                supabaseAdmin, tx.user_id,
+                "Nova venda!",
+                `${formattedAmount} — ${tx.customer_name || "Cliente"}${productName ? ` — ${productName}` : ""}`,
+                "/dashboard/transactions",
+              );
+              if (!pushRes.ok) console.log("[webhook] push not sent:", pushRes.reason);
+            } catch (err: any) {
+              console.error("[webhook] push send failed:", err?.message || err);
+            }
 
             try {
               const { data: utmifyCfg } = await supabaseAdmin
