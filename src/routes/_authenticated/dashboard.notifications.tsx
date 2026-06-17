@@ -75,6 +75,21 @@ function NotificationsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
   });
 
+  const { mutate: doSendTest, isPending: testing } = useMutation({
+    mutationFn: () => sendTest(),
+    onSuccess: (r: any) => {
+      if (r?.push_sent) {
+        toast.success("Notificação enviada — confira o aviso do navegador");
+      } else {
+        toast.success("Notificação criada", {
+          description: "Active as notificações push em Configurar para receber alertas mesmo com o site fechado.",
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao testar"),
+  });
+
   const unread = notifications.filter(n => !n.read).length;
 
   return (
