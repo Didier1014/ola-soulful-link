@@ -129,7 +129,8 @@ async function creditSellerIfPending(supabaseAdmin: any, txId: string, userId: s
     const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
     if (user?.user?.user_metadata?.notifications_enabled !== false) {
       const { sendPushToUser } = await import("@/lib/push.functions");
-      sendPushToUser(supabaseAdmin, userId, title, message, "/dashboard/transactions").catch(() => {});
+      const r = await sendPushToUser(supabaseAdmin, userId, title, message, "/dashboard/transactions");
+      if (!r.ok) console.log("[creditSellerIfPending] push not sent:", r.reason);
     }
   } catch (e) {
     console.log("[creditSellerIfPending] notify error", e);
