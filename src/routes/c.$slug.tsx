@@ -73,16 +73,66 @@ function CheckoutPage() {
     }
   }, [product]);
 
-  const pollStatus = useMutation({
-    mutationFn: (txId: string) => checkTransactionStatus({ data: { transaction_id: txId } }),
-  });
+  // Capture tracking params (UTM, src/sck, fbp/fbc) from URL + cookies
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const t: Record<string, string> = {};
+      ["utm_source","utm_campaign","utm_medium","utm_content","utm_term","src","sck"].forEach((k) => {
+        const v = sp.get(k); if (v) t[k] = v;
+      });
+      const cookie = document.cookie || "";
+      const fbp = cookie.match(/_fbp=([^;]+)/)?.[1]; if (fbp) t.fbp = fbp;
+      const fbc = cookie.match(/_fbc=([^;]+)/)?.[1] || (sp.get("fbclid") ? `fb.1.${Date.now()}.${sp.get("fbclid")}` : null);
+      if (fbc) t.fbc = fbc;
+      trackingRef.current = t;
+    } catch {}
+  }, []);
+
+  // Inject Meta Pixel and fire PageView / InitiateCheckout / Purchase
+  useEffect(() => {
+    const pid = product?.pixel_id;
+    if (!pid || typeof window === "undefined") return;
+    const w = window as any;
+    if (!w.fbq) {
+      // Standard Meta Pixel bootstrap
+      (function (f: any, b: any, e: any, v: any) {
+        if (f.fbq) return; const n = f.fbq = function () {
+          n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n; n.push = n; n.loaded = true; n.version = "2.0"; n.queue = [];
+        const t = b.createElement(e); t.async = true; t.src = v;
+        const s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+      })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+    }
+    w.fbq("init", String(pid));
+    if (!pixelFiredRef.current.pageview) {
+      w.fbq("track", "PageView");
+      w.fbq("track", "ViewContent", {
+        content_ids: [product.id], content_name: product.name,
+        content_type: "product", value: Number(product.price_mzn), currency: "MZN",
+      });
+      pixelFiredRef.current.pageview = true;
+    }
+  }, [product?.pixel_id, product?.id]);
 
   const m = useMutation({
-    mutationFn: () => checkout({
-      data: {
-        product_id: product!.id, method, ...form, customer_email: "",
-      },
-    }),
+    mutationFn: () => {
+      const w = window as any;
+      if (product?.pixel_id && w.fbq && !pixelFiredRef.current.init) {
+        w.fbq("track", "InitiateCheckout", {
+          content_ids: [product.id], content_name: product.name,
+          value: Number(product.price_mzn), currency: "MZN",
+        });
+        pixelFiredRef.current.init = true;
+      }
+      return checkout({
+        data: {
+          product_id: product!.id, method, ...form, customer_email: "",
+          tracking: trackingRef.current,
+        },
+      });
+    },
     onMutate: () => {
       setModal({ status: "processing", id: undefined });
     },
