@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { checkApiStatus } from "@/lib/transactions.functions";
 import { updateUserPreferences, sendTestNotification, type Currency } from "@/lib/notifications.functions";
 import { PushToggle } from "@/components/push-setup";
+import { PushReactivateBanner } from "@/components/push-reactivate-banner";
 import { Activity, CheckCircle2, XCircle, Zap, RefreshCw, Copy, Bell, Play, Palette, Volume2, Smartphone } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/settings")({
@@ -161,6 +162,7 @@ function SettingsPage() {
           <p className="text-sm text-muted-foreground">A carregar...</p>
         ) : (
           <>
+            <PushReactivateBanner />
             <div className="flex items-center justify-between">
               <Label className="font-medium cursor-pointer">Notificações no site</Label>
               <Switch checked={notifEnabled} onCheckedChange={setNotifEnabled} />

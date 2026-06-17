@@ -18,6 +18,7 @@ import { Bell, Sparkles, Webhook, TrendingUp, MessageSquare, Send, Save, Radar }
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { usePushNotifications } from "@/components/push-setup";
+import { PushReactivateBanner } from "@/components/push-reactivate-banner";
 import { sendTestNotification } from "@/lib/notifications.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/integrations")({
