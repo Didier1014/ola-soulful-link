@@ -140,6 +140,45 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_logs: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          ok: boolean | null
+          provider: string
+          request_payload: Json | null
+          response_body: string | null
+          status_code: number | null
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          ok?: boolean | null
+          provider: string
+          request_payload?: Json | null
+          response_body?: string | null
+          status_code?: number | null
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          ok?: boolean | null
+          provider?: string
+          request_payload?: Json | null
+          response_body?: string | null
+          status_code?: number | null
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       integration_settings: {
         Row: {
           created_at: string
