@@ -3,6 +3,39 @@
 // in-app notification + web push + Utmify + LowTrack.
 // Called from rlx-webhook, webhook-payment, and creditSellerIfPending (dashboard polling / immediate checkout).
 
+async function logIntegrationCall(
+  supabaseAdmin: any,
+  opts: {
+    userId: string;
+    txId: string;
+    provider: "utmify" | "lowtrack" | "pushcut";
+    statusCode?: number | null;
+    ok?: boolean;
+    payload?: any;
+    response?: string | null;
+    error?: string | null;
+  },
+) {
+  const tag = `[sale:${opts.txId}][${opts.provider}]`;
+  if (opts.error) console.log(`${tag} ERROR`, opts.error);
+  else console.log(`${tag} → HTTP ${opts.statusCode} ok=${opts.ok}`, (opts.response || "").slice(0, 300));
+  try {
+    await supabaseAdmin.from("integration_logs").insert({
+      user_id: opts.userId,
+      transaction_id: opts.txId,
+      provider: opts.provider,
+      status_code: opts.statusCode ?? null,
+      ok: opts.ok ?? null,
+      request_payload: opts.payload ?? null,
+      response_body: opts.response ?? null,
+      error: opts.error ?? null,
+    });
+  } catch (e) {
+    console.log(`${tag} log insert failed`, e);
+  }
+}
+
+
 export async function notifyNewSale(supabaseAdmin: any, txId: string) {
   const { data: tx } = await supabaseAdmin
     .from("transactions")
