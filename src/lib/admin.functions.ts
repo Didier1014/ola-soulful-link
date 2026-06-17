@@ -100,38 +100,52 @@ export const approveWithdrawal = createServerFn({ method: "POST" })
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: wd } = await supabaseAdmin
+    const { data: wd, error: wdErr } = await supabaseAdmin
       .from("withdrawals").select("*").eq("id", data.id).maybeSingle();
+    if (wdErr) throw new Error(wdErr.message);
     if (!wd) throw new Error("Saque não encontrado");
     if (wd.status !== "pending") throw new Error("Saque já foi processado");
 
-    // Deduct from user balance
-    const { data: prof } = await supabaseAdmin
+    const { data: prof, error: pErr } = await supabaseAdmin
       .from("profiles").select("balance_mzn").eq("id", wd.user_id).maybeSingle();
+    if (pErr) throw new Error(pErr.message);
     if (!prof) throw new Error("Utilizador não encontrado");
-    const bal = Number(prof.balance_mzn);
-    if (bal < Number(wd.amount_mzn)) throw new Error("Saldo insuficiente");
 
-    const [uErr, wErr] = await Promise.all([
-      supabaseAdmin.from("profiles")
-        .update({ balance_mzn: Math.round((bal - Number(wd.amount_mzn)) * 100) / 100 })
-        .eq("id", wd.user_id),
-      supabaseAdmin.from("withdrawals")
-        .update({ status: "paid" }).eq("id", data.id),
-    ]);
-    if (uErr.error) throw new Error(uErr.error.message);
-    if (wErr.error) throw new Error(wErr.error.message);
+    const bal = Math.round(Number(prof.balance_mzn) * 100) / 100;
+    const amt = Math.round(Number(wd.amount_mzn) * 100) / 100;
 
-    // Notify user
+    // Tolerância de 1 MT para arredondamentos. Caso falte muito → auto-rejeitar com motivo claro.
+    if (bal + 0.999 < amt) {
+      await supabaseAdmin.from("withdrawals").update({ status: "rejected" }).eq("id", data.id);
+      try {
+        await supabaseAdmin.from("notifications").insert({
+          user_id: wd.user_id, type: "withdrawal_rejected",
+          title: "Saque rejeitado",
+          message: `Saldo insuficiente para processar saque de ${amt} MT (disponível: ${bal} MT).`,
+        });
+      } catch {}
+      throw new Error(`Saldo insuficiente. Disponível: ${bal} MT · Pedido: ${amt} MT. Saque rejeitado automaticamente.`);
+    }
+
+    const newBal = Math.max(0, Math.round((bal - amt) * 100) / 100);
+    const { error: uErr } = await supabaseAdmin.from("profiles")
+      .update({ balance_mzn: newBal }).eq("id", wd.user_id);
+    if (uErr) throw new Error("Erro ao actualizar saldo: " + uErr.message);
+
+    const { error: wErr } = await supabaseAdmin.from("withdrawals")
+      .update({ status: "paid" }).eq("id", data.id);
+    if (wErr) throw new Error("Erro ao actualizar saque: " + wErr.message);
+
     try {
-      const fmt = new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(Number(wd.amount_mzn));
+      const fmt = new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(amt);
       await supabaseAdmin.from("notifications").insert({
         user_id: wd.user_id, type: "withdrawal_paid",
         title: "Saque pago", message: `O seu saque de ${fmt} MT foi processado.`,
       });
     } catch {}
-    return { ok: true };
+    return { ok: true, balance_mzn: newBal };
   });
+
 
 export const rejectWithdrawal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
