@@ -39,6 +39,7 @@ function NotificationsPage() {
   const fetchList = useServerFn(listNotifications);
   const markRead = useServerFn(markNotificationRead);
   const markAll = useServerFn(markAllNotificationsRead);
+  const sendTest = useServerFn(sendTestNotification);
 
   const { data: notifications = [] } = useQuery({
     queryKey: ["notifications"],
