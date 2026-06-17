@@ -399,8 +399,9 @@ function AdminPage() {
           <Card className="rounded-2xl overflow-hidden">
             <div className="grid grid-cols-12 px-4 py-3 text-[10px] uppercase tracking-wider font-bold text-muted-foreground border-b border-border bg-secondary/40">
               <div className="col-span-4">Produto</div>
-              <div className="col-span-3">Vendedor</div>
-              <div className="col-span-3">Entrega</div>
+              <div className="col-span-2">Vendedor</div>
+              <div className="col-span-2 text-right">Vendas</div>
+              <div className="col-span-2">Entrega</div>
               <div className="col-span-1 text-right">Preço</div>
               <div className="col-span-1 text-right">Status</div>
             </div>
@@ -420,10 +421,16 @@ function AdminPage() {
                       <p className="text-[10px] text-muted-foreground uppercase">{p.product_type || "external"}</p>
                     </div>
                   </div>
-                  <div className="col-span-3 text-xs text-muted-foreground truncate">
+                  <div className="col-span-2 text-xs text-muted-foreground truncate">
                     {(p as any).profiles?.business_name || (p as any).profiles?.full_name || "—"}
                   </div>
-                  <div className="col-span-3 flex items-center gap-2 min-w-0">
+                  <div className="col-span-2 text-right">
+                    <p className="font-mono font-bold text-sm" style={{ color: p.sales_count > 0 ? RUBY : undefined }}>
+                      {fmt(Number(p.sales_count ?? 0))}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground font-mono">{fmtMT(Number(p.sales_total_mzn ?? 0))}</p>
+                  </div>
+                  <div className="col-span-2 flex items-center gap-2 min-w-0">
                     {p.delivery_url && (
                       <a href={p.delivery_url} target="_blank" rel="noreferrer"
                         className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary hover:bg-secondary/70 truncate max-w-[180px]">
@@ -486,6 +493,10 @@ function AdminPage() {
                         <p className="font-mono font-bold text-sm shrink-0">{fmtMT(Number(p.price_mzn))}</p>
                       </div>
                       <p className="text-[11px] text-muted-foreground uppercase">{p.product_type || "external"} · {p.active ? "Activo" : "Inactivo"}</p>
+                      <p className="text-[11px] mt-1">
+                        <span className="font-bold" style={{ color: p.sales_count > 0 ? RUBY : undefined }}>{fmt(Number(p.sales_count ?? 0))} venda{p.sales_count === 1 ? "" : "s"}</span>
+                        {p.sales_count > 0 && <span className="text-muted-foreground"> · {fmtMT(Number(p.sales_total_mzn ?? 0))}</span>}
+                      </p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         <a href={`/c/${p.slug}`} target="_blank" rel="noreferrer"
                           className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary hover:bg-secondary/70">
