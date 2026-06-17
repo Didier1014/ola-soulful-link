@@ -114,7 +114,7 @@ export const sendTestNotification = createServerFn({ method: "POST" })
     try {
       const { sendPushToUser } = await import("@/lib/push.functions");
       const result = await sendPushToUser(supabaseAdmin, context.userId, title, message, "/dashboard/transactions");
-      pushSent = Boolean(result);
+      pushSent = Boolean(result?.ok);
     } catch (e) {
       console.error("[sendTestNotification] push failed", e);
     }

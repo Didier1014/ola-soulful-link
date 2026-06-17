@@ -3,6 +3,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+export const getVapidPublicKey = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const key = process.env.VAPID_PUBLIC_KEY;
+    if (!key) throw new Error("VAPID_PUBLIC_KEY não configurada");
+    return { key };
+  });
+
 export const subscribePush = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -67,7 +75,7 @@ export async function sendPushToUser(
   title: string,
   body: string,
   url?: string,
-): Promise<{ ok: boolean; reason?: string; sent?: number; failed?: number }> {
+): Promise<{ ok: boolean; reason?: string; sent?: number; failed?: number; attempts?: Array<{ endpoint: string; status?: number; ok?: boolean; error?: string; body?: string }> }> {
   // Collect subscriptions: dedicated table + legacy user_metadata fallback
   const subs: Array<{ endpoint: string; p256dh: string; auth: string; id?: string }> = [];
 
@@ -96,14 +104,14 @@ export async function sendPushToUser(
 
   if (subs.length === 0) {
     console.log(`[push] user=${userId} no_subscription`);
-    return { ok: false, reason: "no_subscription" };
+    return { ok: false, reason: "no_subscription", attempts: [] };
   }
 
   const vapidPublic = process.env.VAPID_PUBLIC_KEY;
   const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
   if (!vapidPublic || !vapidPrivate) {
     console.log(`[push] vapid_missing`);
-    return { ok: false, reason: "vapid_missing" };
+    return { ok: false, reason: "vapid_missing", attempts: [] };
   }
 
   const { sendWebPushNotification } = await import("@/lib/webpush.server");
@@ -113,17 +121,30 @@ export async function sendPushToUser(
     subject: process.env.VAPID_SUBJECT || "mailto:admin@redoxpay.com",
   };
   const payload = JSON.stringify({ title, body, url });
+  async function removeSubscription(endpoint: string) {
+    try {
+      await supabaseAdmin.from("push_subscriptions").delete().eq("endpoint", endpoint);
+    } catch {}
+    try {
+      const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
+      const meta = user?.user?.user_metadata ?? {};
+      if (meta?.push_subscription?.endpoint === endpoint) {
+        const cleaned = Object.fromEntries(Object.entries(meta).filter(([k]) => k !== "push_subscription"));
+        await supabaseAdmin.auth.admin.updateUserById(userId, { user_metadata: cleaned });
+      }
+    } catch {}
+  }
 
   let sent = 0, failed = 0;
+  const attempts: Array<{ endpoint: string; status?: number; ok?: boolean; error?: string; body?: string }> = [];
   for (const sub of subs) {
     try {
       const res = await sendWebPushNotification(sub, payload, vapid);
+      attempts.push({ endpoint: sub.endpoint.slice(0, 80), status: res.status, ok: res.status >= 200 && res.status < 300, body: (res.body || "").slice(0, 300) });
       console.log(`[push] user=${userId} ep=${sub.endpoint.slice(0, 40)}... → HTTP ${res.status} ${(res.body || "").slice(0, 200)}`);
-      if (res.status === 404 || res.status === 410) {
-        // Gone — remove this subscription
-        try {
-          await supabaseAdmin.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
-        } catch {}
+      if (res.status === 404 || res.status === 410 || (res.status === 400 && /VapidPkHashMismatch/i.test(res.body || ""))) {
+        // Gone or subscribed with an old VAPID public key — remove and force re-subscribe.
+        await removeSubscription(sub.endpoint);
         failed++;
         continue;
       }
@@ -131,8 +152,9 @@ export async function sendPushToUser(
       else failed++;
     } catch (e: any) {
       console.log(`[push] user=${userId} send_failed`, e?.message ?? e);
+      attempts.push({ endpoint: sub.endpoint.slice(0, 80), ok: false, error: String(e?.message ?? e) });
       failed++;
     }
   }
-  return { ok: sent > 0, sent, failed, reason: sent > 0 ? undefined : "all_failed" };
+  return { ok: sent > 0, sent, failed, attempts, reason: sent > 0 ? undefined : "all_failed" };
 }

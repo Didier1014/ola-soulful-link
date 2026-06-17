@@ -92,9 +92,13 @@ async function processWebhook(request: Request) {
           }
         }
 
-        if (!tx) return new Response("ok"); // ignore unknown txids
+        if (!tx) {
+          console.log(`[RLX webhook] tx not found external_ref=${externalRef || "-"} tx_id=${txIdFromUrl || "-"}`);
+          return new Response("ok"); // ignore unknown txids
+        }
 
         const next = mapGatewayStatus(payload);
+        console.log(`[RLX webhook][sale:${tx.id}] matched status=${tx.status} next=${next} external_ref=${externalRef || tx.external_ref || "-"}`);
 
         if (externalRef && tx.external_ref !== externalRef) {
           await supabaseAdmin.from("transactions").update({ external_ref: externalRef }).eq("id", tx.id);
@@ -126,10 +130,30 @@ async function processWebhook(request: Request) {
               .update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + sellerNet })
               .eq("id", tx.user_id);
 
-            const { notifyNewSale } = await import("@/lib/sale-notify.server");
-            await notifyNewSale(supabaseAdmin, tx.id);
+            try {
+              console.log(`[RLX webhook][sale:${tx.id}] payment marked paid; dispatching sale side-effects`);
+              const { notifyNewSale } = await import("@/lib/sale-notify.server");
+              await notifyNewSale(supabaseAdmin, tx.id);
+              console.log(`[RLX webhook][sale:${tx.id}] sale side-effects finished`);
+            } catch (e) {
+              console.log(`[RLX webhook][sale:${tx.id}] notifyNewSale failed`, e);
+            }
+          } else if (next !== "pending") {
+            const { error: statusErr } = await supabaseAdmin
+              .from("transactions")
+              .update(updates)
+              .eq("id", tx.id);
+            if (statusErr) console.log(`[RLX webhook][sale:${tx.id}] status update failed`, statusErr.message);
           }
 
+        } else if (next === "paid") {
+          try {
+            console.log(`[RLX webhook][sale:${tx.id}] already paid; ensuring sale side-effects`);
+            const { notifyNewSale } = await import("@/lib/sale-notify.server");
+            await notifyNewSale(supabaseAdmin, tx.id);
+          } catch (e) {
+            console.log(`[RLX webhook][sale:${tx.id}] notifyNewSale retry failed`, e);
+          }
         }
         return new Response("ok");
 }
