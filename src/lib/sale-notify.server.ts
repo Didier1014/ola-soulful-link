@@ -122,6 +122,13 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
     return;
   }
 
+  // Serialize concurrent webhooks for the same sale. If another invocation
+  // is already processing this transaction, skip — it will (or already did)
+  // write the ok=true integration logs.
+  const gotLock = await acquireSaleLock(supabaseAdmin, tx.id);
+  if (!gotLock) return;
+
+
   // Read merchant preferences
   let currency = "MZN";
   let notificationsEnabled = true;
