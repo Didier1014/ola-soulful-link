@@ -39,7 +39,12 @@ export const setSubscriptionStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), status: z.enum(["active", "paused", "cancelled"]) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("subscriptions").update({ status: data.status }).eq("id", data.id);
+    const { error, count } = await context.supabase
+      .from("subscriptions")
+      .update({ status: data.status }, { count: "exact" })
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
+    if (!count) throw new Error("Assinatura não encontrada");
     return { ok: true };
   });
