@@ -50,7 +50,7 @@ function IntegrationsPage() {
   const { data } = useQuery({ queryKey: ["bundle"], queryFn: () => fetchBundle() });
   const { data: legacy } = useQuery({ queryKey: ["legacy-integrations"], queryFn: () => fetchLegacy() });
   const [b, setB] = useState<Bundle>(DEFAULT_BUNDLE);
-  const [lowtrack, setLowtrack] = useState<{ enabled: boolean; webhook_url: string; api_token: string }>({ enabled: false, webhook_url: "", api_token: "" });
+  const [lowtrack, setLowtrack] = useState<{ enabled: boolean; webhook_url: string; api_token: string; currency: "MZN" | "BRL" | "USD" | "EUR" }>({ enabled: false, webhook_url: "", api_token: "", currency: "BRL" });
 
   useEffect(() => {
     if (data) {
