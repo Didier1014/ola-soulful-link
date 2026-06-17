@@ -7,7 +7,7 @@ import { createCheckout, checkTransactionStatus } from "@/lib/transactions.funct
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Lock, Heart, ShieldCheck, AlertTriangle, Smartphone } from "lucide-react";
+import { Loader2, Lock, ShieldCheck, AlertTriangle, Smartphone } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
