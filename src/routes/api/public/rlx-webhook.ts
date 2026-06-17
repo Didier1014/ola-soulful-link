@@ -307,10 +307,8 @@ async function processWebhook(request: Request) {
               const lowtrackEnabled = lowtrackCfg?.settings?.enabled !== false;
               const lowtrackToken = lowtrackCfg?.settings?.api_token as string | undefined;
               if (lowtrackUrl && lowtrackEnabled) {
-                const headers: Record<string, string> = {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${lowtrackToken}`,
-                };
+                const headers: Record<string, string> = { "Content-Type": "application/json" };
+                if (lowtrackToken) headers["Authorization"] = `Bearer ${lowtrackToken}`;
 
                 const body = {
                   event: "sale.approved",
