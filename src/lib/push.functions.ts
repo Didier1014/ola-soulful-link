@@ -14,31 +14,50 @@ export const subscribePush = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: user } = await supabaseAdmin.auth.admin.getUserById(context.userId);
-    const meta = user?.user?.user_metadata ?? {};
-    const { error } = await supabaseAdmin.auth.admin.updateUserById(context.userId, {
-      user_metadata: {
-        ...meta,
-        push_subscription: { endpoint: data.endpoint, p256dh: data.p256dh, auth: data.auth },
-      },
-    });
-    if (error) throw new Error(error.message);
+    // Upsert into dedicated table (multi-device, survives user_metadata changes)
+    const { error: tblErr } = await supabaseAdmin
+      .from("push_subscriptions")
+      .upsert(
+        {
+          user_id: context.userId,
+          endpoint: data.endpoint,
+          p256dh: data.p256dh,
+          auth: data.auth,
+        },
+        { onConflict: "endpoint" },
+      );
+    if (tblErr) {
+      console.log("[push] subscribe table error", tblErr.message);
+      throw new Error(tblErr.message);
+    }
+    // Also mirror to user_metadata for legacy reads (best-effort)
+    try {
+      const { data: user } = await supabaseAdmin.auth.admin.getUserById(context.userId);
+      const meta = user?.user?.user_metadata ?? {};
+      await supabaseAdmin.auth.admin.updateUserById(context.userId, {
+        user_metadata: { ...meta, push_subscription: { endpoint: data.endpoint, p256dh: data.p256dh, auth: data.auth } },
+      });
+    } catch {}
+    console.log(`[push] subscribed user=${context.userId} endpoint=${data.endpoint.slice(0, 50)}...`);
     return { ok: true };
   });
 
 export const unsubscribePush = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d: unknown) =>
+    z.object({ endpoint: z.string().url().optional() }).optional().parse(d ?? {})
+  )
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: user } = await supabaseAdmin.auth.admin.getUserById(context.userId);
-    const meta = user?.user?.user_metadata ?? {};
-    const cleaned = Object.fromEntries(
-      Object.entries(meta).filter(([k]) => k !== "push_subscription")
-    );
-    const { error } = await supabaseAdmin.auth.admin.updateUserById(context.userId, {
-      user_metadata: cleaned,
-    });
-    if (error) throw new Error(error.message);
+    let q = supabaseAdmin.from("push_subscriptions").delete().eq("user_id", context.userId);
+    if (data?.endpoint) q = q.eq("endpoint", data.endpoint);
+    await q;
+    try {
+      const { data: user } = await supabaseAdmin.auth.admin.getUserById(context.userId);
+      const meta = user?.user?.user_metadata ?? {};
+      const cleaned = Object.fromEntries(Object.entries(meta).filter(([k]) => k !== "push_subscription"));
+      await supabaseAdmin.auth.admin.updateUserById(context.userId, { user_metadata: cleaned });
+    } catch {}
     return { ok: true };
   });
 
@@ -48,12 +67,34 @@ export async function sendPushToUser(
   title: string,
   body: string,
   url?: string,
-): Promise<{ ok: boolean; reason?: string }> {
-  const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
-  const sub = user?.user?.user_metadata?.push_subscription as
-    | { endpoint: string; p256dh: string; auth: string }
-    | undefined;
-  if (!sub) {
+): Promise<{ ok: boolean; reason?: string; sent?: number; failed?: number }> {
+  // Collect subscriptions: dedicated table + legacy user_metadata fallback
+  const subs: Array<{ endpoint: string; p256dh: string; auth: string; id?: string }> = [];
+
+  const { data: rows, error: rowsErr } = await supabaseAdmin
+    .from("push_subscriptions")
+    .select("id,endpoint,p256dh,auth")
+    .eq("user_id", userId);
+  if (rowsErr) console.log(`[push] user=${userId} table read error`, rowsErr.message);
+  if (rows && rows.length) subs.push(...rows);
+
+  try {
+    const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
+    const legacy = user?.user?.user_metadata?.push_subscription as
+      | { endpoint: string; p256dh: string; auth: string }
+      | undefined;
+    if (legacy && !subs.some((s) => s.endpoint === legacy.endpoint)) {
+      subs.push(legacy);
+      // Migrate legacy subscription into the table for next time
+      try {
+        await supabaseAdmin
+          .from("push_subscriptions")
+          .upsert({ user_id: userId, ...legacy }, { onConflict: "endpoint" });
+      } catch {}
+    }
+  } catch {}
+
+  if (subs.length === 0) {
     console.log(`[push] user=${userId} no_subscription`);
     return { ok: false, reason: "no_subscription" };
   }
@@ -65,28 +106,33 @@ export async function sendPushToUser(
     return { ok: false, reason: "vapid_missing" };
   }
 
-  try {
-    const { sendWebPushNotification } = await import("@/lib/webpush.server");
-    const res = await sendWebPushNotification(
-      sub,
-      JSON.stringify({ title, body, url }),
-      {
-        publicKey: vapidPublic,
-        privateKey: vapidPrivate,
-        subject: process.env.VAPID_SUBJECT || "mailto:admin@redoxpay.com",
-      },
-    );
-    console.log(`[push] user=${userId} → HTTP ${res.status} ${res.body.slice(0, 200)}`);
-    if (res.status === 404 || res.status === 410) {
-      const meta = user?.user?.user_metadata ?? {};
-      const cleaned = Object.fromEntries(Object.entries(meta).filter(([k]) => k !== "push_subscription"));
-      await supabaseAdmin.auth.admin.updateUserById(userId, { user_metadata: cleaned });
-      return { ok: false, reason: `gone:${res.status}` };
+  const { sendWebPushNotification } = await import("@/lib/webpush.server");
+  const vapid = {
+    publicKey: vapidPublic,
+    privateKey: vapidPrivate,
+    subject: process.env.VAPID_SUBJECT || "mailto:admin@redoxpay.com",
+  };
+  const payload = JSON.stringify({ title, body, url });
+
+  let sent = 0, failed = 0;
+  for (const sub of subs) {
+    try {
+      const res = await sendWebPushNotification(sub, payload, vapid);
+      console.log(`[push] user=${userId} ep=${sub.endpoint.slice(0, 40)}... → HTTP ${res.status} ${(res.body || "").slice(0, 200)}`);
+      if (res.status === 404 || res.status === 410) {
+        // Gone — remove this subscription
+        try {
+          await supabaseAdmin.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
+        } catch {}
+        failed++;
+        continue;
+      }
+      if (res.status >= 200 && res.status < 300) sent++;
+      else failed++;
+    } catch (e: any) {
+      console.log(`[push] user=${userId} send_failed`, e?.message ?? e);
+      failed++;
     }
-    if (res.status >= 200 && res.status < 300) return { ok: true };
-    return { ok: false, reason: `http:${res.status}` };
-  } catch (e: any) {
-    console.log(`[push] user=${userId} send_failed`, e?.message ?? e);
-    return { ok: false, reason: `send_failed:${e?.message ?? "unknown"}` };
   }
+  return { ok: sent > 0, sent, failed, reason: sent > 0 ? undefined : "all_failed" };
 }
