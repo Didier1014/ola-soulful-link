@@ -32,6 +32,7 @@ function AdminPage() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("overview");
   const [search, setSearch] = useState("");
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
 
   const fnOverview = useServerFn(getAdminOverview);
   const fnProfiles = useServerFn(listAllProfiles);
@@ -40,6 +41,22 @@ function AdminPage() {
   const fnProd = useServerFn(listAllProducts);
   const fnApprove = useServerFn(approveWithdrawal);
   const fnReject = useServerFn(rejectWithdrawal);
+  const fnUserProds = useServerFn(listUserProducts);
+  const fnSigned = useServerFn(getDigitalSignedUrl);
+
+  const userProducts = useQuery({
+    queryKey: ["admin_user_products", selectedUser?.id],
+    queryFn: () => fnUserProds({ data: { user_id: selectedUser!.id } }),
+    enabled: !!selectedUser,
+  });
+
+  const openDigital = async (path: string) => {
+    try {
+      const r = await fnSigned({ data: { path } });
+      if (r.url) window.open(r.url, "_blank");
+      else toast.error("Não foi possível gerar link");
+    } catch (e: any) { toast.error(e?.message || "Erro"); }
+  };
 
   const overview = useQuery({ queryKey: ["admin_overview"], queryFn: () => fnOverview(), retry: false });
   const profiles = useQuery({ queryKey: ["admin_profiles"], queryFn: () => fnProfiles(), enabled: tab === "users" });
