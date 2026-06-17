@@ -250,7 +250,7 @@ function DashboardPreview() {
       <div className="text-center max-w-2xl mx-auto mb-12">
         <p className="text-sm uppercase tracking-widest text-primary-glow mb-3">Painel inteligente</p>
         <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Gestão completa do seu negócio</h2>
-        <p className="mt-4 text-muted-foreground">Vendas em tempo real, taxas, relatórios, estornos e antecipação de recebíveis.</p>
+        <p className="mt-4 text-muted-foreground">Vendas em tempo real, relatórios, estornos e antecipação de recebíveis. Taxa única e transparente: <span className="text-foreground font-semibold">15% + 15 MT</span> por transação aprovada — sem mensalidade, sem setup.</p>
       </div>
 
       <div className="relative rounded-3xl border border-white/10 bg-card/40 p-6 md:p-10 backdrop-blur">
