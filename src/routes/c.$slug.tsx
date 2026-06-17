@@ -58,6 +58,8 @@ function CheckoutPage() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollCountRef = useRef(0);
   const checkingRef = useRef(false);
+  const trackingRef = useRef<Record<string, string>>({});
+  const pixelFiredRef = useRef<{ pageview: boolean; init: boolean; purchase: boolean }>({ pageview: false, init: false, purchase: false });
 
   useEffect(() => {
     if (cardRef.current) {
@@ -71,16 +73,66 @@ function CheckoutPage() {
     }
   }, [product]);
 
-  const pollStatus = useMutation({
-    mutationFn: (txId: string) => checkTransactionStatus({ data: { transaction_id: txId } }),
-  });
+  // Capture tracking params (UTM, src/sck, fbp/fbc) from URL + cookies
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const t: Record<string, string> = {};
+      ["utm_source","utm_campaign","utm_medium","utm_content","utm_term","src","sck"].forEach((k) => {
+        const v = sp.get(k); if (v) t[k] = v;
+      });
+      const cookie = document.cookie || "";
+      const fbp = cookie.match(/_fbp=([^;]+)/)?.[1]; if (fbp) t.fbp = fbp;
+      const fbc = cookie.match(/_fbc=([^;]+)/)?.[1] || (sp.get("fbclid") ? `fb.1.${Date.now()}.${sp.get("fbclid")}` : null);
+      if (fbc) t.fbc = fbc;
+      trackingRef.current = t;
+    } catch {}
+  }, []);
+
+  // Inject Meta Pixel and fire PageView / InitiateCheckout / Purchase
+  useEffect(() => {
+    const pid = product?.pixel_id;
+    if (!pid || typeof window === "undefined") return;
+    const w = window as any;
+    if (!w.fbq) {
+      // Standard Meta Pixel bootstrap
+      (function (f: any, b: any, e: any, v: any) {
+        if (f.fbq) return; const n = f.fbq = function () {
+          n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n; n.push = n; n.loaded = true; n.version = "2.0"; n.queue = [];
+        const t = b.createElement(e); t.async = true; t.src = v;
+        const s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+      })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+    }
+    w.fbq("init", String(pid));
+    if (!pixelFiredRef.current.pageview) {
+      w.fbq("track", "PageView");
+      w.fbq("track", "ViewContent", {
+        content_ids: [product.id], content_name: product.name,
+        content_type: "product", value: Number(product.price_mzn), currency: "MZN",
+      });
+      pixelFiredRef.current.pageview = true;
+    }
+  }, [product?.pixel_id, product?.id]);
 
   const m = useMutation({
-    mutationFn: () => checkout({
-      data: {
-        product_id: product!.id, method, ...form, customer_email: "",
-      },
-    }),
+    mutationFn: () => {
+      const w = window as any;
+      if (product?.pixel_id && w.fbq && !pixelFiredRef.current.init) {
+        w.fbq("track", "InitiateCheckout", {
+          content_ids: [product.id], content_name: product.name,
+          value: Number(product.price_mzn), currency: "MZN",
+        });
+        pixelFiredRef.current.init = true;
+      }
+      return checkout({
+        data: {
+          product_id: product!.id, method, ...form, customer_email: "",
+          tracking: trackingRef.current,
+        },
+      });
+    },
     onMutate: () => {
       setModal({ status: "processing", id: undefined });
     },
@@ -159,15 +211,29 @@ function CheckoutPage() {
   // Redirect automático para a página de obrigado (ou link digital) ao confirmar pagamento
   useEffect(() => {
     if (modal?.status !== "paid" || !modal.id) return;
+    // 🎯 Fire Meta Pixel Purchase event
+    const w = window as any;
+    if (product?.pixel_id && w.fbq && !pixelFiredRef.current.purchase) {
+      try {
+        w.fbq("track", "Purchase", {
+          value: Number(product.price_mzn),
+          currency: "MZN",
+          content_ids: [product.id],
+          content_name: product.name,
+          content_type: "product",
+          transaction_id: modal.id,
+        });
+      } catch {}
+      pixelFiredRef.current.purchase = true;
+    }
     const target = modal.delivery_url
       ? modal.delivery_url
       : `/obrigado?tx_id=${modal.id}&slug=${slug}`;
     const t = setTimeout(() => {
-      if (modal.delivery_url) window.location.href = target;
-      else window.location.href = target;
+      window.location.href = target;
     }, 1500);
     return () => clearTimeout(t);
-  }, [modal?.status, modal?.id, modal?.delivery_url, slug]);
+  }, [modal?.status, modal?.id, modal?.delivery_url, slug, product?.pixel_id, product?.id, product?.name, product?.price_mzn]);
 
   if (isLoading) return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6" style={{ background: "linear-gradient(135deg, #f9fafc 0%, #f1f5f9 100%)" }}>
