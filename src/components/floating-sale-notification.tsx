@@ -61,7 +61,7 @@ export function FloatingSaleNotification() {
       if (!uid || cancelled) return;
 
       channel = supabase
-        .channel(`floating-sale-${uid}`)
+        .channel(`user:${uid}:floating-sale`, { config: { private: true } })
         .on(
           "postgres_changes",
           {

@@ -57,7 +57,7 @@ export function NotificationBell() {
       const uid = data?.user?.id;
       if (!uid) return;
       channel = supabase
-        .channel(`notif-bell-${uid}`)
+        .channel(`user:${uid}:notif-bell`, { config: { private: true } })
         .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${uid}` }, () => {
           queryClient.invalidateQueries({ queryKey: ["notifications"] });
           queryClient.invalidateQueries({ queryKey: ["notifications", "unread"] });

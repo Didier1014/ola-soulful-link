@@ -55,7 +55,7 @@ function NotificationsPage() {
       const uid = data?.user?.id;
       if (!uid) return;
       channel = supabase
-        .channel(`notif-page-${uid}`)
+        .channel(`user:${uid}:notif-page`, { config: { private: true } })
         .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${uid}` }, () => {
           queryClient.invalidateQueries({ queryKey: ["notifications"] });
           queryClient.invalidateQueries({ queryKey: ["notifications", "unread"] });
