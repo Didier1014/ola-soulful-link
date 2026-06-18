@@ -544,6 +544,15 @@ function FormStep({
             <div className="space-y-2"><Label>UTMify ID</Label><Input value={form.utimify_id} onChange={(e) => setForm({ ...form, utimify_id: e.target.value })} /></div>
             <div className="space-y-2"><Label>LowTrack Token</Label><Input value={form.lawtracker_id} onChange={(e) => setForm({ ...form, lawtracker_id: e.target.value })} placeholder="Cole aqui o token do LowTrack" /></div>
             <div className="space-y-2"><Label>Telefone Suporte</Label><Input value={form.support_phone} onChange={(e) => setForm({ ...form, support_phone: e.target.value })} placeholder="+258 84..." /></div>
+            <div className="space-y-2 col-span-2">
+              <Label>Pushcut Webhook URL</Label>
+              <Input
+                value={form.config?.pushcut_webhook_url || ""}
+                onChange={(e) => setForm({ ...form, config: { ...(form.config || {}), pushcut_webhook_url: e.target.value } })}
+                placeholder="https://api.pushcut.io/.../notifications/..."
+              />
+              <p className="text-xs text-muted-foreground">Se preenchido, dispara notificação Pushcut só para vendas deste produto (sobrepõe a configuração global).</p>
+            </div>
           </div>
         </div>
       )}
