@@ -181,7 +181,7 @@ function Features() {
     { icon: Repeat, title: "Recorrência", desc: "Cobranças automáticas e planos de assinatura." },
     { icon: QrCode, title: "QR Code", desc: "Gere QR dinâmicos para receber em qualquer lugar." },
     { icon: Link2, title: "Links de pagamento", desc: "Partilhe via WhatsApp, SMS ou email." },
-    { icon: TrendingUp, title: "Transferências 24/7", desc: "Liquidação em tempo real, todos os dias." },
+    { icon: TrendingUp, title: "Saque <24h", desc: "Levante o seu dinheiro em menos de 24 horas, todos os dias." },
     { icon: BarChart3, title: "Relatórios", desc: "Dashboards completos e exportações." },
   ];
   return (
