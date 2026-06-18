@@ -59,7 +59,8 @@ function TxPage() {
         ))}
       </div>
 
-      <Card className="rounded-2xl shadow-sm divide-y divide-border">
+      {/* Mobile / tablet — card list */}
+      <Card className="lg:hidden rounded-2xl shadow-sm divide-y divide-border">
         {isLoading && <p className="p-8 text-center text-muted-foreground text-sm">Carregando...</p>}
         {!isLoading && !filtered.length && <p className="p-8 text-center text-muted-foreground text-sm">Nenhuma transação.</p>}
         {filtered.map(t => {
@@ -97,6 +98,99 @@ function TxPage() {
             </div>
           </div>
         )})}
+      </Card>
+
+      {/* Desktop — full table */}
+      <Card className="hidden lg:block rounded-2xl shadow-sm overflow-hidden">
+        {isLoading ? (
+          <p className="p-8 text-center text-muted-foreground text-sm">Carregando...</p>
+        ) : !filtered.length ? (
+          <p className="p-8 text-center text-muted-foreground text-sm">Nenhuma transação.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground border-b border-border bg-muted/30">
+                  <th className="text-left py-3 px-3 font-medium">ID</th>
+                  <th className="text-left py-3 px-3 font-medium">Cliente</th>
+                  <th className="text-left py-3 px-3 font-medium">Contacto</th>
+                  <th className="text-left py-3 px-3 font-medium">Canal</th>
+                  <th className="text-right py-3 px-3 font-medium">Valor</th>
+                  <th className="text-right py-3 px-3 font-medium">Taxa</th>
+                  <th className="text-right py-3 px-3 font-medium">Líquido</th>
+                  <th className="text-left py-3 px-3 font-medium">Ref. Gateway</th>
+                  <th className="text-left py-3 px-3 font-medium">Data</th>
+                  <th className="text-center py-3 px-3 font-medium">Estado</th>
+                  <th className="text-right py-3 px-3 font-medium">Acção</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((t) => {
+                  const amt = Number(t.amount_mzn);
+                  const tFee = Math.round((amt * 0.15 + 15) * 100) / 100;
+                  const tNet = Math.round((amt - tFee) * 100) / 100;
+                  const created = new Date(t.created_at);
+                  return (
+                    <tr key={t.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition">
+                      <td className="py-3 px-3">
+                        <code className="text-[11px] text-muted-foreground font-mono">{t.id.slice(0, 8)}</code>
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="font-medium truncate max-w-[180px]">{t.customer_name}</div>
+                        {t.customer_email && <div className="text-[11px] text-muted-foreground truncate max-w-[180px]">{t.customer_email}</div>}
+                      </td>
+                      <td className="py-3 px-3 tabular-nums text-muted-foreground">{t.customer_phone || "—"}</td>
+                      <td className="py-3 px-3">
+                        <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-1 rounded-md ${t.method==='mpesa' ? 'bg-rose-500/10 text-rose-500' : t.method==='emola' ? 'bg-amber-500/10 text-amber-500' : 'bg-secondary text-foreground/70'}`}>
+                          {t.method === 'mpesa' ? 'M-PESA' : t.method === 'emola' ? 'E-MOLA' : 'CARTÃO'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-right tabular-nums font-semibold">{fmtMT(amt)}</td>
+                      <td className="py-3 px-3 text-right tabular-nums text-muted-foreground">
+                        {t.status === 'paid' ? <>-{fmtMT2(tFee)} MT</> : '—'}
+                      </td>
+                      <td className="py-3 px-3 text-right tabular-nums">
+                        {t.status === 'paid' ? <span className="text-emerald-600 font-semibold">+{fmtMT2(tNet)} MT</span> : '—'}
+                      </td>
+                      <td className="py-3 px-3">
+                        {t.external_ref ? (
+                          <code className="text-[11px] font-mono text-muted-foreground" title={t.external_ref}>{t.external_ref.slice(0, 14)}{t.external_ref.length > 14 ? '…' : ''}</code>
+                        ) : <span className="text-muted-foreground">—</span>}
+                      </td>
+                      <td className="py-3 px-3 text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">
+                        <div>{created.toLocaleDateString("pt-MZ")}</div>
+                        <div className="opacity-70">{created.toLocaleTimeString("pt-MZ", { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
+                      </td>
+                      <td className="py-3 px-3 text-center">
+                        {t.status === 'paid' && <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">● Sucesso</span>}
+                        {t.status === 'failed' && <span className="inline-flex items-center gap-1 text-xs font-medium text-[#e11d48]">● Falhou</span>}
+                        {t.status === 'pending' && <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600">● Pendente</span>}
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        {t.status === 'pending' ? (
+                          <button
+                            disabled={verifyingId === t.id}
+                            onClick={() => handleVerify(t.id)}
+                            className="text-[11px] px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-muted/40 disabled:opacity-50 transition"
+                          >
+                            {verifyingId === t.id ? "A verificar…" : "Verificar"}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => { navigator.clipboard.writeText(t.id); toast.success("ID copiado"); }}
+                            className="text-[11px] px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-muted/40 transition"
+                          >
+                            Copiar ID
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Card>
     </div>
   );
