@@ -39,6 +39,7 @@ const SaleConfirmationEmail = ({
     <Preview>Nova venda aprovada — {amount}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <EmailLogo />
         <Heading style={h1}>🎉 Nova venda aprovada!</Heading>
         <Text style={text}>
           Olá {producerName}, recebeste um novo pagamento via RedoxPay.
