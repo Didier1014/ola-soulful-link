@@ -229,7 +229,7 @@ function AuthPage() {
             </form>
           )}
 
-          {mode === "forgot" && (
+          {!existingUser && mode === "forgot" && (
             <form onSubmit={handleForgot} className="space-y-5">
               <Header title="Recuperar senha" subtitle="Enviaremos um link de redefinição para o seu email." />
               <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={160} /></Field>
