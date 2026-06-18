@@ -24,6 +24,7 @@ function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("login");
   const [loading, setLoading] = useState(false);
+  const [existingUser, setExistingUser] = useState<{ email: string } | null>(null);
 
   // shared
   const [email, setEmail] = useState("");
@@ -37,9 +38,23 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard" });
+      if (data.session?.user?.email) {
+        setExistingUser({ email: data.session.user.email });
+      }
     });
-  }, [navigate]);
+  }, []);
+
+  async function handleSwitchAccount() {
+    setLoading(true);
+    try {
+      await supabase.auth.signOut();
+      setExistingUser(null);
+      setEmail("");
+      setPassword("");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
