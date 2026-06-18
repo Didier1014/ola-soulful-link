@@ -404,3 +404,82 @@ function DonutChart({ mpesa, emola }: { mpesa: number; emola: number }) {
     </svg>
   );
 }
+
+type HourPoint = { hour: number; count: number; volume: number };
+function buildHourly(paid: { created_at: string; amount_mzn: number | string }[]): HourPoint[] {
+  const buckets: HourPoint[] = Array.from({ length: 24 }, (_, h) => ({ hour: h, count: 0, volume: 0 }));
+  for (const p of paid) {
+    const h = new Date(p.created_at).getHours();
+    if (h >= 0 && h < 24) {
+      buckets[h].count += 1;
+      buckets[h].volume += Number(p.amount_mzn);
+    }
+  }
+  return buckets;
+}
+
+function HourlyBars({ data }: { data: HourPoint[] }) {
+  const max = Math.max(1, ...data.map(d => d.count));
+  const peakIdx = data.reduce((acc, d, i) => (d.count > data[acc].count ? i : acc), 0);
+  return (
+    <div>
+      <div className="flex items-end gap-[3px] h-44 sm:h-52">
+        {data.map((d, i) => {
+          const h = (d.count / max) * 100;
+          const isPeak = i === peakIdx && d.count > 0;
+          return (
+            <div key={i} className="group flex-1 flex flex-col items-center justify-end h-full relative">
+              <div className="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full opacity-0 group-hover:opacity-100 transition pointer-events-none z-10 whitespace-nowrap">
+                <div className="bg-popover border border-border rounded-md px-2 py-1 shadow-lg text-[11px]">
+                  <div className="font-semibold tabular-nums">{String(d.hour).padStart(2,'0')}h–{String((d.hour+1)%24).padStart(2,'0')}h</div>
+                  <div className="text-muted-foreground tabular-nums">{d.count} {d.count===1?'venda':'vendas'} · {fmtMT(d.volume)} MT</div>
+                </div>
+              </div>
+              <div
+                className={`w-full rounded-t-md transition-all ${isPeak ? "bg-gradient-to-t from-primary to-primary-glow shadow-[0_0_20px_-4px_var(--primary)]" : "bg-muted hover:bg-primary/40"}`}
+                style={{ height: `${Math.max(d.count > 0 ? 4 : 0, h)}%` }}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex justify-between text-[10px] text-muted-foreground tabular-nums px-0.5">
+        {[0, 6, 12, 18, 23].map(h => <span key={h}>{String(h).padStart(2,'0')}h</span>)}
+      </div>
+    </div>
+  );
+}
+
+function buildWeekday(paid: { created_at: string; amount_mzn: number | string }[]) {
+  const labels = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  const buckets = labels.map((label, i) => ({ label, day: i, count: 0, volume: 0 }));
+  for (const p of paid) {
+    const d = new Date(p.created_at).getDay();
+    buckets[d].count += 1;
+    buckets[d].volume += Number(p.amount_mzn);
+  }
+  return buckets;
+}
+
+function WeekdayBars({ data }: { data: { label: string; count: number; volume: number }[] }) {
+  const max = Math.max(1, ...data.map(d => d.volume));
+  return (
+    <div className="space-y-2.5">
+      {data.map((d, i) => {
+        const w = (d.volume / max) * 100;
+        return (
+          <div key={i} className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground w-8 shrink-0">{d.label}</span>
+            <div className="flex-1 h-6 rounded-md bg-muted/50 overflow-hidden relative">
+              <div
+                className="h-full bg-gradient-to-r from-primary/80 to-primary-glow rounded-md transition-all"
+                style={{ width: `${Math.max(d.volume > 0 ? 4 : 0, w)}%` }}
+              />
+            </div>
+            <span className="text-xs font-medium tabular-nums w-20 text-right text-muted-foreground">{fmtMT(d.volume)} MT</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
