@@ -9,6 +9,7 @@ import {
   Preview,
   Text,
 } from '@react-email/components'
+import { EmailLogo } from './_logo'
 
 interface ReauthenticationEmailProps {
   token: string
@@ -20,6 +21,7 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
     <Preview>O seu código de verificação</Preview>
     <Body style={main}>
       <Container style={container}>
+        <EmailLogo />
         <Heading style={h1}>Confirmar reautenticação</Heading>
         <Text style={text}>Use o código abaixo para confirmar a sua identidade:</Text>
         <Text style={codeStyle}>{token}</Text>

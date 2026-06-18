@@ -11,6 +11,7 @@ import {
   Preview,
   Text,
 } from '@react-email/components'
+import { EmailLogo } from './_logo'
 
 interface SignupEmailProps {
   siteName: string
@@ -30,6 +31,7 @@ export const SignupEmail = ({
     <Preview>Confirme o seu email no {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <EmailLogo />
         <Heading style={h1}>Confirme o seu email</Heading>
         <Text style={text}>
           Obrigado por se registar no{' '}
