@@ -259,7 +259,7 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
 
     // PUSHcut
     try {
-      const pushcutUrl = bundle?.pushcut?.enabled ? (bundle?.pushcut?.webhook_url as string) : null;
+      const pushcutUrl = productPushcutUrl || (bundle?.pushcut?.enabled ? (bundle?.pushcut?.webhook_url as string) : null);
       if (pushcutUrl) {
         if (await hasSuccessfulIntegration(supabaseAdmin, userId, tx.id, "pushcut")) {
           console.log(`[sale:${tx.id}][pushcut] already sent — skipping`);
