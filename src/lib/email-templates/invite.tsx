@@ -29,6 +29,7 @@ export const InviteEmail = ({
     <Preview>Foi convidado para se juntar ao {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <EmailLogo />
         <Heading style={h1}>Foi convidado</Heading>
         <Text style={text}>
           Foi convidado para se juntar ao{' '}
