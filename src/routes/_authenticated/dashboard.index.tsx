@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Wallet, Smartphone, Calendar, BarChart3, CircleDollarSign, ArrowUpRight,
-  TrendingUp, Activity,
+  TrendingUp, Activity, Clock, Flame,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
