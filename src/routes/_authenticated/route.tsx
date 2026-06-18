@@ -66,7 +66,7 @@ function AuthedShell() {
 
       <div className="relative z-10 bg-background min-h-screen">
         <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/60 border-b border-white/5">
-          <div className="max-w-3xl mx-auto flex items-center gap-2 px-4 h-14">
+          <div className="max-w-7xl mx-auto flex items-center gap-2 px-4 lg:px-8 h-14">
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="rounded-xl h-10 w-10 bg-white/5 border-white/10 hover:bg-white/10 text-foreground">
@@ -87,7 +87,7 @@ function AuthedShell() {
           </div>
         </header>
 
-        <main className="max-w-3xl mx-auto px-4 py-5 pb-24">
+        <main className="max-w-7xl mx-auto px-4 lg:px-8 py-5 lg:py-8 pb-24">
           <Outlet />
         </main>
         <FloatingSaleNotification />
