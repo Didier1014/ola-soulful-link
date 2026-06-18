@@ -26,6 +26,7 @@ export const MagicLinkEmail = ({
     <Preview>O seu link de acesso ao {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <EmailLogo />
         <Heading style={h1}>O seu link de acesso</Heading>
         <Text style={text}>
           Clique no botão abaixo para entrar no {siteName}. Este link irá expirar
