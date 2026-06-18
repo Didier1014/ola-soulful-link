@@ -8,8 +8,8 @@ self.addEventListener("push", (event) => {
     const title = data.title || "Redox Pay";
     const options = {
       body: data.body || "",
-      icon: data.icon || "/favicon.ico",
-      badge: data.badge || "/favicon.ico",
+      icon: data.icon || "/icon-192.png",
+      badge: data.badge || "/icon-192.png",
       data: { url: data.url || "/dashboard" },
       vibrate: [200, 100, 200],
       requireInteraction: true,
