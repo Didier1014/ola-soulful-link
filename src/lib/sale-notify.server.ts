@@ -153,15 +153,17 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
   let productName: string | null = null;
   let productUtmifyId: string | null = null;
   let productLowtrackId: string | null = null;
+  let productPushcutUrl: string | null = null;
   if (tx.product_id) {
     const { data: prod } = await supabaseAdmin
       .from("products")
-      .select("name,utimify_id,lawtracker_id")
+      .select("name,utimify_id,lawtracker_id,config")
       .eq("id", tx.product_id)
       .maybeSingle();
     productName = prod?.name ?? null;
     productUtmifyId = prod?.utimify_id ?? null;
     productLowtrackId = prod?.lawtracker_id ?? null;
+    productPushcutUrl = (prod?.config as any)?.pushcut_webhook_url || null;
   }
 
   const { convertAmount } = await import("@/lib/currency.functions");
