@@ -106,8 +106,8 @@ function Hero() {
       {/* Stats */}
       <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
         <Stat value="1.6M+" label="Transações" />
-        <Stat value="130k+" label="Movimentados/dia" />
-        <Stat value="<1s" label="Confirmação" />
+        <Stat value="800k+" label="Movimentados/dia" />
+        <Stat value="<24h" label="Saque disponível" />
         <Stat value="99.4%" label="Taxa de sucesso" />
       </div>
     </section>
