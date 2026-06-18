@@ -165,7 +165,23 @@ function AuthPage() {
             <span className="h-2 w-2 rounded-full bg-primary-glow" /> REDOX <span className="text-gradient-red">PAY</span>
           </Link>
 
-          {mode === "login" && (
+          {existingUser && (
+            <div className="space-y-5">
+              <Header title="Já está conectado" subtitle="Continue na sua conta atual ou entre com outra." />
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Conta atual</p>
+                <p className="mt-1 font-medium break-all">{existingUser.email}</p>
+              </div>
+              <Button onClick={() => navigate({ to: "/dashboard" })} className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground red-glow">
+                Continuar como {existingUser.email.split("@")[0]} <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              <Button onClick={handleSwitchAccount} variant="outline" disabled={loading} className="w-full h-11 border-white/15 bg-white/5 hover:bg-white/10">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar com outra conta"}
+              </Button>
+            </div>
+          )}
+
+          {!existingUser && mode === "login" && (
             <form onSubmit={handleLogin} className="space-y-5">
               <Header title="Entrar" subtitle="Acesse o seu painel Redox Pay" />
 
