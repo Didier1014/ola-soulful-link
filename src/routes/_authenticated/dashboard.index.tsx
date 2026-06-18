@@ -214,7 +214,38 @@ function Overview() {
         </Card>
       </div>
 
-      {/* RESUMO */}
+      {/* PICO DE VENDAS — desktop highlight */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <Card className="lg:col-span-8 rounded-3xl p-6 relative overflow-hidden">
+          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+          <div className="relative flex items-start justify-between mb-4">
+            <div>
+              <h3 className="font-semibold flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Horário de pico de vendas</h3>
+              <p className="text-sm text-muted-foreground">Vendas por hora do dia · últimos 30 dias</p>
+            </div>
+            {(() => {
+              const hourly = buildHourly(paid);
+              const peak = hourly.reduce((a, b) => (b.count > a.count ? b : a), hourly[0]);
+              return peak.count > 0 ? (
+                <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+                  <Flame className="h-3 w-3" /> Pico {String(peak.hour).padStart(2,'0')}h–{String((peak.hour+1)%24).padStart(2,'0')}h · {peak.count} {peak.count===1?'venda':'vendas'}
+                </span>
+              ) : null;
+            })()}
+          </div>
+          <HourlyBars data={buildHourly(paid)} />
+        </Card>
+
+        <Card className="lg:col-span-4 rounded-3xl p-6">
+          <h3 className="font-semibold flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" /> Por dia da semana</h3>
+          <p className="text-sm text-muted-foreground">Volume de vendas</p>
+          <div className="mt-4">
+            <WeekdayBars data={buildWeekday(paid)} />
+          </div>
+        </Card>
+      </div>
+
+
       <Card className="rounded-3xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold">Resumo financeiro</h3>
