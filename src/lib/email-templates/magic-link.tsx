@@ -10,6 +10,7 @@ import {
   Preview,
   Text,
 } from '@react-email/components'
+import { EmailLogo } from './_logo'
 
 interface MagicLinkEmailProps {
   siteName: string
