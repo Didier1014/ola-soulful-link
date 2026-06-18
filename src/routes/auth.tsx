@@ -24,6 +24,7 @@ function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("login");
   const [loading, setLoading] = useState(false);
+  const [existingUser, setExistingUser] = useState<{ email: string } | null>(null);
 
   // shared
   const [email, setEmail] = useState("");
@@ -37,9 +38,23 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard" });
+      if (data.session?.user?.email) {
+        setExistingUser({ email: data.session.user.email });
+      }
     });
-  }, [navigate]);
+  }, []);
+
+  async function handleSwitchAccount() {
+    setLoading(true);
+    try {
+      await supabase.auth.signOut();
+      setExistingUser(null);
+      setEmail("");
+      setPassword("");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -150,7 +165,23 @@ function AuthPage() {
             <span className="h-2 w-2 rounded-full bg-primary-glow" /> REDOX <span className="text-gradient-red">PAY</span>
           </Link>
 
-          {mode === "login" && (
+          {existingUser && (
+            <div className="space-y-5">
+              <Header title="Já está conectado" subtitle="Continue na sua conta atual ou entre com outra." />
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Conta atual</p>
+                <p className="mt-1 font-medium break-all">{existingUser.email}</p>
+              </div>
+              <Button onClick={() => navigate({ to: "/dashboard" })} className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground red-glow">
+                Continuar como {existingUser.email.split("@")[0]} <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              <Button onClick={handleSwitchAccount} variant="outline" disabled={loading} className="w-full h-11 border-white/15 bg-white/5 hover:bg-white/10">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar com outra conta"}
+              </Button>
+            </div>
+          )}
+
+          {!existingUser && mode === "login" && (
             <form onSubmit={handleLogin} className="space-y-5">
               <Header title="Entrar" subtitle="Acesse o seu painel Redox Pay" />
 
@@ -167,7 +198,7 @@ function AuthPage() {
             </form>
           )}
 
-          {mode === "signup" && (
+          {!existingUser && mode === "signup" && (
             <form onSubmit={handleSignup} className="space-y-4">
               <Header title="Criar conta" subtitle="Comece a receber em minutos" />
               <div className="grid grid-cols-2 gap-3">
@@ -198,7 +229,7 @@ function AuthPage() {
             </form>
           )}
 
-          {mode === "forgot" && (
+          {!existingUser && mode === "forgot" && (
             <form onSubmit={handleForgot} className="space-y-5">
               <Header title="Recuperar senha" subtitle="Enviaremos um link de redefinição para o seu email." />
               <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={160} /></Field>
