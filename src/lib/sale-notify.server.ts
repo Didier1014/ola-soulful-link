@@ -169,10 +169,22 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
   // ---------- In-app + web push ----------
   if (notificationsEnabled) {
     const pushCurrency = (bundle?.push_custom?.currency as string) || currency;
-    const formattedAmount = Number(tx.amount_mzn).toLocaleString("pt-MZ", {
+    const displayAmount =
+      pushCurrency === "MZN"
+        ? Number(tx.amount_mzn)
+        : await convertAmount(Number(tx.amount_mzn), "MZN", pushCurrency);
+    const localeMap: Record<string, string> = {
+      MZN: "pt-MZ",
+      BRL: "pt-BR",
+      USD: "en-US",
+      EUR: "de-DE",
+      ZAR: "en-ZA",
+    };
+    const formattedAmount = displayAmount.toLocaleString(localeMap[pushCurrency] ?? "pt-MZ", {
       style: "currency",
       currency: pushCurrency,
     });
+    console.log(`[sale:${tx.id}][notification] amount converted ${tx.amount_mzn} MZN → ${displayAmount} ${pushCurrency}`);
     const fillVars = (s: string) =>
       s
         .replaceAll("{valor}", formattedAmount)
