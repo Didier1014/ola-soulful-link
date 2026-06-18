@@ -26,6 +26,7 @@ export const RecoveryEmail = ({
     <Preview>Redefinir a sua palavra-passe — {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <EmailLogo />
         <Heading style={h1}>Redefinir a sua palavra-passe</Heading>
         <Text style={text}>
           Recebemos um pedido para redefinir a sua palavra-passe no {siteName}.
