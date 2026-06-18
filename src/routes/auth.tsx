@@ -198,7 +198,7 @@ function AuthPage() {
             </form>
           )}
 
-          {mode === "signup" && (
+          {!existingUser && mode === "signup" && (
             <form onSubmit={handleSignup} className="space-y-4">
               <Header title="Criar conta" subtitle="Comece a receber em minutos" />
               <div className="grid grid-cols-2 gap-3">
