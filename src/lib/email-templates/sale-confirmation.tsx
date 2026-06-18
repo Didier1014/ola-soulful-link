@@ -11,6 +11,7 @@ import {
   Hr,
 } from '@react-email/components'
 import type { TemplateEntry } from './registry'
+import { EmailLogo } from './_logo'
 
 interface SaleConfirmationProps {
   producerName?: string
