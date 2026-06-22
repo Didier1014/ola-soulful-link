@@ -67,8 +67,8 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       if (t.status === "paid") {
         const amt = Number(t.amount_mzn || 0);
         const sellerFee = Math.round((amt * 0.15 + 15) * 100) / 100;
-        const rlxCost = Math.round((amt * 0.10 + 10) * 100) / 100;
-        revenueGrowth[day] = (revenueGrowth[day] || 0) + (sellerFee - rlxCost);
+        const providerCost = Math.round((amt * 0.10 + 10) * 100) / 100;
+        revenueGrowth[day] = (revenueGrowth[day] || 0) + (sellerFee - providerCost);
       }
       txTimeline[day] = (txTimeline[day] || 0) + 1;
     });
