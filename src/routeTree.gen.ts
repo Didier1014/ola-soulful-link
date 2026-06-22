@@ -21,8 +21,6 @@ import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as ApiDebugNotificationRouteImport } from './routes/api/debug-notification'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
-import { Route as ApiPublicWebhookPaymentRouteImport } from './routes/api/public/webhook-payment'
-import { Route as ApiPublicRlxWebhookRouteImport } from './routes/api/public/rlx-webhook'
 import { Route as AuthenticatedDashboardWithdrawalsRouteImport } from './routes/_authenticated/dashboard.withdrawals'
 import { Route as AuthenticatedDashboardTransactionsRouteImport } from './routes/_authenticated/dashboard.transactions'
 import { Route as AuthenticatedDashboardSubscriptionsRouteImport } from './routes/_authenticated/dashboard.subscriptions'
@@ -107,16 +105,6 @@ const AuthenticatedDashboardIndexRoute =
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicWebhookPaymentRoute = ApiPublicWebhookPaymentRouteImport.update({
-  id: '/api/public/webhook-payment',
-  path: '/api/public/webhook-payment',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicRlxWebhookRoute = ApiPublicRlxWebhookRouteImport.update({
-  id: '/api/public/rlx-webhook',
-  path: '/api/public/rlx-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedDashboardWithdrawalsRoute =
@@ -294,8 +282,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/subscriptions': typeof AuthenticatedDashboardSubscriptionsRoute
   '/dashboard/transactions': typeof AuthenticatedDashboardTransactionsRoute
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
-  '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
-  '/api/public/webhook-payment': typeof ApiPublicWebhookPaymentRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
@@ -334,8 +320,6 @@ export interface FileRoutesByTo {
   '/dashboard/subscriptions': typeof AuthenticatedDashboardSubscriptionsRoute
   '/dashboard/transactions': typeof AuthenticatedDashboardTransactionsRoute
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
-  '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
-  '/api/public/webhook-payment': typeof ApiPublicWebhookPaymentRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
@@ -376,8 +360,6 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/subscriptions': typeof AuthenticatedDashboardSubscriptionsRoute
   '/_authenticated/dashboard/transactions': typeof AuthenticatedDashboardTransactionsRoute
   '/_authenticated/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
-  '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
-  '/api/public/webhook-payment': typeof ApiPublicWebhookPaymentRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
@@ -418,8 +400,6 @@ export interface FileRouteTypes {
     | '/dashboard/subscriptions'
     | '/dashboard/transactions'
     | '/dashboard/withdrawals'
-    | '/api/public/rlx-webhook'
-    | '/api/public/webhook-payment'
     | '/lovable/email/suppression'
     | '/dashboard/'
     | '/dashboard/notifications/config'
@@ -458,8 +438,6 @@ export interface FileRouteTypes {
     | '/dashboard/subscriptions'
     | '/dashboard/transactions'
     | '/dashboard/withdrawals'
-    | '/api/public/rlx-webhook'
-    | '/api/public/webhook-payment'
     | '/lovable/email/suppression'
     | '/dashboard'
     | '/dashboard/notifications/config'
@@ -499,8 +477,6 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/subscriptions'
     | '/_authenticated/dashboard/transactions'
     | '/_authenticated/dashboard/withdrawals'
-    | '/api/public/rlx-webhook'
-    | '/api/public/webhook-payment'
     | '/lovable/email/suppression'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/notifications/config'
@@ -524,8 +500,6 @@ export interface RootRouteChildren {
   CSlugRoute: typeof CSlugRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   LSlugRoute: typeof LSlugRoute
-  ApiPublicRlxWebhookRoute: typeof ApiPublicRlxWebhookRoute
-  ApiPublicWebhookPaymentRoute: typeof ApiPublicWebhookPaymentRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicEmbedScriptRoute: typeof ApiPublicEmbedScriptRoute
   ApiPublicNotificationsPollRoute: typeof ApiPublicNotificationsPollRoute
@@ -620,20 +594,6 @@ declare module '@tanstack/react-router' {
       path: '/lovable/email/suppression'
       fullPath: '/lovable/email/suppression'
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/webhook-payment': {
-      id: '/api/public/webhook-payment'
-      path: '/api/public/webhook-payment'
-      fullPath: '/api/public/webhook-payment'
-      preLoaderRoute: typeof ApiPublicWebhookPaymentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/rlx-webhook': {
-      id: '/api/public/rlx-webhook'
-      path: '/api/public/rlx-webhook'
-      fullPath: '/api/public/rlx-webhook'
-      preLoaderRoute: typeof ApiPublicRlxWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/dashboard/withdrawals': {
@@ -893,8 +853,6 @@ const rootRouteChildren: RootRouteChildren = {
   CSlugRoute: CSlugRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   LSlugRoute: LSlugRoute,
-  ApiPublicRlxWebhookRoute: ApiPublicRlxWebhookRoute,
-  ApiPublicWebhookPaymentRoute: ApiPublicWebhookPaymentRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicEmbedScriptRoute: ApiPublicEmbedScriptRoute,
   ApiPublicNotificationsPollRoute: ApiPublicNotificationsPollRoute,
