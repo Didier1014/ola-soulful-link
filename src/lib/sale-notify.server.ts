@@ -1,7 +1,8 @@
 // @ts-nocheck
 // Centralized "new sale detected" side effects:
 // in-app notification + web push + Utmify + LowTrack.
-// Called from rlx-webhook, webhook-payment, and creditSellerIfPending (dashboard polling / immediate checkout).
+// Called from createCheckout/payLink (resposta síncrona do PayBlack) e pelo
+// safety-net em listMyTransactions/checkTransactionStatus.
 
 async function logIntegrationCall(
   supabaseAdmin: any,
