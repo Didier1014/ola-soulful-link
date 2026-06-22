@@ -1,25 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 function calcFee(amount: number) {
   const seller_fee = Math.round((amount * 0.15 + 15) * 100) / 100;
-  const rlx_cost = Math.round((amount * 0.10 + 10) * 100) / 100;
-  const admin_margin = Math.round((seller_fee - rlx_cost) * 100) / 100;
   const seller_net = Math.round((amount - seller_fee) * 100) / 100;
-  return { seller_fee, rlx_cost, admin_margin, seller_net };
-}
-function normalizePhone(phone: string) {
-  const d = phone.replace(/\D/g, "");
-  return d.startsWith("258") ? d.slice(3) : d;
-}
-function getCurrentOrigin() {
-  const request = getRequest();
-  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
-  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
-  if (forwardedHost) return `${forwardedProto}://${forwardedHost}`;
-  return process.env.SITE_URL || new URL(request.url).origin;
+  return { seller_fee, seller_net };
 }
 
 export const getLinkBySlug = createServerFn({ method: "GET" })
@@ -64,8 +50,6 @@ export const payLink = createServerFn({ method: "POST" })
     const amount = Number(link.amount_mzn);
     const { seller_fee, seller_net } = calcFee(amount);
 
-    const token = process.env.RLX_API_TOKEN;
-    // Insert transaction FIRST with pending status
     const trackingClean = data.tracking
       ? Object.fromEntries(Object.entries(data.tracking).filter(([_, v]) => v != null && v !== ""))
       : null;
@@ -76,16 +60,8 @@ export const payLink = createServerFn({ method: "POST" })
     }).select().single();
     if (error) throw new Error(error.message);
 
-    // Fire-and-forget — Vercel Hobby kills functions after 10s, processador demora 30-60s.
-    if (token) {
-      const phone = normalizePhone(data.customer_phone);
-      const webhookUrl = `${getCurrentOrigin()}/api/public/webhook-payment?tx_id=${tx.id}`;
-      fetch("https://checkout.rlxl.ink/api.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ action: "pay", phone, amount, nome_cliente: data.customer_name, webhook_url: webhookUrl }),
-      }).catch((e) => console.log(`[payment-link][sale:${tx.id}] RLX pay failed`, e));
-    } else {
+    const key = process.env.PAYBLACK_API_KEY;
+    if (!key) {
       await supabaseAdmin.from("transactions").update({ status: "paid", external_ref: `SIM-${Date.now()}` }).eq("id", tx.id);
       await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
       const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", link.user_id).maybeSingle();
@@ -96,8 +72,46 @@ export const payLink = createServerFn({ method: "POST" })
       } catch (e) {
         console.log(`[payment-link][sale:${tx.id}] notifyNewSale failed`, e);
       }
+      return { id: tx.id, status: "paid" };
     }
-    return { id: tx.id, status: "pending" };
+
+    try {
+      const { payblackPay, mapPayBlackStatus } = await import("@/lib/payblack.server");
+      const { http, data: resp } = await payblackPay({ method: data.method, phone: data.customer_phone, amount });
+      const externalRef = resp.transaction_reference || (resp.id != null ? String(resp.id) : null);
+      const status = mapPayBlackStatus(resp.status);
+
+      if (http >= 400 || status === "failed") {
+        await supabaseAdmin.from("transactions").update({ status: "failed", external_ref: externalRef }).eq("id", tx.id);
+        return { id: tx.id, status: "failed", message: resp.message ?? resp.error ?? "Pagamento rejeitado" };
+      }
+
+      if (status === "paid") {
+        const { data: changed } = await supabaseAdmin
+          .from("transactions")
+          .update({ status: "paid", external_ref: externalRef })
+          .eq("id", tx.id).eq("status", "pending").select("id").maybeSingle();
+        if (changed) {
+          await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
+          const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", link.user_id).maybeSingle();
+          await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + seller_net }).eq("id", link.user_id);
+          try {
+            const { notifyNewSale } = await import("@/lib/sale-notify.server");
+            await notifyNewSale(supabaseAdmin, tx.id);
+          } catch (e) { console.log(`[payment-link][sale:${tx.id}] notifyNewSale failed`, e); }
+        }
+        return { id: tx.id, status: "paid" };
+      }
+
+      if (externalRef) {
+        await supabaseAdmin.from("transactions").update({ external_ref: externalRef }).eq("id", tx.id);
+      }
+      return { id: tx.id, status: "pending" };
+    } catch (e) {
+      console.log(`[payment-link][sale:${tx.id}] PayBlack error`, e);
+      await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
+      return { id: tx.id, status: "failed", message: e instanceof Error ? e.message : "Falha no gateway" };
+    }
   });
 
 const schema = z.object({

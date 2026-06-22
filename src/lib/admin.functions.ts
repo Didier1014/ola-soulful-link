@@ -40,12 +40,13 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     ]);
 
     const totalVolume = (vol ?? []).reduce((a: number, r: any) => a + Number(r.amount_mzn || 0), 0);
-    // Lucro = seller_fee (15%+15) - custo_processador (10%+10) = 5% + 5 MT por transacção
+    // Lucro estimado = seller_fee (15%+15) - custo processador (~10%+10).
+    // Valor real do custo é devolvido por transacção pelo PayBlack (fee_amount).
     const totalProfit = (fees ?? []).reduce((a: number, r: any) => {
       const amt = Number(r.amount_mzn || 0);
       const sellerFee = Math.round((amt * 0.15 + 15) * 100) / 100;
-      const rlxCost = Math.round((amt * 0.10 + 10) * 100) / 100;
-      return a + (sellerFee - rlxCost);
+      const providerCost = Math.round((amt * 0.10 + 10) * 100) / 100;
+      return a + (sellerFee - providerCost);
     }, 0);
     const totalBalance = (balances ?? []).reduce((a: number, r: any) => a + Number(r.balance_mzn || 0), 0);
     const pendingWd = (wdPending ?? []).reduce((a: number, r: any) => a + Number(r.amount_mzn || 0), 0);
@@ -66,8 +67,8 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       if (t.status === "paid") {
         const amt = Number(t.amount_mzn || 0);
         const sellerFee = Math.round((amt * 0.15 + 15) * 100) / 100;
-        const rlxCost = Math.round((amt * 0.10 + 10) * 100) / 100;
-        revenueGrowth[day] = (revenueGrowth[day] || 0) + (sellerFee - rlxCost);
+        const providerCost = Math.round((amt * 0.10 + 10) * 100) / 100;
+        revenueGrowth[day] = (revenueGrowth[day] || 0) + (sellerFee - providerCost);
       }
       txTimeline[day] = (txTimeline[day] || 0) + 1;
     });
