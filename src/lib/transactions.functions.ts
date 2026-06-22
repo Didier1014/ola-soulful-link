@@ -1,28 +1,22 @@
 // @ts-nocheck
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const checkApiStatus = createServerFn({ method: "GET" }).handler(async () => {
-  const token = process.env.RLX_API_TOKEN;
-  if (!token) return { ok: false, configured: false, latency_ms: 0, message: "Gateway não configurado" };
+  const key = process.env.PAYBLACK_API_KEY;
+  if (!key) return { ok: false, configured: false, latency_ms: 0, message: "Gateway não configurado" };
   const started = Date.now();
   try {
-    const res = await fetch("https://checkout.rlxl.ink/api.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ action: "ping" }),
-    });
+    const { getPayblackBalance } = await import("@/lib/payblack.server");
+    const { http, ok } = await getPayblackBalance();
     const latency = Date.now() - started;
-    const text = await res.text().catch(() => "");
     return {
-      ok: res.status < 500,
+      ok,
       configured: true,
       latency_ms: latency,
-      status: res.status,
-      message: res.ok ? "Gateway online" : `HTTP ${res.status}`,
-      sample: text.slice(0, 120),
+      status: http,
+      message: ok ? "Gateway online (PayBlack)" : `HTTP ${http}`,
     };
   } catch (e) {
     return { ok: false, configured: true, latency_ms: Date.now() - started, message: e instanceof Error ? e.message : "Sem resposta do gateway" };
@@ -49,44 +43,12 @@ const checkoutSchema = z.object({
   }).partial().optional(),
 });
 
-// Taxa do vendedor: 15% + 15 MT; custo RLX oficial: 11.99% + 11.99 MT; margem = diferença.
+// Taxa cobrada ao vendedor: 15% + 15 MT. O PayBlack devolve fee_amount/payout_amount,
+// mas continuamos a aplicar a taxa RedoxPay para calcular o líquido a creditar.
 function calcFee(amount: number) {
   const seller_fee = Math.round((amount * 0.15 + 15) * 100) / 100;
-  const rlx_cost = Math.round((amount * 0.10 + 10) * 100) / 100;
-  const admin_margin = Math.round((seller_fee - rlx_cost) * 100) / 100;
   const seller_net = Math.round((amount - seller_fee) * 100) / 100;
-  return { seller_fee, rlx_cost, admin_margin, seller_net };
-}
-
-// Normalizar telefone para formato local 9 dígitos.
-function normalizePhone(phone: string) {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("258")) return digits.slice(3);
-  return digits;
-}
-
-function getCurrentOrigin() {
-  const request = getRequest();
-  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
-  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
-  if (forwardedHost) return `${forwardedProto}://${forwardedHost}`;
-  return process.env.SITE_URL || new URL(request.url).origin;
-}
-
-function looksLikeGatewayFailure(status?: string, message?: string) {
-  const text = `${status ?? ""} ${message ?? ""}`.toLowerCase();
-  return /error|failed|falh|inv[aá]lido|invalid|unauthorized|rejeitad|cancel/.test(text);
-}
-
-function mapGatewayStatus(payload: Record<string, unknown>) {
-  const text = [payload.status, payload.event, payload.estado, payload.state, payload.message, payload.msg]
-    .filter(Boolean)
-    .map(String)
-    .join(" ")
-    .toLowerCase();
-  if (/success|paid|completed|approved|confirm|confirmado|aprovad|pago/.test(text)) return "paid";
-  if (/failed|error|cancel|reject|rejeitad|expirad|falh/.test(text)) return "failed";
-  return "pending";
+  return { seller_fee, seller_net };
 }
 
 async function creditSellerIfPending(supabaseAdmin: any, txId: string, userId: string, sellerNet: number, updates: Record<string, unknown>) {
@@ -100,8 +62,6 @@ async function creditSellerIfPending(supabaseAdmin: any, txId: string, userId: s
   if (!changed) return false;
   const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", userId).maybeSingle();
   await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + sellerNet }).eq("id", userId);
-
-  // Fire all "new sale" side effects (in-app feed + web push + Utmify + LowTrack)
   try {
     const { notifyNewSale } = await import("@/lib/sale-notify.server");
     await notifyNewSale(supabaseAdmin, txId);
@@ -110,7 +70,6 @@ async function creditSellerIfPending(supabaseAdmin: any, txId: string, userId: s
   }
   return true;
 }
-
 
 export const createCheckout = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => checkoutSchema.parse(d))
@@ -128,7 +87,6 @@ export const createCheckout = createServerFn({ method: "POST" })
     if (amount < 60) throw new Error("Valor mínimo é 60 MT");
     const { seller_fee, seller_net } = calcFee(amount);
 
-    // Insert transaction FIRST with pending status
     const trackingClean = data.tracking
       ? Object.fromEntries(Object.entries(data.tracking).filter(([_, v]) => v != null && v !== ""))
       : null;
@@ -148,56 +106,55 @@ export const createCheckout = createServerFn({ method: "POST" })
     }).select().single();
     if (tErr) throw new Error(tErr.message);
 
-    const token = process.env.RLX_API_TOKEN;
-    let gatewayMessage: string | null = null;
-    if (token && data.method !== "card") {
-      const phone = normalizePhone(data.customer_phone);
-      const webhookUrl = `${getCurrentOrigin()}/api/public/rlx-webhook?tx_id=${tx.id}`;
-      try {
-        const payload = { action: "pay", phone, amount, nome_cliente: data.customer_name, webhook_url: webhookUrl };
-        console.log("[RLX] →", JSON.stringify(payload));
-        const res = await fetch("https://checkout.rlxl.ink/api.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify(payload),
-        });
-        const rawText = await res.text();
-        console.log("[RLX] ← HTTP", res.status, rawText.slice(0, 400));
-        let json: { status?: string; txid?: string; transaction_id?: string; partner_transaction_id?: string; reference?: string; ref?: string; id?: string; msg?: string; message?: string } = {};
-        try { json = JSON.parse(rawText); } catch { /* not json */ }
-        gatewayMessage = json.msg ?? json.message ?? (rawText ? rawText.slice(0, 200) : null);
-        const externalRef = json.txid ?? json.transaction_id ?? json.partner_transaction_id ?? json.reference ?? json.ref ?? json.id;
-        const gatewayStatus = mapGatewayStatus(json as Record<string, unknown>);
-        if (!res.ok || looksLikeGatewayFailure(json.status, gatewayMessage)) {
-          await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
-          return { id: tx.id, status: "failed", amount, fee: seller_fee, net: seller_net, message: gatewayMessage ?? "Pagamento rejeitado pelo gateway" };
-        }
-        if (gatewayStatus === "paid") {
-          await creditSellerIfPending(supabaseAdmin, tx.id, product.user_id, seller_net, { external_ref: externalRef ? String(externalRef) : tx.external_ref });
-          const { data: prod } = await supabaseAdmin.from("products").select("delivery_url").eq("id", product.id).maybeSingle();
-          return { id: tx.id, status: "paid", amount, fee: seller_fee, net: seller_net, delivery_url: prod?.delivery_url ?? undefined, message: gatewayMessage ?? "Pagamento confirmado" };
-        }
-        if (externalRef) {
-          await supabaseAdmin.from("transactions").update({ external_ref: String(externalRef) }).eq("id", tx.id);
-        }
-      } catch (e) {
-        console.log("[RLX] error", e);
-        gatewayMessage = e instanceof Error ? e.message : "Falha ao contactar o gateway";
-        await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
-        return { id: tx.id, status: "failed", amount, fee: seller_fee, net: seller_net, message: gatewayMessage };
-      }
-
-    } else if (!token) {
+    const key = process.env.PAYBLACK_API_KEY;
+    if (!key) {
+      // Modo simulação — sem chave configurada
       await supabaseAdmin.from("transactions").update({ status: "paid", external_ref: `SIM-${Date.now()}` }).eq("id", tx.id);
       const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", product.user_id).maybeSingle();
       await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + seller_net }).eq("id", product.user_id);
       return { id: tx.id, status: "paid", amount, fee: seller_fee, net: seller_net, message: "Modo simulação" };
     }
 
-    return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, message: gatewayMessage };
+    if (data.method === "card") {
+      // PayBlack actual só suporta mpesa/emola.
+      return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, message: "Método não suportado" };
+    }
+
+    try {
+      const { payblackPay, mapPayBlackStatus } = await import("@/lib/payblack.server");
+      const { http, data: resp } = await payblackPay({
+        method: data.method,
+        phone: data.customer_phone,
+        amount,
+      });
+      const externalRef = resp.transaction_reference || (resp.id != null ? String(resp.id) : null);
+      const message = resp.message ?? resp.error ?? null;
+      const status = mapPayBlackStatus(resp.status);
+
+      if (http >= 400 || status === "failed") {
+        await supabaseAdmin.from("transactions").update({ status: "failed", external_ref: externalRef }).eq("id", tx.id);
+        return { id: tx.id, status: "failed", amount, fee: seller_fee, net: seller_net, message: message ?? "Pagamento rejeitado pelo gateway" };
+      }
+
+      if (status === "paid") {
+        await creditSellerIfPending(supabaseAdmin, tx.id, product.user_id, seller_net, { external_ref: externalRef });
+        const { data: prod } = await supabaseAdmin.from("products").select("delivery_url").eq("id", product.id).maybeSingle();
+        return { id: tx.id, status: "paid", amount, fee: seller_fee, net: seller_net, delivery_url: prod?.delivery_url ?? undefined, message: message ?? "Pagamento confirmado" };
+      }
+
+      if (externalRef) {
+        await supabaseAdmin.from("transactions").update({ external_ref: externalRef }).eq("id", tx.id);
+      }
+      return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, message };
+    } catch (e) {
+      console.log("[PayBlack] error", e);
+      const message = e instanceof Error ? e.message : "Falha ao contactar o gateway";
+      await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
+      return { id: tx.id, status: "failed", amount, fee: seller_fee, net: seller_net, message };
+    }
   });
 
-// Polling endpoint — verifica estado da transacção.
+// Polling — confirma estado consultando PayBlack se ainda pendente.
 export const checkTransactionStatus = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ transaction_id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
@@ -206,7 +163,7 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
       .from("transactions").select("*").eq("id", data.transaction_id).maybeSingle();
     if (!tx) throw new Error("Transacção não encontrada");
     if (tx.status === "paid" || tx.status === "failed") {
-      if (tx.status === "paid") {
+      if (tx.status === "paid" && tx.product_id) {
         const { data: prod } = await supabaseAdmin
           .from("products").select("delivery_url").eq("id", tx.product_id).maybeSingle();
         return { status: tx.status, delivery_url: prod?.delivery_url ?? undefined };
@@ -214,21 +171,14 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
       return { status: tx.status };
     }
 
-    const token = process.env.RLX_API_TOKEN;
-    if (!token || !tx.external_ref) return { status: tx.status };
+    const key = process.env.PAYBLACK_API_KEY;
+    if (!key || !tx.external_ref) return { status: tx.status };
 
     try {
-      const res = await fetch("https://checkout.rlxl.ink/api.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ action: "check", txid: tx.external_ref }),
-      });
-      const rawText = await res.text().catch(() => "");
-      let json: Record<string, unknown> = {};
-      try { json = JSON.parse(rawText); } catch { json = { status: rawText }; }
-      console.log("[RLX check] ← HTTP", res.status, rawText.slice(0, 300));
-      const next = mapGatewayStatus(json);
-
+      const { findPayblackTransaction, mapPayBlackStatus } = await import("@/lib/payblack.server");
+      const remote = await findPayblackTransaction(String(tx.external_ref));
+      if (!remote) return { status: tx.status };
+      const next = mapPayBlackStatus(String(remote.status ?? ""));
       if (next !== tx.status) {
         if (next === "paid") {
           await creditSellerIfPending(supabaseAdmin, tx.id, tx.user_id, Number(tx.net_mzn ?? 0), {});
@@ -236,10 +186,10 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
           await supabaseAdmin.from("transactions").update({ status: next }).eq("id", tx.id);
         }
       }
-      if (next === "paid" || tx.status === "paid") {
+      if (next === "paid" && tx.product_id) {
         const { data: prod } = await supabaseAdmin
           .from("products").select("delivery_url").eq("id", tx.product_id).maybeSingle();
-        return { status: next === "paid" ? next : tx.status, delivery_url: prod?.delivery_url ?? undefined };
+        return { status: next, delivery_url: prod?.delivery_url ?? undefined };
       }
       return { status: next };
     } catch {
@@ -254,9 +204,6 @@ export const listMyTransactions = createServerFn({ method: "GET" })
       .from("transactions").select("*").order("created_at", { ascending: false }).limit(200);
     if (error) throw new Error(error.message);
 
-    // Safety net: trigger sale notifications for any paid tx that hasn't
-    // been notified yet (covers cases where the webhook path failed to
-    // deliver the push). notifyNewSale is idempotent — duplicates no-op.
     try {
       const paid = (data ?? []).filter((t: any) => t.status === "paid").slice(0, 20);
       if (paid.length) {
@@ -273,9 +220,7 @@ export const listMyTransactions = createServerFn({ method: "GET" })
         );
         const missing = paid.filter((t: any) => !notifiedSet.has(t.id));
         if (missing.length) {
-          console.log(`[listMyTransactions] dispatching ${missing.length} pending sale notifications for user=${context.userId}`);
           const { notifyNewSale } = await import("@/lib/sale-notify.server");
-          // Fire and forget — don't block the list response
           Promise.all(
             missing.map((t: any) =>
               notifyNewSale(supabaseAdmin, t.id).catch((e) =>
@@ -322,7 +267,6 @@ export const createWithdrawal = createServerFn({ method: "POST" })
     destination: z.string().trim().min(3).max(120),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    // Validate available balance
     const { data: prof, error: pErr } = await context.supabase
       .from("profiles").select("balance_mzn").eq("id", context.userId).maybeSingle();
     if (pErr) throw new Error(pErr.message);
@@ -338,7 +282,6 @@ export const createWithdrawal = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
 
-    // Notify admins via push only (no in-app feed entry — admins consult /dashboard/admin)
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: admins } = await supabaseAdmin
@@ -360,6 +303,7 @@ export const createWithdrawal = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
 export const listMyWithdrawals = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
