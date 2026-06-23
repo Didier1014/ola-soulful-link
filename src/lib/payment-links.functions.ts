@@ -117,7 +117,7 @@ export const payLink = createServerFn({ method: "POST" })
 const schema = z.object({
   title: z.string().trim().min(1).max(120),
   description: z.string().max(1000).optional().default(""),
-  amount_mzn: z.number().min(1).max(1_000_000),
+  amount_mzn: z.number().min(100, "Valor mínimo é 100 MT").max(1_000_000),
 });
 
 function shortId(len = 7) {

@@ -25,7 +25,7 @@ export const checkApiStatus = createServerFn({ method: "GET" }).handler(async ()
 
 const checkoutSchema = z.object({
   product_id: z.string().uuid().optional(),
-  amount_mzn: z.number().min(60, "Valor mínimo é 60 MT").max(1_000_000).optional(),
+  amount_mzn: z.number().min(100, "Valor mínimo é 100 MT").max(1_000_000).optional(),
   customer_name: z.string().trim().min(2).max(120),
   customer_email: z.string().trim().email().max(160).optional().or(z.literal("")).default(""),
   customer_phone: z.string().trim().regex(/^\+?\d{8,15}$/, "Telefone inválido"),
@@ -84,7 +84,7 @@ export const createCheckout = createServerFn({ method: "POST" })
     if (!product || !product.active) throw new Error("Produto indisponível");
 
     const amount = data.amount_mzn ?? Number(product.price_mzn);
-    if (amount < 60) throw new Error("Valor mínimo é 60 MT");
+    if (amount < 100) throw new Error("Valor mínimo é 100 MT");
     const { seller_fee, seller_net } = calcFee(amount);
 
     const trackingClean = data.tracking

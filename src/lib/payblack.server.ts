@@ -6,12 +6,11 @@
 //   GET  /api/balance      (X-API-Key)
 //   GET  /api/customers    (X-API-Key)
 //
-// Resposta de /api/pay devolve: id, status (success/failed/pending),
-// amount, fee_amount, payout_amount, transaction_reference, created_at.
+// Resposta de /api/pay devolve: { "transacao": { id, status, amount, fee_amount,
+// payout_amount, transaction_reference, created_at, ... } }
 
 const BASE = process.env.PAYBLACK_BASE_URL || "https://payflax.site";
 
-// Conta de payout RedoxPay para cada canal (recebe o valor líquido devolvido pelo gateway).
 const PAYOUT_MPESA = process.env.PAYBLACK_PAYOUT_MPESA || "258858073241";
 const PAYOUT_EMOLA = process.env.PAYBLACK_PAYOUT_EMOLA || "258869380845";
 
@@ -34,8 +33,6 @@ function digits(phone: string) {
   return phone.replace(/\D/g, "");
 }
 
-// M-Pesa quer formato internacional "258XXXXXXXXX".
-// e-Mola quer apenas os 9 dígitos locais.
 export function formatPhone(phone: string, method: PayBlackMethod) {
   const d = digits(phone);
   const local = d.startsWith("258") ? d.slice(3) : d;
@@ -69,9 +66,12 @@ export async function payblackPay(args: {
     body: JSON.stringify(body),
   });
   const raw = await res.text();
-  console.log("[PayBlack] ← HTTP", res.status, raw.slice(0, 400));
-  let data: PayBlackPayResponse = {};
-  try { data = JSON.parse(raw); } catch { /* not json */ }
+  console.log("[PayBlack] ← HTTP", res.status, raw); // sem slice — log completo para depurar
+  let parsed: any = {};
+  try { parsed = JSON.parse(raw); } catch { /* not json */ }
+  // A PayBlack devolve { "transacao": { id, status, transaction_reference, ... } }.
+  // Desembrulhar aqui — sem isto, resp.status/resp.id ficam sempre undefined.
+  const data: PayBlackPayResponse = parsed?.transacao ?? parsed;
   return { http: res.status, raw, data };
 }
 
@@ -105,7 +105,7 @@ export async function findPayblackTransaction(reference: string) {
   for (let page = 1; page <= 3; page++) {
     const { ok, data } = await listPayblackTransactions({ page, limit: 100 });
     if (!ok) return null;
-    const list: any[] = Array.isArray(data) ? data : (data?.data ?? data?.transactions ?? []);
+    const list: any[] = Array.isArray(data) ? data : (data?.transacoes ?? data?.data ?? data?.transactions ?? []);
     const found = list.find((t) => String(t.transaction_reference ?? t.reference ?? t.id) === String(reference));
     if (found) return found;
     if (!list.length || list.length < 100) break;
