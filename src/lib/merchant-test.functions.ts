@@ -6,11 +6,17 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { calcSplit, MIN_AMOUNT, type SplitMethod } from "@/lib/split";
 
+function normalizePhone(input: string): string | null {
+  const d = String(input || "").replace(/\D/g, "");
+  const local = d.startsWith("258") ? d.slice(3) : d;
+  return /^\d{9}$/.test(local) ? local : null;
+}
+
 export const runMerchantTest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     merchant_id: z.string().uuid(),
-    payer_phone: z.string().regex(/^\+?\d{8,15}$/),
+    payer_phone: z.string(),
     payer_name: z.string().trim().min(1).max(120).default("Teste Merchant"),
     amount: z.number().min(MIN_AMOUNT),
     method: z.enum(["mpesa", "emola"]),
