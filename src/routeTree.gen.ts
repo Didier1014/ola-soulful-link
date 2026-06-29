@@ -22,6 +22,7 @@ import { Route as ApiDebugNotificationRouteImport } from './routes/api/debug-not
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicRlxWebhookRouteImport } from './routes/api/public/rlx-webhook'
+import { Route as ApiPublicPayRouteImport } from './routes/api/public/pay'
 import { Route as AuthenticatedDashboardWithdrawalsRouteImport } from './routes/_authenticated/dashboard.withdrawals'
 import { Route as AuthenticatedDashboardTransactionsRouteImport } from './routes/_authenticated/dashboard.transactions'
 import { Route as AuthenticatedDashboardSubscriptionsRouteImport } from './routes/_authenticated/dashboard.subscriptions'
@@ -113,6 +114,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
 const ApiPublicRlxWebhookRoute = ApiPublicRlxWebhookRouteImport.update({
   id: '/api/public/rlx-webhook',
   path: '/api/public/rlx-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPayRoute = ApiPublicPayRouteImport.update({
+  id: '/api/public/pay',
+  path: '/api/public/pay',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedDashboardWithdrawalsRoute =
@@ -303,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/subscriptions': typeof AuthenticatedDashboardSubscriptionsRoute
   '/dashboard/transactions': typeof AuthenticatedDashboardTransactionsRoute
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
+  '/api/public/pay': typeof ApiPublicPayRoute
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
@@ -344,6 +351,7 @@ export interface FileRoutesByTo {
   '/dashboard/subscriptions': typeof AuthenticatedDashboardSubscriptionsRoute
   '/dashboard/transactions': typeof AuthenticatedDashboardTransactionsRoute
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
+  '/api/public/pay': typeof ApiPublicPayRoute
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
@@ -387,6 +395,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/subscriptions': typeof AuthenticatedDashboardSubscriptionsRoute
   '/_authenticated/dashboard/transactions': typeof AuthenticatedDashboardTransactionsRoute
   '/_authenticated/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
+  '/api/public/pay': typeof ApiPublicPayRoute
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
@@ -430,6 +439,7 @@ export interface FileRouteTypes {
     | '/dashboard/subscriptions'
     | '/dashboard/transactions'
     | '/dashboard/withdrawals'
+    | '/api/public/pay'
     | '/api/public/rlx-webhook'
     | '/lovable/email/suppression'
     | '/dashboard/'
@@ -471,6 +481,7 @@ export interface FileRouteTypes {
     | '/dashboard/subscriptions'
     | '/dashboard/transactions'
     | '/dashboard/withdrawals'
+    | '/api/public/pay'
     | '/api/public/rlx-webhook'
     | '/lovable/email/suppression'
     | '/dashboard'
@@ -513,6 +524,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/subscriptions'
     | '/_authenticated/dashboard/transactions'
     | '/_authenticated/dashboard/withdrawals'
+    | '/api/public/pay'
     | '/api/public/rlx-webhook'
     | '/lovable/email/suppression'
     | '/_authenticated/dashboard/'
@@ -538,6 +550,7 @@ export interface RootRouteChildren {
   CSlugRoute: typeof CSlugRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   LSlugRoute: typeof LSlugRoute
+  ApiPublicPayRoute: typeof ApiPublicPayRoute
   ApiPublicRlxWebhookRoute: typeof ApiPublicRlxWebhookRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicEmbedScriptRoute: typeof ApiPublicEmbedScriptRoute
@@ -640,6 +653,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/rlx-webhook'
       fullPath: '/api/public/rlx-webhook'
       preLoaderRoute: typeof ApiPublicRlxWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/pay': {
+      id: '/api/public/pay'
+      path: '/api/public/pay'
+      fullPath: '/api/public/pay'
+      preLoaderRoute: typeof ApiPublicPayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/dashboard/withdrawals': {
@@ -931,6 +951,7 @@ const rootRouteChildren: RootRouteChildren = {
   CSlugRoute: CSlugRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   LSlugRoute: LSlugRoute,
+  ApiPublicPayRoute: ApiPublicPayRoute,
   ApiPublicRlxWebhookRoute: ApiPublicRlxWebhookRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicEmbedScriptRoute: ApiPublicEmbedScriptRoute,

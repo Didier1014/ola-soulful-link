@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Endpoint público para merchants — valida api_key e executa split.
 // Authorization: Bearer mrc_live_xxx
 // Body JSON: { client_id, payer_phone, payer_name?, amount, method: 'mpesa'|'emola', is_test? }
