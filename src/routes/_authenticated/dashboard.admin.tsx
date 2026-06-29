@@ -33,6 +33,7 @@ function AdminPage() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("overview");
   const [search, setSearch] = useState("");
+  const [showTests, setShowTests] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
 
   const fnOverview = useServerFn(getAdminOverview);
