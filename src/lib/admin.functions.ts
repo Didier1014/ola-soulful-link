@@ -27,16 +27,16 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       { data: txDates },
     ] = await Promise.all([
       supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("transactions").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("transactions").select("*", { count: "exact", head: true }).eq("is_test", false),
       supabaseAdmin.from("products").select("*", { count: "exact", head: true }),
       supabaseAdmin.from("withdrawals").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("transactions").select("amount_mzn").eq("status", "paid"),
-      supabaseAdmin.from("transactions").select("amount_mzn,fee_mzn").eq("status", "paid"),
+      supabaseAdmin.from("transactions").select("amount_mzn").eq("status", "paid").eq("is_test", false),
+      supabaseAdmin.from("transactions").select("amount_mzn,fee_mzn").eq("status", "paid").eq("is_test", false),
       supabaseAdmin.from("profiles").select("balance_mzn"),
       supabaseAdmin.from("withdrawals").select("amount_mzn").eq("status", "pending"),
       supabaseAdmin.from("withdrawals").select("amount_mzn"),
       supabaseAdmin.from("profiles").select("created_at"),
-      supabaseAdmin.from("transactions").select("created_at,fee_mzn,amount_mzn,status"),
+      supabaseAdmin.from("transactions").select("created_at,fee_mzn,amount_mzn,status").eq("is_test", false),
     ]);
 
     const totalVolume = (vol ?? []).reduce((a: number, r: any) => a + Number(r.amount_mzn || 0), 0);
