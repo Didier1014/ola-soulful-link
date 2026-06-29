@@ -62,7 +62,7 @@ function AdminPage() {
 
   const overview = useQuery({ queryKey: ["admin_overview"], queryFn: () => fnOverview(), retry: false });
   const profiles = useQuery({ queryKey: ["admin_profiles"], queryFn: () => fnProfiles(), enabled: tab === "users" });
-  const txs = useQuery({ queryKey: ["admin_tx"], queryFn: () => fnTx(), enabled: tab === "transactions" });
+  const txs = useQuery({ queryKey: ["admin_tx", showTests], queryFn: () => fnTx({ data: { include_tests: showTests } }), enabled: tab === "transactions" });
   const wds = useQuery({ queryKey: ["admin_wd"], queryFn: () => fnWd(), enabled: tab === "withdrawals" || tab === "overview" });
   const prods = useQuery({ queryKey: ["admin_prods"], queryFn: () => fnProd(), enabled: tab === "products" });
 
