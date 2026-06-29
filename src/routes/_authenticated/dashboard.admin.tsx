@@ -16,8 +16,9 @@ import { toast } from "sonner";
 import {
   Shield, Users, Receipt, Package, TrendingUp, AlertTriangle,
   ArrowUpDown, Wallet, DollarSign, CheckCircle2, XCircle, Search,
-  Activity, Zap, Clock, ExternalLink, FileDown, ChevronRight,
+  Activity, Zap, Clock, ExternalLink, FileDown, ChevronRight, Settings, Beaker,
 } from "lucide-react";
+import { getPlatformConfig, updatePlatformConfig } from "@/lib/platform-config.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/admin")({ component: AdminPage });
 
