@@ -117,21 +117,25 @@ function DrawerContent({ close, onSignOut }: { close: () => void; onSignOut: () 
         <div className="w-9" />
       </div>
 
-      <p className="px-5 pt-5 pb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Menu</p>
-      <nav className="px-3 flex flex-col gap-1">
-        {navItems.map((it) => (
-          <Link
-            key={it.to}
-            to={it.to}
-            onClick={close}
-            activeOptions={{ exact: !!it.exact }}
-            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground/70 hover:bg-white/5 hover:text-foreground transition-colors"
-            activeProps={{ className: "flex items-center gap-3 rounded-xl px-3 py-3 text-sm bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30 text-foreground font-semibold shadow-[0_0_20px_-8px_var(--primary-glow)]" }}
-          >
-            <it.icon className="h-4 w-4" /> {it.label}
-          </Link>
-        ))}
-      </nav>
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <p className="px-5 pt-5 pb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Menu</p>
+        <nav className="px-3 pb-3 flex flex-col gap-1">
+          {navItems.map((it) => (
+            <Link
+              key={it.to}
+              to={it.to}
+              onClick={close}
+              activeOptions={{ exact: !!it.exact }}
+              className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground/70 hover:bg-white/5 hover:text-foreground transition-colors"
+              activeProps={{ className: "flex items-center gap-3 rounded-xl px-3 py-3 text-sm bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30 text-foreground font-semibold shadow-[0_0_20px_-8px_var(--primary-glow)]" }}
+            >
+              <it.icon className="h-4 w-4" /> {it.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      <div className="border-t border-white/5 p-3 space-y-1 shrink-0">
 
       <div className="mt-auto border-t border-white/5 p-3 space-y-1">
         <button onClick={toggleTheme} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-foreground/60 hover:bg-white/5">
