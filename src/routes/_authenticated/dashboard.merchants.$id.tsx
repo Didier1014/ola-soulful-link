@@ -12,8 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { toast } from "sonner";
 import { ArrowLeft, Copy, Eye, EyeOff, RefreshCw, Beaker } from "lucide-react";
 import { getMerchant, updateMerchant, revokeMerchantApiKey } from "@/lib/merchants.functions";
-import { runAdminTest } from "@/lib/admin-test.functions";
-import { getPlatformConfig } from "@/lib/platform-config.functions";
+import { runMerchantTest } from "@/lib/merchant-test.functions";
 import { calcSplit, MIN_AMOUNT, type SplitMethod } from "@/lib/split";
 
 export const Route = createFileRoute("/_authenticated/dashboard/merchants/$id")({
