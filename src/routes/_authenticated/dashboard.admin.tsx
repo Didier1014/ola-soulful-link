@@ -123,6 +123,7 @@ function AdminPage() {
     { id: "transactions", label: "Transações", icon: Receipt },
     { id: "withdrawals", label: "Saques", icon: ArrowUpDown, badge: pendingCount },
     { id: "products", label: "Produtos", icon: Package },
+    { id: "settings", label: "Configurações", icon: Settings },
   ];
 
   if (!isAdmin) {
