@@ -60,7 +60,7 @@ export const payLink = createServerFn({ method: "POST" })
     }).select().single();
     if (error) throw new Error(error.message);
 
-    const key = process.env.PAYBLACK_API_KEY;
+    const key = process.env.RLX_API_TOKEN;
     if (!key) {
       await supabaseAdmin.from("transactions").update({ status: "paid", external_ref: `SIM-${Date.now()}` }).eq("id", tx.id);
       await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
@@ -76,10 +76,15 @@ export const payLink = createServerFn({ method: "POST" })
     }
 
     try {
-      const { payblackPay, mapPayBlackStatus } = await import("@/lib/payblack.server");
-      const { http, data: resp } = await payblackPay({ method: data.method, phone: data.customer_phone, amount });
-      const externalRef = resp.transaction_reference || (resp.id != null ? String(resp.id) : null);
-      const status = mapPayBlackStatus(resp.status);
+      const { rlxPay, mapRlxStatus } = await import("@/lib/rlx.server");
+      const { http, data: resp } = await rlxPay({
+        method: data.method,
+        phone: data.customer_phone,
+        amount,
+        nome_cliente: data.customer_name,
+      });
+      const externalRef = resp.txid ? String(resp.txid) : null;
+      const status = mapRlxStatus(resp.status);
 
       if (http >= 400 || status === "failed") {
         await supabaseAdmin.from("transactions").update({ status: "failed", external_ref: externalRef }).eq("id", tx.id);
@@ -108,11 +113,12 @@ export const payLink = createServerFn({ method: "POST" })
       }
       return { id: tx.id, status: "pending" };
     } catch (e) {
-      console.log(`[payment-link][sale:${tx.id}] PayBlack error`, e);
+      console.log(`[payment-link][sale:${tx.id}] RLX error`, e);
       await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
       return { id: tx.id, status: "failed", message: e instanceof Error ? e.message : "Falha no gateway" };
     }
   });
+
 
 const schema = z.object({
   title: z.string().trim().min(1).max(120),
