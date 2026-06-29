@@ -136,8 +136,6 @@ function DrawerContent({ close, onSignOut }: { close: () => void; onSignOut: () 
       </div>
 
       <div className="border-t border-white/5 p-3 space-y-1 shrink-0">
-
-      <div className="mt-auto border-t border-white/5 p-3 space-y-1">
         <button onClick={toggleTheme} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-foreground/60 hover:bg-white/5">
           {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />} {isDark ? "Modo claro" : "Modo escuro"}
         </button>
