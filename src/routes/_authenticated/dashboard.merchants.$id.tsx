@@ -248,7 +248,7 @@ function TestTransactionButton({ merchantId }: { merchantId: string }) {
         )}
 
         <DialogFooter>
-          <Button onClick={run} disabled={busy}>{busy ? "A correr…" : "Correr teste"}</Button>
+          <Button onClick={run} disabled={cannotRun}>{busy ? "A correr…" : "Correr teste"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
