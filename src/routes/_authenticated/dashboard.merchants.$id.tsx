@@ -183,12 +183,21 @@ function TestTransactionButton({ merchantId }: { merchantId: string }) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<any>(null);
 
+  const amountInvalid = !Number.isFinite(Number(amount)) || Number(amount) < MIN_AMOUNT;
+  const phoneDigits = String(phone || "").replace(/\D/g, "").replace(/^258/, "");
+  const phoneInvalid = !/^\d{9}$/.test(phoneDigits);
+  const cannotRun = busy || amountInvalid || phoneInvalid;
+
   const run = async () => {
+    if (amountInvalid) { toast.error(`Valor mínimo: ${MIN_AMOUNT} MT`); return; }
+    if (phoneInvalid) { toast.error("Telefone deve ter 9 dígitos"); return; }
     setBusy(true); setResult(null);
     try {
-      const r: any = await fnTest({ data: { merchant_id: merchantId, payer_phone: phone, amount: Number(amount), method } });
+      const r: any = await fnTest({ data: { merchant_id: merchantId, payer_phone: phoneDigits, amount: Number(amount), method } });
       setResult(r);
-      toast.success(`Teste executado: ${r.status}`);
+      if (r.status === "success") toast.success(`Teste OK: ${r.status}`);
+      else if (r.status === "failed") toast.error(`Falhou: ${r.status}`);
+      else toast.message(`Estado: ${r.status}`);
     } catch (e: any) {
       setResult({ error: e?.message ?? "Erro" });
       toast.error(e?.message ?? "Erro");
@@ -239,7 +248,7 @@ function TestTransactionButton({ merchantId }: { merchantId: string }) {
         )}
 
         <DialogFooter>
-          <Button onClick={run} disabled={busy}>{busy ? "A correr…" : "Correr teste"}</Button>
+          <Button onClick={run} disabled={cannotRun}>{busy ? "A correr…" : "Correr teste"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

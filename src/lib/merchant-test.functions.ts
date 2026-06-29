@@ -6,16 +6,25 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { calcSplit, MIN_AMOUNT, type SplitMethod } from "@/lib/split";
 
+function normalizePhone(input: string): string | null {
+  const d = String(input || "").replace(/\D/g, "");
+  const local = d.startsWith("258") ? d.slice(3) : d;
+  return /^\d{9}$/.test(local) ? local : null;
+}
+
 export const runMerchantTest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     merchant_id: z.string().uuid(),
-    payer_phone: z.string().regex(/^\+?\d{8,15}$/),
+    payer_phone: z.string(),
     payer_name: z.string().trim().min(1).max(120).default("Teste Merchant"),
     amount: z.number().min(MIN_AMOUNT),
     method: z.enum(["mpesa", "emola"]),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    const phone = normalizePhone(data.payer_phone);
+    if (!phone) throw new Error("INVALID_PHONE: telefone deve ter 9 dígitos (com ou sem +258)");
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: merchant, error } = await supabaseAdmin
@@ -31,6 +40,11 @@ export const runMerchantTest = createServerFn({ method: "POST" })
     }
     if (!merchant.active) throw new Error("Merchant inactivo — activa antes de testar");
 
+    // Respeita gateway_mode: 'sandbox' simula, qualquer outro valor = live
+    const { data: cfg } = await supabaseAdmin
+      .from("platform_config").select("gateway_mode").eq("id", "config").maybeSingle();
+    const sandbox = String(cfg?.gateway_mode ?? "").toLowerCase() === "sandbox";
+
     const method = data.method as SplitMethod;
     const split = calcSplit(data.amount, method);
     const merchantPhone = method === "mpesa"
@@ -41,7 +55,7 @@ export const runMerchantTest = createServerFn({ method: "POST" })
     const { data: logRow } = await supabaseAdmin.from("merchant_transactions").insert({
       merchant_id: merchant.id,
       owner_id: merchant.owner_id,
-      payer_phone: data.payer_phone,
+      payer_phone: phone,
       method,
       gross: split.gross,
       platform_fee: split.platformFee,
@@ -54,10 +68,24 @@ export const runMerchantTest = createServerFn({ method: "POST" })
       is_test: true,
     }).select().single();
 
+    if (sandbox) {
+      await supabaseAdmin.from("merchant_transactions").update({
+        status: "success",
+        rlx_txid: `sandbox_${logRow.id}`,
+        rlx_response: { sandbox: true, simulated: true },
+      }).eq("id", logRow.id);
+      return {
+        status: "success", sandbox: true, http: 200, split,
+        merchant_phone: merchantPhone,
+        partner_transaction_id: `sandbox_${logRow.id}`,
+        rlx_response: { sandbox: true, simulated: true },
+      };
+    }
+
     try {
       const { rlxPay, mapRlxStatus } = await import("@/lib/rlx.server");
       const { http, data: resp } = await rlxPay({
-        phone: data.payer_phone,
+        phone,
         amount: split.gross,
         nome_cliente: data.payer_name,
         splits: [
@@ -86,3 +114,4 @@ export const runMerchantTest = createServerFn({ method: "POST" })
       throw new Error(message);
     }
   });
+

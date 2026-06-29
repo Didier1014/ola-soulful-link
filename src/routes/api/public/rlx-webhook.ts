@@ -1,17 +1,45 @@
-// RLX Webhook — recebe payment.success e marca a transação como paga.
-// URL pública: /api/public/rlx-webhook
+// RLX Webhook — recebe payment.success/failed.
+// SEGURANÇA: valida HMAC-SHA256(body, GATEWAY_WEBHOOK_SECRET) contra o
+// header `x-rlx-signature` (timingSafeEqual). Sem assinatura válida → 401
+// e nenhuma transacção é tocada.
 import { createFileRoute } from "@tanstack/react-router";
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+function verifySignature(rawBody: string, signature: string | null): boolean {
+  const secret = process.env.GATEWAY_WEBHOOK_SECRET;
+  if (!secret) {
+    console.warn("[RLX webhook] GATEWAY_WEBHOOK_SECRET não configurada — rejeitando");
+    return false;
+  }
+  if (!signature) return false;
+  const sig = signature.replace(/^sha256=/, "").trim().toLowerCase();
+  const expected = createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
+  const a = Buffer.from(sig, "hex");
+  const b = Buffer.from(expected, "hex");
+  if (a.length === 0 || a.length !== b.length) return false;
+  try { return timingSafeEqual(a, b); } catch { return false; }
+}
 
 export const Route = createFileRoute("/api/public/rlx-webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        let payload: any = {};
-        try {
-          payload = await request.json();
-        } catch {
-          return new Response("invalid json", { status: 400 });
+        const rawBody = await request.text();
+        const sigHeader =
+          request.headers.get("x-rlx-signature") ||
+          request.headers.get("x-webhook-signature") ||
+          request.headers.get("x-signature");
+
+        if (!verifySignature(rawBody, sigHeader)) {
+          console.warn("[RLX webhook] invalid_signature", {
+            ip: request.headers.get("x-forwarded-for"),
+            sig_present: !!sigHeader,
+          });
+          return new Response("invalid signature", { status: 401 });
         }
+
+        let payload: any = {};
+        try { payload = JSON.parse(rawBody); } catch { return new Response("invalid json", { status: 400 }); }
         console.log("[RLX webhook] ←", JSON.stringify(payload));
 
         const event = String(payload?.event ?? payload?.type ?? "").toLowerCase();
@@ -36,12 +64,11 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
             .select("id")
             .maybeSingle();
           if (changed) {
-            const { data: prof } = await supabaseAdmin
-              .from("profiles").select("balance_mzn").eq("id", tx.user_id).maybeSingle();
-            await supabaseAdmin
-              .from("profiles")
-              .update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + Number(tx.net_mzn ?? 0) })
-              .eq("id", tx.user_id);
+            // Atomic balance increment — sem race condition
+            await supabaseAdmin.rpc("increment_balance", {
+              _user_id: tx.user_id,
+              _amount: Number(tx.net_mzn ?? 0),
+            });
             try {
               const { notifyNewSale } = await import("@/lib/sale-notify.server");
               await notifyNewSale(supabaseAdmin, tx.id);
