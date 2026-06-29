@@ -660,6 +660,40 @@ function SettingsPanel() {
         </div>
       </Card>
 
+      <Card className="p-5 rounded-2xl space-y-4">
+        <div className="flex items-center gap-2">
+          <Wallet className="h-4 w-4" style={{ color: RUBY }} />
+          <h2 className="font-semibold">Recepção de Pagamentos (Dashboard)</h2>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Define como a dashboard recebe pagamentos C2B em produção (página "Nova Transação" e cobranças internas).
+        </p>
+        <div className="space-y-3">
+          {[
+            { v: "merchant", title: "Via API da Merchant", desc: "Cada pagamento usa a api_key e payouts do merchant dono da transacção. Aplica split de lucro automaticamente." },
+            { v: "general", title: "Via API Geral", desc: "Todos os pagamentos vão directos para os números de payout da plataforma (abaixo), sem passar por merchant." },
+          ].map(opt => {
+            const active = d.gateway_mode === opt.v;
+            return (
+              <button key={opt.v}
+                onClick={() => upd.mutate({ gateway_mode: opt.v })}
+                disabled={upd.isPending}
+                className={`w-full text-left p-3 rounded-xl border transition-all ${active ? "border-rose-500/40 bg-rose-500/5" : "border-border bg-card hover:bg-secondary/40"}`}>
+                <div className="flex items-center gap-2">
+                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${active ? "border-rose-500" : "border-muted-foreground"}`}>
+                    {active && <div className="h-2 w-2 rounded-full bg-rose-500" />}
+                  </div>
+                  <span className="font-medium text-sm">{opt.title}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 ml-6">{opt.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+
+
+
       <Card className="p-5 rounded-2xl space-y-3">
         <h2 className="font-semibold flex items-center gap-2"><Wallet className="h-4 w-4" style={{ color: RUBY }} /> Payouts da Plataforma</h2>
         <p className="text-xs text-muted-foreground">
