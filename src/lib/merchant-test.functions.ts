@@ -22,6 +22,9 @@ export const runMerchantTest = createServerFn({ method: "POST" })
     method: z.enum(["mpesa", "emola"]),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    const phone = normalizePhone(data.payer_phone);
+    if (!phone) throw new Error("INVALID_PHONE: telefone deve ter 9 dígitos (com ou sem +258)");
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: merchant, error } = await supabaseAdmin
@@ -37,6 +40,11 @@ export const runMerchantTest = createServerFn({ method: "POST" })
     }
     if (!merchant.active) throw new Error("Merchant inactivo — activa antes de testar");
 
+    // Respeita gateway_mode: 'sandbox' simula, qualquer outro valor = live
+    const { data: cfg } = await supabaseAdmin
+      .from("platform_config").select("gateway_mode").eq("id", "config").maybeSingle();
+    const sandbox = String(cfg?.gateway_mode ?? "").toLowerCase() === "sandbox";
+
     const method = data.method as SplitMethod;
     const split = calcSplit(data.amount, method);
     const merchantPhone = method === "mpesa"
@@ -47,7 +55,7 @@ export const runMerchantTest = createServerFn({ method: "POST" })
     const { data: logRow } = await supabaseAdmin.from("merchant_transactions").insert({
       merchant_id: merchant.id,
       owner_id: merchant.owner_id,
-      payer_phone: data.payer_phone,
+      payer_phone: phone,
       method,
       gross: split.gross,
       platform_fee: split.platformFee,
@@ -60,10 +68,24 @@ export const runMerchantTest = createServerFn({ method: "POST" })
       is_test: true,
     }).select().single();
 
+    if (sandbox) {
+      await supabaseAdmin.from("merchant_transactions").update({
+        status: "success",
+        rlx_txid: `sandbox_${logRow.id}`,
+        rlx_response: { sandbox: true, simulated: true },
+      }).eq("id", logRow.id);
+      return {
+        status: "success", sandbox: true, http: 200, split,
+        merchant_phone: merchantPhone,
+        partner_transaction_id: `sandbox_${logRow.id}`,
+        rlx_response: { sandbox: true, simulated: true },
+      };
+    }
+
     try {
       const { rlxPay, mapRlxStatus } = await import("@/lib/rlx.server");
       const { http, data: resp } = await rlxPay({
-        phone: data.payer_phone,
+        phone,
         amount: split.gross,
         nome_cliente: data.payer_name,
         splits: [
@@ -92,3 +114,4 @@ export const runMerchantTest = createServerFn({ method: "POST" })
       throw new Error(message);
     }
   });
+
