@@ -45,11 +45,12 @@ function MerchantDetail() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <Link to="/dashboard/merchants"><Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4" /> Voltar</Button></Link>
         <h1 className="text-2xl font-bold">{m.name}</h1>
         <Badge variant={m.active ? "default" : "secondary"}>{m.active ? "Activo" : "Inactivo"}</Badge>
         <div className="ml-auto flex items-center gap-2">
+          <TestTransactionButton merchantId={m.id} />
           <Label className="text-xs">Activo</Label>
           <Switch checked={m.active} onCheckedChange={async (v) => {
             try { await update({ data: { id: m.id, active: v } }); toast.success(v ? "Activado" : "Desactivado"); q.refetch(); }
