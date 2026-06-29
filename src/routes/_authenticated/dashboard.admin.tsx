@@ -346,6 +346,7 @@ function AdminPage() {
               {!txs.data?.length && <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma transação.</p>}
             </div>
           </Card>
+          </>
         )}
 
         {tab === "withdrawals" && (
