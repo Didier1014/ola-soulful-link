@@ -855,6 +855,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_balance: {
+        Args: { _amount: number; _user_id: string }
+        Returns: number
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
