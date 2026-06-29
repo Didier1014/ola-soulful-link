@@ -124,11 +124,11 @@ export const createCheckout = createServerFn({ method: "POST" })
     try {
       const { rlxPay, mapRlxStatus } = await import("@/lib/rlx.server");
       const { http, data: resp } = await rlxPay({
-        method: data.method,
         phone: data.customer_phone,
         amount,
         nome_cliente: data.customer_name,
       });
+
       const externalRef = resp.txid ? String(resp.txid) : null;
       const message = resp.message ?? resp.error ?? null;
       const status = mapRlxStatus(resp.status);
