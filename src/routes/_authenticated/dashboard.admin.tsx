@@ -602,3 +602,91 @@ function AreaChart({ data, height }: { data: { label: string; value: number }[];
     </svg>
   );
 }
+
+function SettingsPanel() {
+  const fnGet = useServerFn(getPlatformConfig);
+  const fnUpd = useServerFn(updatePlatformConfig);
+  const qc = useQueryClient();
+  const cfg = useQuery({ queryKey: ["platform_config"], queryFn: () => fnGet() });
+  const [mpesa, setMpesa] = useState("");
+  const [emola, setEmola] = useState("");
+  useEffect(() => {
+    if (cfg.data) {
+      setMpesa(cfg.data.profit_payout_mpesa ?? "");
+      setEmola(cfg.data.profit_payout_emola ?? "");
+    }
+  }, [cfg.data]);
+  const upd = useMutation({
+    mutationFn: (patch: any) => fnUpd({ data: patch }),
+    onSuccess: () => { toast.success("Configuração actualizada"); qc.invalidateQueries({ queryKey: ["platform_config"] }); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+  });
+
+  if (cfg.isLoading) return <Card className="p-6 rounded-2xl">A carregar…</Card>;
+  const d = cfg.data;
+  if (!d) return <Card className="p-6 rounded-2xl text-destructive">Erro a carregar configuração</Card>;
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-5 rounded-2xl space-y-4">
+        <div className="flex items-center gap-2">
+          <Beaker className="h-4 w-4" style={{ color: RUBY }} />
+          <h2 className="font-semibold">Modo de Teste</h2>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Define como o botão "Testar Transação" (na aba de cada merchant) se comporta.
+        </p>
+        <div className="space-y-3">
+          {[
+            { v: "merchant", title: "Via Merchant", desc: "Simula um merchant real a chamar a API pública. Usa a api_key e payout_mpesa/emola do merchant escolhido. Testa o fluxo completo, incluindo split de lucro." },
+            { v: "general", title: "Via API Geral", desc: "Chama directamente a RLX com as credenciais da plataforma, sem ligar a nenhum merchant. Útil só para confirmar que a ligação à gateway está activa (Bearer token válido, endpoint a responder)." },
+          ].map(opt => {
+            const active = d.test_mode === opt.v;
+            return (
+              <button key={opt.v}
+                onClick={() => upd.mutate({ test_mode: opt.v })}
+                disabled={upd.isPending}
+                className={`w-full text-left p-3 rounded-xl border transition-all ${active ? "border-rose-500/40 bg-rose-500/5" : "border-border bg-card hover:bg-secondary/40"}`}>
+                <div className="flex items-center gap-2">
+                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${active ? "border-rose-500" : "border-muted-foreground"}`}>
+                    {active && <div className="h-2 w-2 rounded-full bg-rose-500" />}
+                  </div>
+                  <span className="font-medium text-sm">{opt.title}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 ml-6">{opt.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+
+      <Card className="p-5 rounded-2xl space-y-3">
+        <h2 className="font-semibold flex items-center gap-2"><Wallet className="h-4 w-4" style={{ color: RUBY }} /> Payouts da Plataforma</h2>
+        <p className="text-xs text-muted-foreground">
+          Números usados como destino único em testes "Via API Geral" e para receber o lucro da plataforma.
+        </p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">M-Pesa (84/85)</label>
+            <input value={mpesa} onChange={e => setMpesa(e.target.value.replace(/\D/g,""))} maxLength={9}
+              className="mt-1 w-full h-10 px-3 rounded-lg bg-background border border-border font-mono text-sm" />
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">E-Mola (86/87)</label>
+            <input value={emola} onChange={e => setEmola(e.target.value.replace(/\D/g,""))} maxLength={9}
+              className="mt-1 w-full h-10 px-3 rounded-lg bg-background border border-border font-mono text-sm" />
+          </div>
+        </div>
+        <Button onClick={() => upd.mutate({ profit_payout_mpesa: mpesa, profit_payout_emola: emola })}
+          disabled={upd.isPending} className="text-white" style={{ background: RUBY }}>
+          Gravar
+        </Button>
+      </Card>
+
+      <Card className="p-5 rounded-2xl text-xs space-y-1">
+        <p className="text-muted-foreground">Modo actual: <span className="font-mono font-bold text-foreground">{d.test_mode}</span></p>
+        <p className="text-muted-foreground">Gateway: <span className="font-mono font-bold text-foreground">{d.gateway_mode}</span></p>
+      </Card>
+    </div>
+  );
+}
