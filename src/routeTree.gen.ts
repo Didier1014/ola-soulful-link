@@ -33,6 +33,7 @@ import { Route as AuthenticatedDashboardProductsRouteImport } from './routes/_au
 import { Route as AuthenticatedDashboardPaymentLinksRouteImport } from './routes/_authenticated/dashboard.payment-links'
 import { Route as AuthenticatedDashboardNotificationsRouteImport } from './routes/_authenticated/dashboard.notifications'
 import { Route as AuthenticatedDashboardNewTransactionRouteImport } from './routes/_authenticated/dashboard.new-transaction'
+import { Route as AuthenticatedDashboardMerchantsRouteImport } from './routes/_authenticated/dashboard.merchants'
 import { Route as AuthenticatedDashboardIntegrationsRouteImport } from './routes/_authenticated/dashboard.integrations'
 import { Route as AuthenticatedDashboardIntegrationLogsRouteImport } from './routes/_authenticated/dashboard.integration-logs'
 import { Route as AuthenticatedDashboardEmailLogsRouteImport } from './routes/_authenticated/dashboard.email-logs'
@@ -179,6 +180,12 @@ const AuthenticatedDashboardNewTransactionRoute =
     path: '/dashboard/new-transaction',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardMerchantsRoute =
+  AuthenticatedDashboardMerchantsRouteImport.update({
+    id: '/dashboard/merchants',
+    path: '/dashboard/merchants',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardIntegrationsRoute =
   AuthenticatedDashboardIntegrationsRouteImport.update({
     id: '/dashboard/integrations',
@@ -277,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/email-logs': typeof AuthenticatedDashboardEmailLogsRoute
   '/dashboard/integration-logs': typeof AuthenticatedDashboardIntegrationLogsRoute
   '/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
+  '/dashboard/merchants': typeof AuthenticatedDashboardMerchantsRoute
   '/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
   '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
   '/dashboard/payment-links': typeof AuthenticatedDashboardPaymentLinksRoute
@@ -316,6 +324,7 @@ export interface FileRoutesByTo {
   '/dashboard/email-logs': typeof AuthenticatedDashboardEmailLogsRoute
   '/dashboard/integration-logs': typeof AuthenticatedDashboardIntegrationLogsRoute
   '/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
+  '/dashboard/merchants': typeof AuthenticatedDashboardMerchantsRoute
   '/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
   '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
   '/dashboard/payment-links': typeof AuthenticatedDashboardPaymentLinksRoute
@@ -357,6 +366,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/email-logs': typeof AuthenticatedDashboardEmailLogsRoute
   '/_authenticated/dashboard/integration-logs': typeof AuthenticatedDashboardIntegrationLogsRoute
   '/_authenticated/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
+  '/_authenticated/dashboard/merchants': typeof AuthenticatedDashboardMerchantsRoute
   '/_authenticated/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
   '/_authenticated/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
   '/_authenticated/dashboard/payment-links': typeof AuthenticatedDashboardPaymentLinksRoute
@@ -398,6 +408,7 @@ export interface FileRouteTypes {
     | '/dashboard/email-logs'
     | '/dashboard/integration-logs'
     | '/dashboard/integrations'
+    | '/dashboard/merchants'
     | '/dashboard/new-transaction'
     | '/dashboard/notifications'
     | '/dashboard/payment-links'
@@ -437,6 +448,7 @@ export interface FileRouteTypes {
     | '/dashboard/email-logs'
     | '/dashboard/integration-logs'
     | '/dashboard/integrations'
+    | '/dashboard/merchants'
     | '/dashboard/new-transaction'
     | '/dashboard/notifications'
     | '/dashboard/payment-links'
@@ -477,6 +489,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/email-logs'
     | '/_authenticated/dashboard/integration-logs'
     | '/_authenticated/dashboard/integrations'
+    | '/_authenticated/dashboard/merchants'
     | '/_authenticated/dashboard/new-transaction'
     | '/_authenticated/dashboard/notifications'
     | '/_authenticated/dashboard/payment-links'
@@ -693,6 +706,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardNewTransactionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard/merchants': {
+      id: '/_authenticated/dashboard/merchants'
+      path: '/dashboard/merchants'
+      fullPath: '/dashboard/merchants'
+      preLoaderRoute: typeof AuthenticatedDashboardMerchantsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard/integrations': {
       id: '/_authenticated/dashboard/integrations'
       path: '/dashboard/integrations'
@@ -816,6 +836,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardEmailLogsRoute: typeof AuthenticatedDashboardEmailLogsRoute
   AuthenticatedDashboardIntegrationLogsRoute: typeof AuthenticatedDashboardIntegrationLogsRoute
   AuthenticatedDashboardIntegrationsRoute: typeof AuthenticatedDashboardIntegrationsRoute
+  AuthenticatedDashboardMerchantsRoute: typeof AuthenticatedDashboardMerchantsRoute
   AuthenticatedDashboardNewTransactionRoute: typeof AuthenticatedDashboardNewTransactionRoute
   AuthenticatedDashboardNotificationsRoute: typeof AuthenticatedDashboardNotificationsRouteWithChildren
   AuthenticatedDashboardPaymentLinksRoute: typeof AuthenticatedDashboardPaymentLinksRoute
@@ -839,6 +860,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedDashboardIntegrationLogsRoute,
   AuthenticatedDashboardIntegrationsRoute:
     AuthenticatedDashboardIntegrationsRoute,
+  AuthenticatedDashboardMerchantsRoute: AuthenticatedDashboardMerchantsRoute,
   AuthenticatedDashboardNewTransactionRoute:
     AuthenticatedDashboardNewTransactionRoute,
   AuthenticatedDashboardNotificationsRoute:
