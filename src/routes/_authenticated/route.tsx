@@ -74,7 +74,7 @@ function AuthedShell() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="bg-sidebar text-sidebar-foreground w-80 p-0 border-r border-white/5 [&>button]:hidden">
+              <SheetContent side="left" className="bg-sidebar text-sidebar-foreground w-80 max-w-[85vw] p-0 border-r border-white/5 flex flex-col [&>button]:hidden">
                 <DrawerContent close={() => setOpen(false)} onSignOut={signOut} />
               </SheetContent>
             </Sheet>
