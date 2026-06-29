@@ -27,16 +27,16 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       { data: txDates },
     ] = await Promise.all([
       supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("transactions").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("transactions").select("*", { count: "exact", head: true }).eq("is_test", false),
       supabaseAdmin.from("products").select("*", { count: "exact", head: true }),
       supabaseAdmin.from("withdrawals").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("transactions").select("amount_mzn").eq("status", "paid"),
-      supabaseAdmin.from("transactions").select("amount_mzn,fee_mzn").eq("status", "paid"),
+      supabaseAdmin.from("transactions").select("amount_mzn").eq("status", "paid").eq("is_test", false),
+      supabaseAdmin.from("transactions").select("amount_mzn,fee_mzn").eq("status", "paid").eq("is_test", false),
       supabaseAdmin.from("profiles").select("balance_mzn"),
       supabaseAdmin.from("withdrawals").select("amount_mzn").eq("status", "pending"),
       supabaseAdmin.from("withdrawals").select("amount_mzn"),
       supabaseAdmin.from("profiles").select("created_at"),
-      supabaseAdmin.from("transactions").select("created_at,fee_mzn,amount_mzn,status"),
+      supabaseAdmin.from("transactions").select("created_at,fee_mzn,amount_mzn,status").eq("is_test", false),
     ]);
 
     const totalVolume = (vol ?? []).reduce((a: number, r: any) => a + Number(r.amount_mzn || 0), 0);
@@ -187,15 +187,16 @@ export const listAllProfiles = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
-export const listAllTransactions = createServerFn({ method: "GET" })
+export const listAllTransactions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context, data }: { context: any; data?: { include_tests?: boolean } }) => {
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
-      .from("transactions").select("*").order("created_at", { ascending: false }).limit(200);
+    let q = supabaseAdmin.from("transactions").select("*").order("created_at", { ascending: false }).limit(200);
+    if (!data?.include_tests) q = q.eq("is_test", false);
+    const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return rows ?? [];
   });
 
 export const listAllWithdrawals = createServerFn({ method: "GET" })

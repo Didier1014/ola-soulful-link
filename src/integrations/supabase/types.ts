@@ -223,6 +223,7 @@ export type Database = {
           created_at: string
           gross: number
           id: string
+          is_test: boolean
           merchant_id: string
           merchant_net: number
           merchant_phone: string
@@ -241,6 +242,7 @@ export type Database = {
           created_at?: string
           gross: number
           id?: string
+          is_test?: boolean
           merchant_id: string
           merchant_net: number
           merchant_phone: string
@@ -259,6 +261,7 @@ export type Database = {
           created_at?: string
           gross?: number
           id?: string
+          is_test?: boolean
           merchant_id?: string
           merchant_net?: number
           merchant_phone?: string
@@ -397,6 +400,33 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      platform_config: {
+        Row: {
+          gateway_mode: string
+          id: string
+          profit_payout_emola: string | null
+          profit_payout_mpesa: string | null
+          test_mode: string
+          updated_at: string
+        }
+        Insert: {
+          gateway_mode?: string
+          id?: string
+          profit_payout_emola?: string | null
+          profit_payout_mpesa?: string | null
+          test_mode?: string
+          updated_at?: string
+        }
+        Update: {
+          gateway_mode?: string
+          id?: string
+          profit_payout_emola?: string | null
+          profit_payout_mpesa?: string | null
+          test_mode?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -693,6 +723,7 @@ export type Database = {
           external_ref: string | null
           fee_mzn: number
           id: string
+          is_test: boolean
           metadata: Json | null
           method: string
           net_mzn: number
@@ -710,6 +741,7 @@ export type Database = {
           external_ref?: string | null
           fee_mzn?: number
           id?: string
+          is_test?: boolean
           metadata?: Json | null
           method: string
           net_mzn?: number
@@ -727,6 +759,7 @@ export type Database = {
           external_ref?: string | null
           fee_mzn?: number
           id?: string
+          is_test?: boolean
           metadata?: Json | null
           method?: string
           net_mzn?: number
