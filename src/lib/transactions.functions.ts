@@ -157,7 +157,7 @@ export const createCheckout = createServerFn({ method: "POST" })
   });
 
 
-// Polling — confirma estado consultando PayBlack se ainda pendente.
+// Polling — confirma estado consultando RLX se ainda pendente.
 export const checkTransactionStatus = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ transaction_id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
@@ -174,18 +174,17 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
       return { status: tx.status };
     }
 
-    const key = process.env.PAYBLACK_API_KEY;
+    const key = process.env.RLX_API_TOKEN;
     if (!key || !tx.external_ref) return { status: tx.status };
 
     try {
-      const { findPayblackTransaction, mapPayBlackStatus } = await import("@/lib/payblack.server");
-      const remote = await findPayblackTransaction(String(tx.external_ref));
-      if (!remote) return { status: tx.status };
-      const next = mapPayBlackStatus(String(remote.status ?? ""));
+      const { rlxCheck, mapRlxStatus } = await import("@/lib/rlx.server");
+      const { data: remote } = await rlxCheck(String(tx.external_ref));
+      const next = mapRlxStatus(String(remote?.status ?? ""));
       if (next !== tx.status) {
         if (next === "paid") {
           await creditSellerIfPending(supabaseAdmin, tx.id, tx.user_id, Number(tx.net_mzn ?? 0), {});
-        } else {
+        } else if (next === "failed") {
           await supabaseAdmin.from("transactions").update({ status: next }).eq("id", tx.id);
         }
       }
@@ -199,6 +198,7 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
       return { status: tx.status };
     }
   });
+
 
 export const listMyTransactions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
