@@ -29,6 +29,7 @@ const navItems = [
   { to: "/dashboard/transactions", label: "Transações", icon: Receipt, exact: false },
   { to: "/dashboard/new-transaction", label: "Nova transacção", icon: PlusCircle, exact: false },
   { to: "/dashboard/customers", label: "Clientes", icon: Users, exact: false },
+  { to: "/dashboard/merchants", label: "Merchants", icon: Store, exact: false },
   { to: "/dashboard/products", label: "Produtos", icon: Package, exact: false },
   { to: "/dashboard/payment-links", label: "Links de pagamento", icon: Link2, exact: false },
 
