@@ -8,9 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ArrowLeft, Copy, Eye, EyeOff, RefreshCw } from "lucide-react";
+import { ArrowLeft, Copy, Eye, EyeOff, RefreshCw, Beaker } from "lucide-react";
 import { getMerchant, updateMerchant, revokeMerchantApiKey } from "@/lib/merchants.functions";
+import { runAdminTest } from "@/lib/admin-test.functions";
+import { getPlatformConfig } from "@/lib/platform-config.functions";
 import { calcSplit, MIN_AMOUNT, type SplitMethod } from "@/lib/split";
 
 export const Route = createFileRoute("/_authenticated/dashboard/merchants/$id")({
