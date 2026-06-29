@@ -296,6 +296,13 @@ function AdminPage() {
         )}
 
         {tab === "transactions" && (
+          <>
+          <div className="flex items-center justify-end gap-2 text-xs">
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" checked={showTests} onChange={e => setShowTests(e.target.checked)} className="accent-rose-500" />
+              <span className="text-muted-foreground">Mostrar transações de teste</span>
+            </label>
+          </div>
           <Card className="rounded-2xl overflow-hidden">
             <div className="grid grid-cols-12 px-4 py-3 text-[10px] uppercase tracking-wider font-bold text-muted-foreground border-b border-border bg-secondary/40">
               <div className="col-span-4">Cliente</div>
