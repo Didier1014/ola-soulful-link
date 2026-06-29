@@ -176,16 +176,12 @@ function StatusBadge({ s }: { s: string }) {
 
 function TestTransactionButton({ merchantId }: { merchantId: string }) {
   const [open, setOpen] = useState(false);
-  const fnCfg = useServerFn(getPlatformConfig);
-  const fnTest = useServerFn(runAdminTest);
-  const cfg = useQuery({ queryKey: ["platform_config"], queryFn: () => fnCfg(), enabled: open, retry: false });
+  const fnTest = useServerFn(runMerchantTest);
   const [phone, setPhone] = useState("847123456");
   const [amount, setAmount] = useState(50);
   const [method, setMethod] = useState<SplitMethod>("mpesa");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<any>(null);
-
-  const mode = cfg.data?.test_mode ?? "merchant";
 
   const run = async () => {
     setBusy(true); setResult(null);
@@ -202,15 +198,14 @@ function TestTransactionButton({ merchantId }: { merchantId: string }) {
   return (
     <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setResult(null); }}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline"><Beaker className="h-3.5 w-3.5" /> Testar Transação</Button>
+        <Button size="sm" variant="outline"><Beaker className="h-3.5 w-3.5" /> Testar C2B</Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>Testar transação · modo <span className="font-mono">{mode}</span></DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Testar transação C2B</DialogTitle></DialogHeader>
         <p className="text-xs text-muted-foreground">
-          {mode === "merchant"
-            ? "Vai chamar internamente o fluxo da API pública com a api_key real deste merchant. Marcado como is_test=true — não conta nos KPIs."
-            : "Vai chamar directamente a RLX com os payouts da plataforma, ignorando este merchant. Útil só para confirmar conectividade à gateway."}
+          Vai disparar um pagamento real na RLX usando os teus números de payout. O cliente recebe o pedido USSD/STK no telefone abaixo. Marcado como <b>teste</b> — não conta nos relatórios.
         </p>
+
         <div className="grid grid-cols-2 gap-3">
           <div><Label>Telefone do pagador</Label><Input value={phone} onChange={e => setPhone(e.target.value)} /></div>
           <div><Label>Valor (MT)</Label><Input type="number" min={MIN_AMOUNT} value={amount} onChange={e => setAmount(Number(e.target.value))} /></div>
