@@ -107,9 +107,9 @@ export const createCheckout = createServerFn({ method: "POST" })
     }).select().single();
     if (tErr) throw new Error(tErr.message);
 
-    const key = process.env.PAYBLACK_API_KEY;
+    const key = process.env.RLX_API_TOKEN;
     if (!key) {
-      // Modo simulação — sem chave configurada
+      // Modo simulação — sem token configurado
       await supabaseAdmin.from("transactions").update({ status: "paid", external_ref: `SIM-${Date.now()}` }).eq("id", tx.id);
       const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", product.user_id).maybeSingle();
       await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + seller_net }).eq("id", product.user_id);
@@ -117,20 +117,21 @@ export const createCheckout = createServerFn({ method: "POST" })
     }
 
     if (data.method === "card") {
-      // PayBlack actual só suporta mpesa/emola.
+      // RLX só suporta mpesa/emola.
       return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, message: "Método não suportado" };
     }
 
     try {
-      const { payblackPay, mapPayBlackStatus } = await import("@/lib/payblack.server");
-      const { http, data: resp } = await payblackPay({
+      const { rlxPay, mapRlxStatus } = await import("@/lib/rlx.server");
+      const { http, data: resp } = await rlxPay({
         method: data.method,
         phone: data.customer_phone,
         amount,
+        nome_cliente: data.customer_name,
       });
-      const externalRef = resp.transaction_reference || (resp.id != null ? String(resp.id) : null);
+      const externalRef = resp.txid ? String(resp.txid) : null;
       const message = resp.message ?? resp.error ?? null;
-      const status = mapPayBlackStatus(resp.status);
+      const status = mapRlxStatus(resp.status);
 
       if (http >= 400 || status === "failed") {
         await supabaseAdmin.from("transactions").update({ status: "failed", external_ref: externalRef }).eq("id", tx.id);
@@ -148,12 +149,13 @@ export const createCheckout = createServerFn({ method: "POST" })
       }
       return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, message };
     } catch (e) {
-      console.log("[PayBlack] error", e);
+      console.log("[RLX] error", e);
       const message = e instanceof Error ? e.message : "Falha ao contactar o gateway";
       await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
       return { id: tx.id, status: "failed", amount, fee: seller_fee, net: seller_net, message };
     }
   });
+
 
 // Polling — confirma estado consultando PayBlack se ainda pendente.
 export const checkTransactionStatus = createServerFn({ method: "POST" })
