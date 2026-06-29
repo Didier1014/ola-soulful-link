@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, Package, Receipt, Wallet, LogOut, Menu, X,
   PlusCircle, BarChart3, Plug, BookOpen, Settings as SettingsIcon, Sun, Moon,
-  Users, Link2, Code2, MessageSquare, RotateCcw, User, Shield, Bell, Mail,
+  Users, Link2, Code2, MessageSquare, RotateCcw, User, Shield, Bell, Mail, Store,
 } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 import { FloatingSaleNotification } from "@/components/floating-sale-notification";
@@ -29,6 +29,7 @@ const navItems = [
   { to: "/dashboard/transactions", label: "Transações", icon: Receipt, exact: false },
   { to: "/dashboard/new-transaction", label: "Nova transacção", icon: PlusCircle, exact: false },
   { to: "/dashboard/customers", label: "Clientes", icon: Users, exact: false },
+  { to: "/dashboard/merchants", label: "Merchants", icon: Store, exact: false },
   { to: "/dashboard/products", label: "Produtos", icon: Package, exact: false },
   { to: "/dashboard/payment-links", label: "Links de pagamento", icon: Link2, exact: false },
 

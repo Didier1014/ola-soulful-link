@@ -33,6 +33,7 @@ import { Route as AuthenticatedDashboardProductsRouteImport } from './routes/_au
 import { Route as AuthenticatedDashboardPaymentLinksRouteImport } from './routes/_authenticated/dashboard.payment-links'
 import { Route as AuthenticatedDashboardNotificationsRouteImport } from './routes/_authenticated/dashboard.notifications'
 import { Route as AuthenticatedDashboardNewTransactionRouteImport } from './routes/_authenticated/dashboard.new-transaction'
+import { Route as AuthenticatedDashboardMerchantsRouteImport } from './routes/_authenticated/dashboard.merchants'
 import { Route as AuthenticatedDashboardIntegrationsRouteImport } from './routes/_authenticated/dashboard.integrations'
 import { Route as AuthenticatedDashboardIntegrationLogsRouteImport } from './routes/_authenticated/dashboard.integration-logs'
 import { Route as AuthenticatedDashboardEmailLogsRouteImport } from './routes/_authenticated/dashboard.email-logs'
@@ -47,6 +48,7 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 import { Route as ApiPublicNotificationsPollRouteImport } from './routes/api/public/notifications.poll'
 import { Route as ApiPublicEmbedScriptRouteImport } from './routes/api/public/embed.script'
 import { Route as AuthenticatedDashboardNotificationsConfigRouteImport } from './routes/_authenticated/dashboard.notifications.config'
+import { Route as AuthenticatedDashboardMerchantsIdRouteImport } from './routes/_authenticated/dashboard.merchants.$id'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -179,6 +181,12 @@ const AuthenticatedDashboardNewTransactionRoute =
     path: '/dashboard/new-transaction',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardMerchantsRoute =
+  AuthenticatedDashboardMerchantsRouteImport.update({
+    id: '/dashboard/merchants',
+    path: '/dashboard/merchants',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardIntegrationsRoute =
   AuthenticatedDashboardIntegrationsRouteImport.update({
     id: '/dashboard/integrations',
@@ -260,6 +268,12 @@ const AuthenticatedDashboardNotificationsConfigRoute =
     path: '/config',
     getParentRoute: () => AuthenticatedDashboardNotificationsRoute,
   } as any)
+const AuthenticatedDashboardMerchantsIdRoute =
+  AuthenticatedDashboardMerchantsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedDashboardMerchantsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -277,6 +291,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/email-logs': typeof AuthenticatedDashboardEmailLogsRoute
   '/dashboard/integration-logs': typeof AuthenticatedDashboardIntegrationLogsRoute
   '/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
+  '/dashboard/merchants': typeof AuthenticatedDashboardMerchantsRouteWithChildren
   '/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
   '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
   '/dashboard/payment-links': typeof AuthenticatedDashboardPaymentLinksRoute
@@ -291,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/merchants/$id': typeof AuthenticatedDashboardMerchantsIdRoute
   '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
@@ -316,6 +332,7 @@ export interface FileRoutesByTo {
   '/dashboard/email-logs': typeof AuthenticatedDashboardEmailLogsRoute
   '/dashboard/integration-logs': typeof AuthenticatedDashboardIntegrationLogsRoute
   '/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
+  '/dashboard/merchants': typeof AuthenticatedDashboardMerchantsRouteWithChildren
   '/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
   '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
   '/dashboard/payment-links': typeof AuthenticatedDashboardPaymentLinksRoute
@@ -330,6 +347,7 @@ export interface FileRoutesByTo {
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/merchants/$id': typeof AuthenticatedDashboardMerchantsIdRoute
   '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
@@ -357,6 +375,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/email-logs': typeof AuthenticatedDashboardEmailLogsRoute
   '/_authenticated/dashboard/integration-logs': typeof AuthenticatedDashboardIntegrationLogsRoute
   '/_authenticated/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
+  '/_authenticated/dashboard/merchants': typeof AuthenticatedDashboardMerchantsRouteWithChildren
   '/_authenticated/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
   '/_authenticated/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
   '/_authenticated/dashboard/payment-links': typeof AuthenticatedDashboardPaymentLinksRoute
@@ -371,6 +390,7 @@ export interface FileRoutesById {
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/dashboard/merchants/$id': typeof AuthenticatedDashboardMerchantsIdRoute
   '/_authenticated/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
@@ -398,6 +418,7 @@ export interface FileRouteTypes {
     | '/dashboard/email-logs'
     | '/dashboard/integration-logs'
     | '/dashboard/integrations'
+    | '/dashboard/merchants'
     | '/dashboard/new-transaction'
     | '/dashboard/notifications'
     | '/dashboard/payment-links'
@@ -412,6 +433,7 @@ export interface FileRouteTypes {
     | '/api/public/rlx-webhook'
     | '/lovable/email/suppression'
     | '/dashboard/'
+    | '/dashboard/merchants/$id'
     | '/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
@@ -437,6 +459,7 @@ export interface FileRouteTypes {
     | '/dashboard/email-logs'
     | '/dashboard/integration-logs'
     | '/dashboard/integrations'
+    | '/dashboard/merchants'
     | '/dashboard/new-transaction'
     | '/dashboard/notifications'
     | '/dashboard/payment-links'
@@ -451,6 +474,7 @@ export interface FileRouteTypes {
     | '/api/public/rlx-webhook'
     | '/lovable/email/suppression'
     | '/dashboard'
+    | '/dashboard/merchants/$id'
     | '/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
@@ -477,6 +501,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/email-logs'
     | '/_authenticated/dashboard/integration-logs'
     | '/_authenticated/dashboard/integrations'
+    | '/_authenticated/dashboard/merchants'
     | '/_authenticated/dashboard/new-transaction'
     | '/_authenticated/dashboard/notifications'
     | '/_authenticated/dashboard/payment-links'
@@ -491,6 +516,7 @@ export interface FileRouteTypes {
     | '/api/public/rlx-webhook'
     | '/lovable/email/suppression'
     | '/_authenticated/dashboard/'
+    | '/_authenticated/dashboard/merchants/$id'
     | '/_authenticated/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
@@ -693,6 +719,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardNewTransactionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard/merchants': {
+      id: '/_authenticated/dashboard/merchants'
+      path: '/dashboard/merchants'
+      fullPath: '/dashboard/merchants'
+      preLoaderRoute: typeof AuthenticatedDashboardMerchantsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard/integrations': {
       id: '/_authenticated/dashboard/integrations'
       path: '/dashboard/integrations'
@@ -791,8 +824,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardNotificationsConfigRouteImport
       parentRoute: typeof AuthenticatedDashboardNotificationsRoute
     }
+    '/_authenticated/dashboard/merchants/$id': {
+      id: '/_authenticated/dashboard/merchants/$id'
+      path: '/$id'
+      fullPath: '/dashboard/merchants/$id'
+      preLoaderRoute: typeof AuthenticatedDashboardMerchantsIdRouteImport
+      parentRoute: typeof AuthenticatedDashboardMerchantsRoute
+    }
   }
 }
+
+interface AuthenticatedDashboardMerchantsRouteChildren {
+  AuthenticatedDashboardMerchantsIdRoute: typeof AuthenticatedDashboardMerchantsIdRoute
+}
+
+const AuthenticatedDashboardMerchantsRouteChildren: AuthenticatedDashboardMerchantsRouteChildren =
+  {
+    AuthenticatedDashboardMerchantsIdRoute:
+      AuthenticatedDashboardMerchantsIdRoute,
+  }
+
+const AuthenticatedDashboardMerchantsRouteWithChildren =
+  AuthenticatedDashboardMerchantsRoute._addFileChildren(
+    AuthenticatedDashboardMerchantsRouteChildren,
+  )
 
 interface AuthenticatedDashboardNotificationsRouteChildren {
   AuthenticatedDashboardNotificationsConfigRoute: typeof AuthenticatedDashboardNotificationsConfigRoute
@@ -816,6 +871,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardEmailLogsRoute: typeof AuthenticatedDashboardEmailLogsRoute
   AuthenticatedDashboardIntegrationLogsRoute: typeof AuthenticatedDashboardIntegrationLogsRoute
   AuthenticatedDashboardIntegrationsRoute: typeof AuthenticatedDashboardIntegrationsRoute
+  AuthenticatedDashboardMerchantsRoute: typeof AuthenticatedDashboardMerchantsRouteWithChildren
   AuthenticatedDashboardNewTransactionRoute: typeof AuthenticatedDashboardNewTransactionRoute
   AuthenticatedDashboardNotificationsRoute: typeof AuthenticatedDashboardNotificationsRouteWithChildren
   AuthenticatedDashboardPaymentLinksRoute: typeof AuthenticatedDashboardPaymentLinksRoute
@@ -839,6 +895,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedDashboardIntegrationLogsRoute,
   AuthenticatedDashboardIntegrationsRoute:
     AuthenticatedDashboardIntegrationsRoute,
+  AuthenticatedDashboardMerchantsRoute:
+    AuthenticatedDashboardMerchantsRouteWithChildren,
   AuthenticatedDashboardNewTransactionRoute:
     AuthenticatedDashboardNewTransactionRoute,
   AuthenticatedDashboardNotificationsRoute:
@@ -886,13 +944,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

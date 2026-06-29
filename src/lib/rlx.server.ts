@@ -62,6 +62,7 @@ export async function rlxPay(args: {
   webhook_url?: string;
   payout_phone_mpesa?: string;
   payout_phone_emola?: string;
+  splits?: Array<{ phone: string; amount: number | string }>;
 }) {
   const payload: Record<string, unknown> = {
     action: "pay",
@@ -72,6 +73,12 @@ export async function rlxPay(args: {
   if (args.webhook_url) payload.webhook_url = args.webhook_url;
   if (args.payout_phone_mpesa) payload.payout_phone_mpesa = formatPhone(args.payout_phone_mpesa);
   if (args.payout_phone_emola) payload.payout_phone_emola = formatPhone(args.payout_phone_emola);
+  if (args.splits && args.splits.length) {
+    payload.splits = args.splits.map((s) => ({
+      phone: formatPhone(s.phone),
+      amount: String(s.amount),
+    }));
+  }
   return rlxPost(payload);
 }
 
