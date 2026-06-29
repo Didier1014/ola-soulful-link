@@ -98,16 +98,12 @@ export const revokeMerchantApiKey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // verifica ownership antes
-    const { data: own } = await context.supabase
-      .from("merchants").select("id").eq("id", data.id).maybeSingle();
-    if (!own) throw new Error("Merchant não encontrado");
-    const { data: newKey } = await supabaseAdmin.rpc("gen_merchant_api_key");
-    const apiKey = newKey as string;
+    const { randomBytes } = await import("crypto");
+    const apiKey = "mrc_live_" + randomBytes(24).toString("hex");
     const { data: row, error } = await context.supabase
       .from("merchants").update({ api_key: apiKey }).eq("id", data.id).select().single();
     if (error) throw new Error(error.message);
+    if (!row) throw new Error("Merchant não encontrado");
     return row;
   });
 
