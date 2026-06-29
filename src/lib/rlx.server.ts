@@ -2,10 +2,10 @@
 // Docs: https://checkout.rlxl.ink/docs.php
 // Endpoint: POST https://checkout.rlxl.ink/api.php
 // Auth: Authorization: Bearer ${RLX_API_TOKEN}
-// Actions:
-//   - action="pay"   { phone, amount, nome_cliente, webhook_url } -> { txid, status, ... }
-//   - action="check" { txid }                                      -> { status, ... }
-// Webhook event: payment.success { txid, valor_bruto, valor_liquido, taxa_rlx }
+// Pay:   { action:"pay", phone, amount, nome_cliente, webhook_url?, payout_phone_mpesa?, payout_phone_emola? }
+// Check: { action:"check", txid }
+// Telefone: 9 dígitos locais (84/85 M-Pesa, 86/87 e-Mola). A RLX infere o canal pelo prefixo.
+// Mínimo C2B: 50 MT. Taxa RLX: 11.99% + 11.99 MT.
 
 const BASE = process.env.RLX_API_BASE || "https://checkout.rlxl.ink/api.php";
 
@@ -13,7 +13,9 @@ export type RlxMethod = "mpesa" | "emola";
 
 export interface RlxResponse {
   txid?: string;
+  partner_transaction_id?: string;
   status?: string;
+  event?: string;
   message?: string;
   error?: string;
   [k: string]: unknown;
@@ -29,23 +31,22 @@ function digits(s: string) {
   return s.replace(/\D/g, "");
 }
 
+// Doc: telefone em 9 dígitos locais (ex: "841234567"). Sem prefixo 258.
 export function formatPhone(phone: string) {
   const d = digits(phone);
-  const local = d.startsWith("258") ? d.slice(3) : d;
-  return `258${local}`;
+  return d.startsWith("258") ? d.slice(3) : d;
 }
 
 async function rlxPost(payload: Record<string, unknown>) {
   const token = getToken();
-  const body = JSON.stringify(payload);
-  console.log("[RLX] →", JSON.stringify({ ...payload }));
+  console.log("[RLX] →", JSON.stringify(payload));
   const res = await fetch(BASE, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body,
+    body: JSON.stringify(payload),
   });
   const raw = await res.text();
   console.log("[RLX] ← HTTP", res.status, raw);
@@ -55,20 +56,23 @@ async function rlxPost(payload: Record<string, unknown>) {
 }
 
 export async function rlxPay(args: {
-  method: RlxMethod;
   phone: string;
   amount: number | string;
   nome_cliente: string;
   webhook_url?: string;
+  payout_phone_mpesa?: string;
+  payout_phone_emola?: string;
 }) {
-  return rlxPost({
+  const payload: Record<string, unknown> = {
     action: "pay",
-    method: args.method,
     phone: formatPhone(args.phone),
     amount: String(args.amount),
     nome_cliente: args.nome_cliente,
-    webhook_url: args.webhook_url,
-  });
+  };
+  if (args.webhook_url) payload.webhook_url = args.webhook_url;
+  if (args.payout_phone_mpesa) payload.payout_phone_mpesa = formatPhone(args.payout_phone_mpesa);
+  if (args.payout_phone_emola) payload.payout_phone_emola = formatPhone(args.payout_phone_emola);
+  return rlxPost(payload);
 }
 
 export async function rlxCheck(txid: string) {
@@ -82,7 +86,7 @@ export function mapRlxStatus(s?: string): "paid" | "failed" | "pending" {
   return "pending";
 }
 
-// Ping/status — usa action=check com txid vazio só para validar o token/endpoint.
+// Ping para healthcheck — usa action=check com txid dummy só para validar token/endpoint.
 export async function rlxPing() {
   const token = process.env.RLX_API_TOKEN;
   if (!token) return { ok: false, http: 0, message: "RLX_API_TOKEN não configurada" };
