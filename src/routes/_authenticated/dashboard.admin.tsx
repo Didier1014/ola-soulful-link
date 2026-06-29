@@ -470,6 +470,10 @@ function AdminPage() {
           </Card>
         )}
 
+        {tab === "settings" && <SettingsPanel />}
+
+
+
         <Sheet open={!!selectedUser} onOpenChange={(o) => !o && setSelectedUser(null)}>
           <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
             <SheetHeader>
