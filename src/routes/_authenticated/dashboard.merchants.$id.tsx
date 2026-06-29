@@ -191,7 +191,7 @@ function TestTransactionButton({ merchantId }: { merchantId: string }) {
   const run = async () => {
     setBusy(true); setResult(null);
     try {
-      const r = await fnTest({ data: { merchant_id: merchantId, payer_phone: phone, amount: Number(amount), method } });
+      const r: any = await fnTest({ data: { merchant_id: merchantId, payer_phone: phone, amount: Number(amount), method } });
       setResult(r);
       toast.success(`Teste executado: ${r.status}`);
     } catch (e: any) {
