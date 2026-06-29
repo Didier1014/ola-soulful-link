@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, Package, Receipt, Wallet, LogOut, Menu, X,
   PlusCircle, BarChart3, Plug, BookOpen, Settings as SettingsIcon, Sun, Moon,
-  Users, Link2, Code2, MessageSquare, RotateCcw, User, Shield, Bell, Mail,
+  Users, Link2, Code2, MessageSquare, RotateCcw, User, Shield, Bell, Mail, Store,
 } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 import { FloatingSaleNotification } from "@/components/floating-sale-notification";
