@@ -187,15 +187,16 @@ export const listAllProfiles = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
-export const listAllTransactions = createServerFn({ method: "GET" })
+export const listAllTransactions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context, data }: { context: any; data?: { include_tests?: boolean } }) => {
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
-      .from("transactions").select("*").order("created_at", { ascending: false }).limit(200);
+    let q = supabaseAdmin.from("transactions").select("*").order("created_at", { ascending: false }).limit(200);
+    if (!data?.include_tests) q = q.eq("is_test", false);
+    const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return rows ?? [];
   });
 
 export const listAllWithdrawals = createServerFn({ method: "GET" })
