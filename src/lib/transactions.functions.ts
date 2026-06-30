@@ -92,54 +92,20 @@ export const createCheckout = createServerFn({ method: "POST" })
     }).select().single();
     if (tErr) throw new Error(tErr.message);
 
-    const key = process.env.RLX_API_TOKEN;
-    if (!key) {
-      // Modo simulação — sem token configurado
-      await supabaseAdmin.from("transactions").update({ status: "paid", external_ref: `SIM-${Date.now()}` }).eq("id", tx.id);
-      const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", product.user_id).maybeSingle();
-      await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + seller_net }).eq("id", product.user_id);
-      return { id: tx.id, status: "paid", amount, fee: seller_fee, net: seller_net, message: "Modo simulação" };
-    }
-
-    if (data.method === "card") {
-      // RLX só suporta mpesa/emola.
-      return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, message: "Método não suportado" };
-    }
-
+    // Modo simulação — sem gateway de pagamento integrado
+    await supabaseAdmin.from("transactions").update({ status: "paid", external_ref: `SIM-${Date.now()}` }).eq("id", tx.id);
+    const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", product.user_id).maybeSingle();
+    await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + seller_net }).eq("id", product.user_id);
     try {
-      const { rlxPay, mapRlxStatus } = await import("@/lib/rlx.server");
-      const { http, data: resp } = await rlxPay({
-        method: data.method,
-        phone: data.customer_phone,
-        amount,
-        nome_cliente: data.customer_name,
-      });
-      const externalRef = resp.txid ? String(resp.txid) : null;
-      const message = resp.message ?? resp.error ?? null;
-      const status = mapRlxStatus(resp.status);
-
-      if (http >= 400 || status === "failed") {
-        await supabaseAdmin.from("transactions").update({ status: "failed", external_ref: externalRef }).eq("id", tx.id);
-        return { id: tx.id, status: "failed", amount, fee: seller_fee, net: seller_net, message: message ?? "Pagamento rejeitado pelo gateway" };
-      }
-
-      if (status === "paid") {
-        await creditSellerIfPending(supabaseAdmin, tx.id, product.user_id, seller_net, { external_ref: externalRef });
-        const { data: prod } = await supabaseAdmin.from("products").select("delivery_url").eq("id", product.id).maybeSingle();
-        return { id: tx.id, status: "paid", amount, fee: seller_fee, net: seller_net, delivery_url: prod?.delivery_url ?? undefined, message: message ?? "Pagamento confirmado" };
-      }
-
-      if (externalRef) {
-        await supabaseAdmin.from("transactions").update({ external_ref: externalRef }).eq("id", tx.id);
-      }
-      return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, message };
+      const { notifyNewSale } = await import("@/lib/sale-notify.server");
+      await notifyNewSale(supabaseAdmin, tx.id);
     } catch (e) {
-      console.log("[RLX] error", e);
-      const message = e instanceof Error ? e.message : "Falha ao contactar o gateway";
-      await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
-      return { id: tx.id, status: "failed", amount, fee: seller_fee, net: seller_net, message };
+      console.log("[createCheckout] notifyNewSale error", e);
     }
+    const { data: prod } = await supabaseAdmin.from("products").select("delivery_url").eq("id", product.id).maybeSingle();
+    return { id: tx.id, status: "paid", amount, fee: seller_fee, net: seller_net, delivery_url: prod?.delivery_url ?? undefined, message: "Pagamento confirmado" };
   });
+
 
 
 // Polling — confirma estado consultando RLX se ainda pendente.
