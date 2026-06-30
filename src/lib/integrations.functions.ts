@@ -83,6 +83,7 @@ const bundleSchema = z.object({
     template: z.string().max(500).optional().default(""),
     test_number: z.string().max(20).optional().default(""),
     support_phone: z.string().max(20).optional().default(""),
+    support_phone2: z.string().max(20).optional().default(""),
   }).optional(),
 });
 
