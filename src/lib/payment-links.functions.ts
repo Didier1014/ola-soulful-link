@@ -68,15 +68,23 @@ export const payLink = createServerFn({ method: "POST" })
         amount,
         nome_cliente: data.customer_name,
         webhook_url: "https://redoxpay.lovable.app/api/public/rlx-webhook",
+        reference: String(tx.id).replace(/-/g, "").slice(0, 20),
+        method: data.method,
       });
-      const txid = r?.txid || r?.data?.txid || r?.id;
+      const txid = r?.txid || r?.partner_transaction_id || r?.data?.txid || r?.data?.partner_transaction_id || r?.id;
       if (txid) {
         await supabaseAdmin.from("transactions").update({ external_ref: String(txid) }).eq("id", tx.id);
       }
       await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
     } catch (e) {
-      await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
-      throw new Error(e instanceof Error ? e.message : "Falha ao iniciar pagamento");
+      const errMsg = e instanceof Error ? e.message : "Falha ao iniciar pagamento";
+      const mergedMeta = {
+        ...(trackingClean && Object.keys(trackingClean).length ? { tracking: trackingClean } : {}),
+        error_message: errMsg,
+        failed_at: new Date().toISOString(),
+      };
+      await supabaseAdmin.from("transactions").update({ status: "failed", metadata: mergedMeta }).eq("id", tx.id);
+      throw new Error(errMsg);
     }
     return { id: tx.id, status: "pending" };
   });
