@@ -169,12 +169,18 @@ export const sendTestSms = createServerFn({ method: "POST" })
     number: z.string().min(6).max(20),
   }).parse(d))
   .handler(async ({ data }) => {
-    // Stub: writes to sms_logs as "queued"; real provider integration ships later
+    const { hexmoSendSms } = await import("@/lib/hexmo.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("sms_logs")
-      .insert({ phone: data.number, message: `[${data.sender_id}] ${data.message}`, status: "queued" } as any);
-    if (error) throw new Error(error.message);
-    return { ok: true };
-
+    const r = await hexmoSendSms({
+      recipient: data.number,
+      sender_id: data.sender_id,
+      message: data.message,
+    });
+    await supabaseAdmin.from("sms_logs").insert({
+      phone: data.number,
+      message: `[${data.sender_id}] ${data.message}`,
+      status: r.ok ? "sent" : "failed",
+    } as any);
+    if (!r.ok) throw new Error(r.error || "Falha ao enviar SMS via Hexmo");
+    return { ok: true, provider: "hexmo", raw: r.raw };
   });
