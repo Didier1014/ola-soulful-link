@@ -1,25 +1,20 @@
 // @ts-nocheck
-// Endpoint público para merchants — valida api_key e executa split.
+// Endpoint público para merchants — valida api_key e envia pagamento à RLX.
 // Authorization: Bearer mrc_live_xxx
 // Body JSON: { client_id?, payer_phone, payer_name?, amount, method: 'mpesa'|'emola' }
-// (is_test NUNCA é lido do payload público — só pode ser true via fluxo interno autenticado)
+// Telefone é enviado tal como recebido — RLX valida e devolve erro se inválido.
+// is_test NUNCA é lido do payload público.
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { calcSplit, MIN_AMOUNT, type SplitMethod } from "@/lib/split";
 
-function normalizePhone(input: string): string | null {
-  const digits = String(input || "").replace(/\D/g, "");
-  const local = digits.startsWith("258") ? digits.slice(3) : digits;
-  return /^\d{9}$/.test(local) ? local : null;
-}
-
 const bodySchema = z.object({
   client_id: z.string().optional(),
-  payer_phone: z.string(),
+  payer_phone: z.string().min(1),
   payer_name: z.string().trim().min(1).max(120).default("Cliente"),
   amount: z.number().min(MIN_AMOUNT),
   method: z.enum(["mpesa", "emola"]),
-}).passthrough(); // ignora silenciosamente campos extra (ex: is_test do cliente)
+}).passthrough();
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -52,9 +47,6 @@ export const Route = createFileRoute("/api/public/pay")({
         if (!parsed.success) return json({ error: "Pedido inválido", details: parsed.error.format() }, 400);
         const body = parsed.data;
 
-        const normalized = normalizePhone(body.payer_phone);
-        if (!normalized) return json({ error: "INVALID_PHONE", message: "Telefone deve ter 9 dígitos (com ou sem +258)" }, 400);
-
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const { data: merchant, error } = await supabaseAdmin
@@ -65,11 +57,6 @@ export const Route = createFileRoute("/api/public/pay")({
           return json({ error: "client_id não corresponde ao merchant" }, 401);
         }
         if (!merchant.active) return json({ error: "Merchant inactivo" }, 403);
-
-        // Ler gateway_mode da plataforma (sandbox = simular; restante = live)
-        const { data: cfg } = await supabaseAdmin
-          .from("platform_config").select("gateway_mode").eq("id", "config").maybeSingle();
-        const sandbox = String(cfg?.gateway_mode ?? "").toLowerCase() === "sandbox";
 
         const method = body.method as SplitMethod;
         const split = calcSplit(body.amount, method);
@@ -82,7 +69,7 @@ export const Route = createFileRoute("/api/public/pay")({
         const { data: logRow } = await supabaseAdmin.from("merchant_transactions").insert({
           merchant_id: merchant.id,
           owner_id: merchant.owner_id,
-          payer_phone: normalized,
+          payer_phone: body.payer_phone,
           method,
           gross: split.gross,
           platform_fee: split.platformFee,
@@ -95,29 +82,14 @@ export const Route = createFileRoute("/api/public/pay")({
           is_test: false,
         }).select().single();
 
-        if (sandbox) {
-          await supabaseAdmin.from("merchant_transactions").update({
-            status: "success",
-            rlx_txid: `sandbox_${logRow.id}`,
-            rlx_response: { sandbox: true, simulated: true },
-          }).eq("id", logRow.id);
-          return json({
-            id: logRow.id, status: "success", sandbox: true,
-            partner_transaction_id: `sandbox_${logRow.id}`,
-            split, merchant_phone: merchantPhone,
-          });
-        }
-
         try {
           const { rlxPay, mapRlxStatus } = await import("@/lib/rlx.server");
           const { http, data: resp } = await rlxPay({
-            phone: normalized,
+            phone: body.payer_phone,
             amount: split.gross,
             nome_cliente: body.payer_name,
-            splits: [
-              { phone: split.providerPhone, amount: split.ownerProfit },
-              { phone: merchantPhone, amount: split.merchantNet },
-            ],
+            payout_phone_mpesa: method === "mpesa" ? merchantPhone : undefined,
+            payout_phone_emola: method === "emola" ? merchantPhone : undefined,
           });
           const mapped = mapRlxStatus(resp?.status);
           const finalStatus = http >= 400 || mapped === "failed" ? "failed" : mapped === "paid" ? "success" : "pending";
@@ -127,6 +99,14 @@ export const Route = createFileRoute("/api/public/pay")({
             rlx_txid: resp?.txid ? String(resp.txid) : null,
             rlx_response: resp ?? null,
           }).eq("id", logRow.id);
+
+          if (finalStatus === "failed") {
+            const rlxError = resp?.error ?? resp?.message ?? "Pagamento recusado pela RLX";
+            return json({
+              id: logRow.id, status: "failed", error: rlxError,
+              rlx_http: http, rlx_response: resp ?? null, split,
+            }, http >= 400 ? http : 502);
+          }
 
           return json({
             id: logRow.id,
