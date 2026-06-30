@@ -287,11 +287,20 @@ function IntegrationsPage() {
         <Input value={b.mozesms.sender_id || ""}
           onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, sender_id: e.target.value } })}
           maxLength={11} placeholder="RedoxPay" />
-        <Label>Modelo da Mensagem SMS</Label>
+        <div className="flex items-center justify-between">
+          <Label>Modelo da Mensagem SMS</Label>
+          <div className="flex flex-wrap gap-1">
+            {["{nome}","{produto}","{valor}","{email}","{suporte}"].map((v) => (
+              <Button key={v} type="button" variant="outline" size="sm" className="h-7 px-2 text-xs"
+                onClick={() => setB({ ...b, mozesms: { ...b.mozesms, template: (b.mozesms.template || "") + v } })}
+              >{v}</Button>
+            ))}
+          </div>
+        </div>
         <Textarea rows={3} value={b.mozesms.template || ""}
           onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, template: e.target.value } })}
         />
-        <p className="text-xs text-muted-foreground -mt-2">Variáveis: {"{nome}"}, {"{produto}"}, {"{valor}"}, {"{email}"}, {"{suporte}"}</p>
+        <p className="text-xs text-muted-foreground -mt-2">Clique nas variáveis acima para inserir. {"{suporte}"} usa o número configurado abaixo.</p>
         <Label>Número de Suporte (aparece no SMS como {"{suporte}"})</Label>
         <div className="flex gap-2">
           <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+</div>
