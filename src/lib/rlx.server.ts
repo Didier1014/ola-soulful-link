@@ -32,7 +32,11 @@ async function call(body: Record<string, unknown>) {
   let json: any = null;
   try { json = JSON.parse(text); } catch { /* ignore */ }
   if (!res.ok) {
-    throw new Error(`RLX ${res.status}: ${json?.message || text || "erro"}`);
+    throw new Error(`RLX ${res.status}: ${json?.message || json?.msg || text || "erro"}`);
+  }
+  // RLX devolve HTTP 200 mesmo em falhas, sinalizando com status:"error" no corpo.
+  if (json && typeof json === "object" && String(json.status).toLowerCase() === "error") {
+    throw new Error(`RLX: ${json.msg || json.message || "erro desconhecido"}`);
   }
   return json ?? {};
 }
