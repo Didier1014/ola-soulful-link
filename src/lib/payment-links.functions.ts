@@ -68,8 +68,6 @@ export const payLink = createServerFn({ method: "POST" })
         amount,
         nome_cliente: data.customer_name,
         webhook_url: "https://redoxpay.lovable.app/api/public/rlx-webhook",
-        reference: String(tx.id).replace(/-/g, "").slice(0, 20),
-        method: data.method,
       });
       const txid = r?.txid || r?.partner_transaction_id || r?.data?.txid || r?.data?.partner_transaction_id || r?.id;
       if (txid) {
