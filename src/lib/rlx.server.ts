@@ -15,6 +15,7 @@ export type RlxPayInput = {
   amount: number;
   nome_cliente: string;
   webhook_url?: string;
+  reference?: string;
 };
 
 async function call(body: Record<string, unknown>) {
@@ -45,13 +46,20 @@ function normalizePhone(raw: string) {
 
 export async function rlxPay(input: RlxPayInput) {
   const phone = normalizePhone(input.phone);
-  console.log("[rlxPay] phone=", phone, "amount=", input.amount);
+  // RLX exige reference entre 1 e 20 caracteres. Geramos curta: timestamp base36 + random.
+  const reference = (input.reference && input.reference.length > 0 && input.reference.length <= 20)
+    ? input.reference
+    : (Date.now().toString(36) + Math.random().toString(36).slice(2, 6)).slice(0, 20);
+  console.log("[rlxPay] phone=", phone, "amount=", input.amount, "ref=", reference);
   const r = await call({
     action: "pay",
     phone,
     amount: input.amount,
     nome_cliente: input.nome_cliente,
     webhook_url: input.webhook_url,
+    reference,
+    transaction_reference: reference,
+    ref: reference,
   });
   console.log("[rlxPay] response=", JSON.stringify(r));
   return r;
