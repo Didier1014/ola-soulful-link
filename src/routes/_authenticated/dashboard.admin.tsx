@@ -249,6 +249,28 @@ function AdminPage() {
                 <AreaChart data={d.tx_timeline.map(u => ({ label: u.date.slice(5), value: u.count }))} height={140} />
               </Card>
             </div>
+
+            <Card className="p-5 rounded-2xl">
+              <h2 className="font-semibold mb-3 flex items-center gap-2"><MessageSquare className="h-4 w-4 text-emerald-500" /> Teste de SMS (Hexmo)</h2>
+              <p className="text-xs text-muted-foreground mb-3">Envia um SMS de teste via Hexmo para validar a integração.</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Sender ID</Label>
+                  <Input value={smsTest.sender_id} onChange={e => setSmsTest({ ...smsTest, sender_id: e.target.value })} maxLength={11} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Número (+258)</Label>
+                  <Input value={smsTest.number} onChange={e => setSmsTest({ ...smsTest, number: e.target.value.replace(/\D/g, "") })} placeholder="84XXXXXXX" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Mensagem</Label>
+                  <Input value={smsTest.message} onChange={e => setSmsTest({ ...smsTest, message: e.target.value })} maxLength={160} />
+                </div>
+              </div>
+              <Button className="mt-3" disabled={testSmsM.isPending || !smsTest.number || !smsTest.message} onClick={() => testSmsM.mutate()}>
+                <Send className="h-4 w-4 mr-2" /> {testSmsM.isPending ? "A enviar..." : "Enviar SMS de teste"}
+              </Button>
+            </Card>
           </>
         )}
 
