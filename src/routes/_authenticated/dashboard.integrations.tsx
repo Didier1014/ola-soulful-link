@@ -29,7 +29,7 @@ interface Bundle {
   push_custom: { title?: string; body?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
   pushcut: { enabled?: boolean; webhook_url?: string };
   utmify: { enabled?: boolean; api_token?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
-  mozesms: { enabled?: boolean; sender_id?: string; template?: string; test_number?: string; support_phone?: string };
+  mozesms: { enabled?: boolean; sender_id?: string; template?: string; test_number?: string; support_phone?: string; support_phone2?: string };
 }
 
 const DEFAULT_BUNDLE: Bundle = {
