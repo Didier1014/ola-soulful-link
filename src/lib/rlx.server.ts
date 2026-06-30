@@ -42,9 +42,11 @@ async function call(body: Record<string, unknown>) {
   let json: any = null;
   try { json = JSON.parse(text); } catch { /* ignore */ }
   if (!res.ok) {
+    console.log("[rlx] HTTP error", res.status, "body=", text, "request=", JSON.stringify(body));
     throw new Error(`RLX ${res.status}: ${json?.message || json?.msg || text || "erro"}`);
   }
   if (json && typeof json === "object" && String(json.status).toLowerCase() === "error") {
+    console.log("[rlx] gateway error response=", text, "request=", JSON.stringify(body));
     throw new Error(`RLX: ${json.msg || json.message || "erro desconhecido"}`);
   }
   return json ?? {};
