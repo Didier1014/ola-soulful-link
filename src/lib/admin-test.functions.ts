@@ -63,10 +63,8 @@ export const runAdminTest = createServerFn({ method: "POST" })
         phone: data.payer_phone,
         amount: split.gross,
         nome_cliente: data.payer_name,
-        splits: [
-          { phone: split.providerPhone, amount: split.ownerProfit },
-          { phone: merchantPhone, amount: split.merchantNet },
-        ],
+        payout_phone_mpesa: method === "mpesa" ? merchantPhone : undefined,
+        payout_phone_emola: method === "emola" ? merchantPhone : undefined,
       });
       const mapped = mapRlxStatus(resp?.status);
       const finalStatus = http >= 400 || mapped === "failed" ? "failed" : mapped === "paid" ? "success" : "pending";
