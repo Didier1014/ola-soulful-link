@@ -15,6 +15,7 @@ export type RlxPayInput = {
   amount: number;
   nome_cliente: string;
   webhook_url?: string;
+  reference?: string;
 };
 
 async function call(body: Record<string, unknown>) {
