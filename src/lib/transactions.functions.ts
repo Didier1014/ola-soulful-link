@@ -126,6 +126,22 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
     const { data: tx } = await supabaseAdmin
       .from("transactions").select("*").eq("id", data.transaction_id).maybeSingle();
     if (!tx) throw new Error("Transacção não encontrada");
+
+    if (tx.status === "pending" && tx.external_ref) {
+      try {
+        const { rlxCheck } = await import("@/lib/rlx.server");
+        const r = await rlxCheck(String(tx.external_ref));
+        const st = (r?.status || r?.data?.status || "").toLowerCase();
+        if (st === "paid" || st === "success" || st === "completed") {
+          await creditSellerIfPending(supabaseAdmin, tx.id, tx.user_id, Number(tx.net_mzn), {});
+          tx.status = "paid";
+        } else if (st === "failed" || st === "cancelled" || st === "canceled") {
+          await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
+          tx.status = "failed";
+        }
+      } catch (e) { console.log("[checkTransactionStatus] rlxCheck error", e); }
+    }
+
     if (tx.status === "paid" && tx.product_id) {
       const { data: prod } = await supabaseAdmin
         .from("products").select("delivery_url").eq("id", tx.product_id).maybeSingle();
