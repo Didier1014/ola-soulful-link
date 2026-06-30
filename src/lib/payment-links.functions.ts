@@ -60,64 +60,20 @@ export const payLink = createServerFn({ method: "POST" })
     }).select().single();
     if (error) throw new Error(error.message);
 
-    const key = process.env.RLX_API_TOKEN;
-    if (!key) {
-      await supabaseAdmin.from("transactions").update({ status: "paid", external_ref: `SIM-${Date.now()}` }).eq("id", tx.id);
-      await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
-      const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", link.user_id).maybeSingle();
-      await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + seller_net }).eq("id", link.user_id);
-      try {
-        const { notifyNewSale } = await import("@/lib/sale-notify.server");
-        await notifyNewSale(supabaseAdmin, tx.id);
-      } catch (e) {
-        console.log(`[payment-link][sale:${tx.id}] notifyNewSale failed`, e);
-      }
-      return { id: tx.id, status: "paid" };
-    }
-
+    // Modo simulação — pagamento auto-confirmado
+    await supabaseAdmin.from("transactions").update({ status: "paid", external_ref: `SIM-${Date.now()}` }).eq("id", tx.id);
+    await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
+    const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", link.user_id).maybeSingle();
+    await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + seller_net }).eq("id", link.user_id);
     try {
-      const { rlxPay, mapRlxStatus } = await import("@/lib/rlx.server");
-      const { http, data: resp } = await rlxPay({
-        method: data.method,
-        phone: data.customer_phone,
-        amount,
-        nome_cliente: data.customer_name,
-      });
-      const externalRef = resp.txid ? String(resp.txid) : null;
-      const status = mapRlxStatus(resp.status);
-
-      if (http >= 400 || status === "failed") {
-        await supabaseAdmin.from("transactions").update({ status: "failed", external_ref: externalRef }).eq("id", tx.id);
-        return { id: tx.id, status: "failed", message: resp.message ?? resp.error ?? "Pagamento rejeitado" };
-      }
-
-      if (status === "paid") {
-        const { data: changed } = await supabaseAdmin
-          .from("transactions")
-          .update({ status: "paid", external_ref: externalRef })
-          .eq("id", tx.id).eq("status", "pending").select("id").maybeSingle();
-        if (changed) {
-          await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
-          const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", link.user_id).maybeSingle();
-          await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + seller_net }).eq("id", link.user_id);
-          try {
-            const { notifyNewSale } = await import("@/lib/sale-notify.server");
-            await notifyNewSale(supabaseAdmin, tx.id);
-          } catch (e) { console.log(`[payment-link][sale:${tx.id}] notifyNewSale failed`, e); }
-        }
-        return { id: tx.id, status: "paid" };
-      }
-
-      if (externalRef) {
-        await supabaseAdmin.from("transactions").update({ external_ref: externalRef }).eq("id", tx.id);
-      }
-      return { id: tx.id, status: "pending" };
+      const { notifyNewSale } = await import("@/lib/sale-notify.server");
+      await notifyNewSale(supabaseAdmin, tx.id);
     } catch (e) {
-      console.log(`[payment-link][sale:${tx.id}] RLX error`, e);
-      await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
-      return { id: tx.id, status: "failed", message: e instanceof Error ? e.message : "Falha no gateway" };
+      console.log(`[payment-link][sale:${tx.id}] notifyNewSale failed`, e);
     }
+    return { id: tx.id, status: "paid" };
   });
+
 
 
 const schema = z.object({
