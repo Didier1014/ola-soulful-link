@@ -148,7 +148,7 @@
   color: transparent;
 }
 
-/* Light-theme scope for the dashboard area (PAYBLACK-style) */
+/* Light-theme scope for the dashboard area */
 .app-light {
   --background: oklch(0.985 0 0);
   --foreground: oklch(0.15 0.01 270);

@@ -1,7 +1,7 @@
 // Cálculo central de taxas RedoxPay.
 // - Taxa cobrada ao vendedor (cliente RedoxPay): 15% + 15 MT
-// - O processador (PayBlack) devolve fee_amount/payout_amount em cada transacção
-//   e o saldo real é consultado via /api/balance — ver src/lib/payblack.server.ts.
+// Modo simulação: sem gateway externo integrado.
+
 export const SELLER_FEE_PCT = 0.15;
 export const SELLER_FEE_FIXED = 15;
 
