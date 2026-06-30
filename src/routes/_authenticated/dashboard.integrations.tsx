@@ -291,7 +291,14 @@ function IntegrationsPage() {
         <Textarea rows={3} value={b.mozesms.template || ""}
           onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, template: e.target.value } })}
         />
-        <p className="text-xs text-muted-foreground -mt-2">Variáveis: {"{nome}"}, {"{produto}"}, {"{valor}"}, {"{email}"}</p>
+        <p className="text-xs text-muted-foreground -mt-2">Variáveis: {"{nome}"}, {"{produto}"}, {"{valor}"}, {"{email}"}, {"{suporte}"}</p>
+        <Label>Número de Suporte (aparece no SMS como {"{suporte}"})</Label>
+        <div className="flex gap-2">
+          <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+</div>
+          <Input value={b.mozesms.support_phone || ""}
+            onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, support_phone: e.target.value.replace(/[^\d+]/g, "") } })}
+            placeholder="258840000000" />
+        </div>
         <Label>Número para teste SMS</Label>
         <div className="flex gap-2">
           <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+258</div>
@@ -305,7 +312,7 @@ function IntegrationsPage() {
             try {
               await tSms({ data: {
                 sender_id: b.mozesms.sender_id || "RedoxPay",
-                message: (b.mozesms.template || "").replaceAll("{nome}", "Teste").replaceAll("{produto}", "Produto Teste").replaceAll("{valor}", "100 MT").replaceAll("{email}", "teste@redox.com"),
+                message: (b.mozesms.template || "").replaceAll("{nome}", "Teste").replaceAll("{produto}", "Produto Teste").replaceAll("{valor}", "100 MT").replaceAll("{email}", "teste@redox.com").replaceAll("{suporte}", b.mozesms.support_phone || ""),
                 number: `258${b.mozesms.test_number}`,
               } });
               toast.success("SMS de teste enviado");
