@@ -108,7 +108,7 @@ export const createCheckout = createServerFn({ method: "POST" })
 
 
 
-// Polling — confirma estado consultando RLX se ainda pendente.
+// Polling — devolve estado actual da transacção.
 export const checkTransactionStatus = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ transaction_id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
@@ -116,39 +116,14 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
     const { data: tx } = await supabaseAdmin
       .from("transactions").select("*").eq("id", data.transaction_id).maybeSingle();
     if (!tx) throw new Error("Transacção não encontrada");
-    if (tx.status === "paid" || tx.status === "failed") {
-      if (tx.status === "paid" && tx.product_id) {
-        const { data: prod } = await supabaseAdmin
-          .from("products").select("delivery_url").eq("id", tx.product_id).maybeSingle();
-        return { status: tx.status, delivery_url: prod?.delivery_url ?? undefined };
-      }
-      return { status: tx.status };
+    if (tx.status === "paid" && tx.product_id) {
+      const { data: prod } = await supabaseAdmin
+        .from("products").select("delivery_url").eq("id", tx.product_id).maybeSingle();
+      return { status: tx.status, delivery_url: prod?.delivery_url ?? undefined };
     }
-
-    const key = process.env.RLX_API_TOKEN;
-    if (!key || !tx.external_ref) return { status: tx.status };
-
-    try {
-      const { rlxCheck, mapRlxStatus } = await import("@/lib/rlx.server");
-      const { data: remote } = await rlxCheck(String(tx.external_ref));
-      const next = mapRlxStatus(String(remote?.status ?? ""));
-      if (next !== tx.status) {
-        if (next === "paid") {
-          await creditSellerIfPending(supabaseAdmin, tx.id, tx.user_id, Number(tx.net_mzn ?? 0), {});
-        } else if (next === "failed") {
-          await supabaseAdmin.from("transactions").update({ status: next }).eq("id", tx.id);
-        }
-      }
-      if (next === "paid" && tx.product_id) {
-        const { data: prod } = await supabaseAdmin
-          .from("products").select("delivery_url").eq("id", tx.product_id).maybeSingle();
-        return { status: next, delivery_url: prod?.delivery_url ?? undefined };
-      }
-      return { status: next };
-    } catch {
-      return { status: tx.status };
-    }
+    return { status: tx.status };
   });
+
 
 
 export const listMyTransactions = createServerFn({ method: "GET" })
