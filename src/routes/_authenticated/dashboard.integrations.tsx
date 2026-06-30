@@ -29,14 +29,14 @@ interface Bundle {
   push_custom: { title?: string; body?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
   pushcut: { enabled?: boolean; webhook_url?: string };
   utmify: { enabled?: boolean; api_token?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
-  mozesms: { enabled?: boolean; sender_id?: string; template?: string; test_number?: string };
+  mozesms: { enabled?: boolean; sender_id?: string; template?: string; test_number?: string; support_phone?: string };
 }
 
 const DEFAULT_BUNDLE: Bundle = {
   push_custom: { title: "💰 Nova venda aprovada!", body: "{valor} — {cliente}", currency: "MZN" },
   pushcut: { enabled: false, webhook_url: "" },
   utmify: { enabled: false, api_token: "", currency: "BRL" },
-  mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Obrigado!", test_number: "" },
+  mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Suporte: {suporte}", test_number: "", support_phone: "" },
 };
 
 function IntegrationsPage() {
@@ -291,7 +291,14 @@ function IntegrationsPage() {
         <Textarea rows={3} value={b.mozesms.template || ""}
           onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, template: e.target.value } })}
         />
-        <p className="text-xs text-muted-foreground -mt-2">Variáveis: {"{nome}"}, {"{produto}"}, {"{valor}"}, {"{email}"}</p>
+        <p className="text-xs text-muted-foreground -mt-2">Variáveis: {"{nome}"}, {"{produto}"}, {"{valor}"}, {"{email}"}, {"{suporte}"}</p>
+        <Label>Número de Suporte (aparece no SMS como {"{suporte}"})</Label>
+        <div className="flex gap-2">
+          <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+</div>
+          <Input value={b.mozesms.support_phone || ""}
+            onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, support_phone: e.target.value.replace(/[^\d+]/g, "") } })}
+            placeholder="258840000000" />
+        </div>
         <Label>Número para teste SMS</Label>
         <div className="flex gap-2">
           <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+258</div>
@@ -305,7 +312,7 @@ function IntegrationsPage() {
             try {
               await tSms({ data: {
                 sender_id: b.mozesms.sender_id || "RedoxPay",
-                message: (b.mozesms.template || "").replaceAll("{nome}", "Teste").replaceAll("{produto}", "Produto Teste").replaceAll("{valor}", "100 MT").replaceAll("{email}", "teste@redox.com"),
+                message: (b.mozesms.template || "").replaceAll("{nome}", "Teste").replaceAll("{produto}", "Produto Teste").replaceAll("{valor}", "100 MT").replaceAll("{email}", "teste@redox.com").replaceAll("{suporte}", b.mozesms.support_phone || ""),
                 number: `258${b.mozesms.test_number}`,
               } });
               toast.success("SMS de teste enviado");
