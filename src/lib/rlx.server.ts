@@ -1,6 +1,16 @@
 // RLX gateway client — checkout.rlxl.ink
 // Endpoint: https://checkout.rlxl.ink/api.php
 // Auth: Authorization: Bearer ${RLX_API_TOKEN}
+//
+// Payload oficial do "pay" (https://checkout.rlxl.ink/docs.php):
+//   action="pay" (obrigatório)
+//   phone (obrigatório, 9 dígitos locais)
+//   amount (obrigatório, mínimo 50.00 MT)
+//   nome_cliente (obrigatório)
+//   payout_phone_mpesa / payout_phone_emola (opcional)
+//   webhook_url (opcional)
+//   splits (opcional)
+// NÃO existe campo "reference" — o ID é gerado pelo rlxPay e devolvido em partner_transaction_id.
 
 const RLX_URL = "https://checkout.rlxl.ink/api.php";
 
@@ -15,8 +25,8 @@ export type RlxPayInput = {
   amount: number;
   nome_cliente: string;
   webhook_url?: string;
-  reference?: string;
-  method?: "mpesa" | "emola";
+  payout_phone_mpesa?: string;
+  payout_phone_emola?: string;
 };
 
 async function call(body: Record<string, unknown>) {
@@ -34,14 +44,13 @@ async function call(body: Record<string, unknown>) {
   if (!res.ok) {
     throw new Error(`RLX ${res.status}: ${json?.message || json?.msg || text || "erro"}`);
   }
-  // RLX devolve HTTP 200 mesmo em falhas, sinalizando com status:"error" no corpo.
   if (json && typeof json === "object" && String(json.status).toLowerCase() === "error") {
     throw new Error(`RLX: ${json.msg || json.message || "erro desconhecido"}`);
   }
   return json ?? {};
 }
 
-// RLX espera 9 dígitos locais (84/85 M-Pesa, 86/87 e-Mola). Removemos prefixos 258/+258/00258.
+// RLX espera 9 dígitos locais. Remove prefixos 258/+258/00258.
 function normalizePhone(raw: string) {
   let n = String(raw || "").replace(/\D/g, "");
   if (n.startsWith("00")) n = n.slice(2);
@@ -49,44 +58,30 @@ function normalizePhone(raw: string) {
   return n;
 }
 
-// Detecta operador a partir do prefixo local (9 dígitos): 84/85 = M-Pesa (Vodacom), 86/87 = e-Mola (Movitel).
-function detectOperator(phone: string): "mpesa" | "emola" | null {
-  const p = phone.slice(0, 2);
-  if (p === "84" || p === "85") return "mpesa";
-  if (p === "86" || p === "87") return "emola";
-  return null;
-}
-
 export async function rlxPay(input: RlxPayInput) {
   const phone = normalizePhone(input.phone);
-  const op = input.method ?? detectOperator(phone);
-  // RLX exige reference entre 1 e 20 caracteres. Geramos curta: timestamp base36 + random.
-  const reference = (input.reference && input.reference.length > 0 && input.reference.length <= 20)
-    ? input.reference
-    : (Date.now().toString(36) + Math.random().toString(36).slice(2, 6)).slice(0, 20);
+  const nome = String(input.nome_cliente || "").trim();
+  if (!nome) throw new Error("nome_cliente é obrigatório");
+  if (!phone || phone.length < 9) throw new Error("Telefone inválido (9 dígitos)");
+  const amt = Number(input.amount);
+  if (!Number.isFinite(amt) || amt < 50) throw new Error("Valor mínimo: 50.00 MT");
+  const amount = amt.toFixed(2); // ex: "100.00"
+
   const payload: Record<string, unknown> = {
     action: "pay",
     phone,
-    amount: input.amount,
-    nome_cliente: input.nome_cliente,
-    webhook_url: input.webhook_url,
-    callback_url: input.webhook_url,
-    reference,
-    transaction_reference: reference,
-    ref: reference,
-    // Identificação do operador em múltiplos nomes de campo (a doc do rlxPay é ambígua).
-    method: op,
-    provider: op,
-    network: op,
-    wallet: op,
-    operator: op === "mpesa" ? "vodacom" : op === "emola" ? "movitel" : null,
+    amount,
+    nome_cliente: nome,
+    webhook_url: input.webhook_url || "https://redoxpay.lovable.app/api/public/rlx-webhook",
   };
+  if (input.payout_phone_mpesa) payload.payout_phone_mpesa = input.payout_phone_mpesa;
+  if (input.payout_phone_emola) payload.payout_phone_emola = input.payout_phone_emola;
+
   console.log("[rlxPay] payload=", JSON.stringify(payload));
   const r = await call(payload);
   console.log("[rlxPay] response=", JSON.stringify(r));
   return r;
 }
-
 
 export async function rlxCheck(txid: string) {
   return call({ action: "check", txid });
