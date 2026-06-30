@@ -36,7 +36,7 @@ const DEFAULT_BUNDLE: Bundle = {
   push_custom: { title: "💰 Nova venda aprovada!", body: "{valor} — {cliente}", currency: "MZN" },
   pushcut: { enabled: false, webhook_url: "" },
   utmify: { enabled: false, api_token: "", currency: "BRL" },
-  mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Suporte: {suporte}", test_number: "", support_phone: "" },
+  mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Suporte: {suporte} / {suporte2}", test_number: "", support_phone: "", support_phone2: "" },
 };
 
 function IntegrationsPage() {
