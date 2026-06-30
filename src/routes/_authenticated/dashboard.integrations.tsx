@@ -204,8 +204,8 @@ function IntegrationsPage() {
 
       {/* 4) UTMify */}
       <IntegrationCard
-        icon={<TrendingUp className="h-5 w-5 text-white" />}
-        iconBg="from-violet-500 to-fuchsia-500"
+        icon={<img src={utmifyLogo.url} alt="UTMify" className="h-7 w-7 object-contain" />}
+        iconBg="bg-white"
         title="UTMify"
         desc="Rastreamento de conversões e atribuição de vendas"
         enabled={!!b.utmify.enabled}
