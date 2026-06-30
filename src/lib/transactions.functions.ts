@@ -4,8 +4,11 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const checkApiStatus = createServerFn({ method: "GET" }).handler(async () => {
-  return { ok: false, configured: false, latency_ms: 0, message: "Gateway não configurado" };
+  const { rlxStatus } = await import("@/lib/rlx.server");
+  return rlxStatus();
 });
+
+const WEBHOOK_URL = "https://redoxpay.lovable.app/api/public/rlx-webhook";
 
 
 
