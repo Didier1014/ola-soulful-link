@@ -16,13 +16,25 @@ export const sendSms = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     phone: z.string().trim().min(6).max(20),
     message: z.string().trim().min(1).max(480),
+    sender_id: z.string().trim().min(1).max(11).optional().default("RedoxPay"),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    // Apenas regista o envio — integração real com gateway SMS é configurável.
+    const { hexmoSendSms } = await import("@/lib/hexmo.server");
+    const r = await hexmoSendSms({
+      recipient: data.phone,
+      sender_id: data.sender_id || "RedoxPay",
+      message: data.message,
+    });
     const { data: row, error } = await context.supabase
       .from("sms_logs")
-      .insert({ user_id: context.userId, phone: data.phone, message: data.message, status: "sent" })
+      .insert({
+        user_id: context.userId,
+        phone: data.phone,
+        message: data.message,
+        status: r.ok ? "sent" : "failed",
+      })
       .select().single();
     if (error) throw new Error(error.message);
+    if (!r.ok) throw new Error(r.error || "Falha ao enviar SMS via Hexmo");
     return row;
   });
