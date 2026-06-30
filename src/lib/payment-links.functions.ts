@@ -60,18 +60,25 @@ export const payLink = createServerFn({ method: "POST" })
     }).select().single();
     if (error) throw new Error(error.message);
 
-    // Modo simulação — pagamento auto-confirmado
-    await supabaseAdmin.from("transactions").update({ status: "paid", external_ref: `SIM-${Date.now()}` }).eq("id", tx.id);
-    await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
-    const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", link.user_id).maybeSingle();
-    await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + seller_net }).eq("id", link.user_id);
+    // Inicia C2B na RLX
     try {
-      const { notifyNewSale } = await import("@/lib/sale-notify.server");
-      await notifyNewSale(supabaseAdmin, tx.id);
+      const { rlxPay } = await import("@/lib/rlx.server");
+      const r = await rlxPay({
+        phone: data.customer_phone,
+        amount,
+        nome_cliente: data.customer_name,
+        webhook_url: "https://redoxpay.lovable.app/api/public/rlx-webhook",
+      });
+      const txid = r?.txid || r?.data?.txid || r?.id;
+      if (txid) {
+        await supabaseAdmin.from("transactions").update({ external_ref: String(txid) }).eq("id", tx.id);
+      }
+      await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
     } catch (e) {
-      console.log(`[payment-link][sale:${tx.id}] notifyNewSale failed`, e);
+      await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
+      throw new Error(e instanceof Error ? e.message : "Falha ao iniciar pagamento");
     }
-    return { id: tx.id, status: "paid" };
+    return { id: tx.id, status: "pending" };
   });
 
 
