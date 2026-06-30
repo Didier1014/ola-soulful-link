@@ -76,10 +76,9 @@ export async function rlxPay(input: RlxPayInput) {
     nome_cliente: nome,
     webhook_url: input.webhook_url || "https://redoxpay.lovable.app/api/public/rlx-webhook",
   };
-  const payoutMpesa = input.payout_phone_mpesa ? normalizePhone(input.payout_phone_mpesa) : "";
-  const payoutEmola = input.payout_phone_emola ? normalizePhone(input.payout_phone_emola) : "";
-  if (payoutMpesa.length === 9) payload.payout_phone_mpesa = payoutMpesa;
-  if (payoutEmola.length === 9) payload.payout_phone_emola = payoutEmola;
+  // O endpoint da RLX aceita payout_phone_* na documentação, mas nos testes reais
+  // esses campos provocam o erro enganador "Invalid Transaction Reference".
+  // Mantemos o pay no payload mínimo oficial e deixamos o payout pelo perfil RLX.
 
   console.log("[rlxPay] payload=", JSON.stringify(payload));
   const r = await call(payload);
