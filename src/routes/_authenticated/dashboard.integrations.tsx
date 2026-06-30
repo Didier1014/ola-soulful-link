@@ -29,14 +29,14 @@ interface Bundle {
   push_custom: { title?: string; body?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
   pushcut: { enabled?: boolean; webhook_url?: string };
   utmify: { enabled?: boolean; api_token?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
-  mozesms: { enabled?: boolean; sender_id?: string; template?: string; test_number?: string };
+  mozesms: { enabled?: boolean; sender_id?: string; template?: string; test_number?: string; support_phone?: string };
 }
 
 const DEFAULT_BUNDLE: Bundle = {
   push_custom: { title: "💰 Nova venda aprovada!", body: "{valor} — {cliente}", currency: "MZN" },
   pushcut: { enabled: false, webhook_url: "" },
   utmify: { enabled: false, api_token: "", currency: "BRL" },
-  mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Obrigado!", test_number: "" },
+  mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Suporte: {suporte}", test_number: "", support_phone: "" },
 };
 
 function IntegrationsPage() {
