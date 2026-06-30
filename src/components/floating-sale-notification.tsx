@@ -73,6 +73,7 @@ export function FloatingSaleNotification() {
           (payload) => {
             const n = payload.new as Record<string, unknown>;
             if (n.type !== "sale") return;
+            if (n.user_id !== userIdRef.current) return; // hard safety: only own notifications
             const d = (n.data ?? {}) as Record<string, unknown>;
             enqueue({
               id: n.id as string,
