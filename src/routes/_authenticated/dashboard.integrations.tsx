@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import { usePushNotifications } from "@/components/push-setup";
 import { PushReactivateBanner } from "@/components/push-reactivate-banner";
 import { sendTestNotification } from "@/lib/notifications.functions";
+import utmifyLogo from "@/assets/utmify-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated/dashboard/integrations")({
   component: IntegrationsPage,
