@@ -1,72 +1,100 @@
-# Aba Merchants + Split de Pagamentos
+## Objectivo
 
-## O que vou construir
+Replicar as duas abas do painel GrokGG (https://grokgg.space/dashboard) — **Integrações** e **Produtos** — no RedoxPay, mantendo o nosso design system, o backend Lovable Cloud e a integração com a RLX.
 
-### 1. Base de dados (migração)
-Nova tabela `merchants` (pertence ao dono da plataforma — `owner_id`):
+## Abas a replicar
 
-| Coluna | Tipo | Notas |
-|---|---|---|
-| id | uuid PK | |
-| owner_id | uuid → auth.users | dono que criou |
-| name | text | obrigatório |
-| email | text | opcional |
-| payout_mpesa | text | 84/85xxxxxxx, opcional |
-| payout_emola | text | 86/87xxxxxxx, opcional |
-| client_id | text único | gerado: `CLI_XXXNNN` |
-| api_key | text único | gerado: `mrc_live_<hex>` |
-| active | bool default true | |
-| created_at / updated_at | timestamptz | |
+### 1) Integrações (`/dashboard/integrations`)
 
-CHECK: pelo menos um dos dois números preenchido. RLS: apenas o `owner_id` lê/escreve os seus merchants. GRANTs normais + admin.
+Cards (toggle on/off + "Testar" por integração + botão único "Salvar Integrações"):
 
-Nova tabela `merchant_transactions` para o log do split:
-`id, merchant_id, owner_id, payer_phone, method, gross, platform_fee, rlx_cost, owner_profit, merchant_net, provider_phone, merchant_phone, status (pending|success|failed), rlx_txid, rlx_response jsonb, created_at`.
+1. **Notificações Push (Web App)** — botão "Ativar notificações" (já existe; mantém).
+2. **Personalizar Notificação Push** — Título, Moeda do valor (MZN/BRL/USD/EUR), Mensagem (corpo) com variáveis `{valor}`, `{produto}`, `{cliente}`, botão "Guardar personalização".
+3. **PUSHcut** — Webhook URL + Testar.
+4. **UTMify** — API Token (password) + Testar (já temos parcial; refina).
+5. **MozeSMS** — Sender ID, Modelo de SMS com variáveis `{nome}`, `{produto}`, `{valor}`, `{email}`, Número para teste SMS (+258) + Testar.
 
-Seed: Gercio Sitoe e Race Armindo Felix pré-carregados para o primeiro admin que abrir a aba (se ainda não existirem).
+Persistência em `integration_settings` (campos JSON `push_custom`, `pushcut`, `utmify`, `mozesms`, `enabled_*`).
 
-### 2. Backend — `src/lib/merchants.functions.ts`
-- `listMerchants` — lista do owner
-- `createMerchant` — valida números (regex 84/85 mpesa, 86/87 emola), gera `client_id` + `api_key`
-- `updateMerchant` — toggle activo, editar números/nome
-- `revokeApiKey` — gera nova api_key
-- `getMerchant` — detalhe + últimas 50 merchant_transactions
-- `processMerchantPayment` — fluxo completo:
-  1. carrega merchant, valida `active`
-  2. `calcSplit(amount, method)` (helper em `src/lib/split.ts`)
-  3. escolhe `merchantPhone` pelo método (fallback para o outro se não tiver)
-  4. POST RLX `action: "pay"` com `splits: [{provider, ownerProfit}, {merchant, merchantNet}]`
-  5. grava `merchant_transactions` com breakdown completo e `rlx_response`
-  6. retorna resultado
+Disparo automático no webhook RLX (`/api/public/rlx-webhook`) quando uma venda é aprovada: envia push (Web Push), POST ao PUSHcut, POST UTMify, POST MozeSMS — tudo opcional, controlado pelos toggles.
 
-### 3. Helper `src/lib/split.ts`
-```ts
-export const PROVIDERS = { mpesa: "847389419", emola: "875844372" };
-export function calcSplit(amount, method) { ... }  // exactamente a fórmula do brief
+### 2) Produtos (`/dashboard/products`)
+
+Lista (igual à actual): cartão com imagem, nome, preço, slug, botões abrir/duplicar/editar/toggle/excluir.
+
+**Modal "Novo Produto" em 2 passos**:
+
+**Passo 1 — Tipo de produto** (4 cartões):
+- Link externo (entrega manual via URL)
+- Produto digital (PDF/ZIP na área de membros)
+- Produto físico (pede endereço, gera código de rastreio)
+- Captura de leads (grátis, sem pagamento)
+
+**Passo 2 — Formulário com 3 abas** (Básico / Entrega / Avançado) e seis pílulas de feature toggles (Pagamento, Checkout, Tracking, Testes A/B, Personalização, Order Bumps, Upsells, Prova Social, Recuperação, Assistente IA):
+
+- **Básico**: Tipo (com "Alterar"), Imagem (upload bucket `product-images`), Nome, Slug (`grokgg.space/...` → no nosso domínio), Descrição, Preço (MZN), Desconto saldo (%).
+- **Entrega**: Link de Obrigado (redireccionamento após pagamento). Para Digital: upload de ficheiro; para Físico: campos de envio; para Leads: redireccionamento.
+- **Avançado**: Sender ID (select), Modelo de Mensagem SMS por produto.
+
+Cada pílula abre um dialog secundário com a sua configuração (todas guardadas em `products.config jsonb`):
+
+- **Pagamento**: métodos aceites (M-Pesa, e-Mola, RLX), permitir parcelas, valor mínimo.
+- **Checkout**: cores, logo, campos pedidos (nome, email, telefone, NUIT, endereço).
+- **Tracking**: Facebook Pixel ID, Google Ads ID, GTM ID, eventos custom.
+- **Testes A/B**: 2 variantes de checkout com % de tráfego.
+- **Personalização**: cabeçalho, badges de prova social, contador escassez.
+- **Order Bumps**: até 3 produtos extra mostrados no checkout.
+- **Upsells**: 1-clique pós-compra, encadeamento.
+- **Prova Social**: feed de vendas recentes no checkout.
+- **Recuperação**: SMS/email para carrinho abandonado.
+- **Assistente IA**: gerar descrição + título com Lovable AI Gateway.
+
+## Esquema da base de dados (migrações)
+
+```sql
+-- products: novas colunas
+ALTER TABLE products
+  ADD COLUMN product_type text NOT NULL DEFAULT 'external'
+    CHECK (product_type IN ('external','digital','physical','lead')),
+  ADD COLUMN thank_you_url text,
+  ADD COLUMN discount_no_balance numeric DEFAULT 0,
+  ADD COLUMN digital_file_path text,
+  ADD COLUMN sms_sender_id text,
+  ADD COLUMN sms_template text,
+  ADD COLUMN config jsonb NOT NULL DEFAULT '{}'::jsonb;
+
+-- integration_settings: campos novos
+ALTER TABLE integration_settings
+  ADD COLUMN push_custom jsonb DEFAULT '{}'::jsonb,
+  ADD COLUMN pushcut jsonb DEFAULT '{}'::jsonb,
+  ADD COLUMN utmify jsonb DEFAULT '{}'::jsonb,
+  ADD COLUMN mozesms jsonb DEFAULT '{}'::jsonb;
 ```
 
-### 4. UI — nova rota `/dashboard/merchants`
-- `src/routes/_authenticated/dashboard.merchants.tsx` — tabela: Nome | M-Pesa | E-Mola | Client ID | Estado | Acções (ver, toggle, eliminar). Botão "Novo merchant" abre Dialog com form validado.
-- `src/routes/_authenticated/dashboard.merchants.$id.tsx` — detalhe: cards com payout phones (copiar), Client ID, API key oculta (mostrar/copiar/revogar), toggle activo, **simulador de split ao vivo** (input valor + método → mostra breakdown), tabela das últimas transacções com breakdown por linha.
-- Adicionar item "Merchants" no sidebar de `src/routes/_authenticated/route.tsx` (ícone `Store`).
+Mantém RLS + GRANTs existentes.
 
-### 5. Validações
-- amount mínimo 50 MT
-- merchant inactivo → erro claro
-- merchant sem número do método → fallback automático para o outro
-- RLX falha/timeout → status `pending`, mantém row para retry
+## Ficheiros a criar/editar
 
-## Detalhes técnicos
+**Novos componentes**:
+- `src/components/products/new-product-dialog.tsx` (wizard 2-passos)
+- `src/components/products/product-feature-dialogs.tsx` (Pagamento, Checkout, Tracking, A/B, Personalização, OrderBumps, Upsells, ProvaSocial, Recuperação, AssistenteIA)
+- `src/components/integrations/integration-card.tsx` (card reutilizável)
 
-- Stack já existente: TanStack Start + `createServerFn` + Supabase RLS. Sem edge functions.
-- RLX já está integrado em `src/lib/rlx.server.ts`. Vou estender `rlxPay` para aceitar `splits?: Array<{phone, amount}>` (passa directamente no payload).
-- Componentes shadcn já em uso (Dialog, Table, Switch, Input, Button). Sem libs novas.
-- Tudo em PT-PT, tom alinhado com o resto do app.
-- `processMerchantPayment` exposto para uso futuro pela API pública (rota `/api/public/merchants/charge` autenticada por `api_key` do merchant) — deixo a função pronta mas a rota fica para a próxima iteração se não quiseres já.
+**Server functions** (novas/expandidas):
+- `src/lib/products.functions.ts` — add `createProductV2`, `updateProductConfig`, `aiGenerateDescription`
+- `src/lib/integrations.functions.ts` — add `testPushcut`, `testUtmify`, `testMozesms`, `sendTestSms`
+- `src/lib/push.functions.ts` — usa `push_custom` para o conteúdo
+- `src/routes/api/public/rlx-webhook.ts` — dispara PUSHcut/UTMify/MozeSMS por venda
 
-## Fora de scope (avisar)
+**Páginas**:
+- `src/routes/_authenticated/dashboard.integrations.tsx` — reescrita
+- `src/routes/_authenticated/dashboard.products.tsx` — reescrita (lista + abre wizard)
 
-- Não toco no fluxo actual de `createCheckout` / `payLink` (continuam a creditar o vendedor logado). O split novo é um fluxo paralelo via `processMerchantPayment`, para os merchants do dono da plataforma.
-- Rota pública autenticada por api_key fica preparada mas não criada nesta iteração — diz se queres já.
+**Storage**:
+- Bucket `product-images` já existe; adicionar bucket `product-digital` (privado) para Produto Digital.
 
-Posso avançar?
+## O que **não** está no âmbito
+
+- Importar logos/marca registada do GrokGG (PUSHcut, UTMify, MozeSMS) — usamos ícones genéricos próximos.
+- Replicar a aba "IA & Insights" do GrokGG (é outro menu, não foi pedido).
+- Substituir a lógica de taxas — mantém-se `src/lib/fees.ts` (15%+15 vendedor, 10%+10 RLX, 5%+5 plataforma).

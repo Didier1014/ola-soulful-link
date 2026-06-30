@@ -16,9 +16,8 @@ import { toast } from "sonner";
 import {
   Shield, Users, Receipt, Package, TrendingUp, AlertTriangle,
   ArrowUpDown, Wallet, DollarSign, CheckCircle2, XCircle, Search,
-  Activity, Zap, Clock, ExternalLink, FileDown, ChevronRight, Settings, Beaker,
+  Activity, Zap, Clock, ExternalLink, FileDown, ChevronRight,
 } from "lucide-react";
-import { getPlatformConfig, updatePlatformConfig } from "@/lib/platform-config.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/admin")({ component: AdminPage });
 
@@ -27,13 +26,12 @@ const fmtMT = (n: number) => `${fmt(n)} MT`;
 const fmt2 = (n: number) => new Intl.NumberFormat("pt-MZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 const RUBY = "#e11d48";
 
-type Tab = "overview" | "users" | "transactions" | "withdrawals" | "products" | "settings";
+type Tab = "overview" | "users" | "transactions" | "withdrawals" | "products";
 
 function AdminPage() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("overview");
   const [search, setSearch] = useState("");
-  const [showTests, setShowTests] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
 
   const fnOverview = useServerFn(getAdminOverview);
@@ -62,7 +60,7 @@ function AdminPage() {
 
   const overview = useQuery({ queryKey: ["admin_overview"], queryFn: () => fnOverview(), retry: false });
   const profiles = useQuery({ queryKey: ["admin_profiles"], queryFn: () => fnProfiles(), enabled: tab === "users" });
-  const txs = useQuery({ queryKey: ["admin_tx", showTests], queryFn: () => fnTx({ data: { include_tests: showTests } }), enabled: tab === "transactions" });
+  const txs = useQuery({ queryKey: ["admin_tx"], queryFn: () => fnTx(), enabled: tab === "transactions" });
   const wds = useQuery({ queryKey: ["admin_wd"], queryFn: () => fnWd(), enabled: tab === "withdrawals" || tab === "overview" });
   const prods = useQuery({ queryKey: ["admin_prods"], queryFn: () => fnProd(), enabled: tab === "products" });
 
@@ -123,7 +121,6 @@ function AdminPage() {
     { id: "transactions", label: "Transações", icon: Receipt },
     { id: "withdrawals", label: "Saques", icon: ArrowUpDown, badge: pendingCount },
     { id: "products", label: "Produtos", icon: Package },
-    { id: "settings", label: "Configurações", icon: Settings },
   ];
 
   if (!isAdmin) {
@@ -296,13 +293,6 @@ function AdminPage() {
         )}
 
         {tab === "transactions" && (
-          <>
-          <div className="flex items-center justify-end gap-2 text-xs">
-            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-              <input type="checkbox" checked={showTests} onChange={e => setShowTests(e.target.checked)} className="accent-rose-500" />
-              <span className="text-muted-foreground">Mostrar transações de teste</span>
-            </label>
-          </div>
           <Card className="rounded-2xl overflow-hidden">
             <div className="grid grid-cols-12 px-4 py-3 text-[10px] uppercase tracking-wider font-bold text-muted-foreground border-b border-border bg-secondary/40">
               <div className="col-span-4">Cliente</div>
@@ -346,7 +336,6 @@ function AdminPage() {
               {!txs.data?.length && <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma transação.</p>}
             </div>
           </Card>
-          </>
         )}
 
         {tab === "withdrawals" && (
@@ -469,10 +458,6 @@ function AdminPage() {
             </div>
           </Card>
         )}
-
-        {tab === "settings" && <SettingsPanel />}
-
-
 
         <Sheet open={!!selectedUser} onOpenChange={(o) => !o && setSelectedUser(null)}>
           <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
@@ -600,127 +585,5 @@ function AreaChart({ data, height }: { data: { label: string; value: number }[];
       <path d={area} fill="url(#rubyFill)" />
       <path d={path} stroke={RUBY} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
-  );
-}
-
-function SettingsPanel() {
-  const fnGet = useServerFn(getPlatformConfig);
-  const fnUpd = useServerFn(updatePlatformConfig);
-  const qc = useQueryClient();
-  const cfg = useQuery({ queryKey: ["platform_config"], queryFn: () => fnGet() });
-  const [mpesa, setMpesa] = useState("");
-  const [emola, setEmola] = useState("");
-  useEffect(() => {
-    if (cfg.data) {
-      setMpesa(cfg.data.profit_payout_mpesa ?? "");
-      setEmola(cfg.data.profit_payout_emola ?? "");
-    }
-  }, [cfg.data]);
-  const upd = useMutation({
-    mutationFn: (patch: any) => fnUpd({ data: patch }),
-    onSuccess: () => { toast.success("Configuração actualizada"); qc.invalidateQueries({ queryKey: ["platform_config"] }); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
-  });
-
-  if (cfg.isLoading) return <Card className="p-6 rounded-2xl">A carregar…</Card>;
-  const d = cfg.data;
-  if (!d) return <Card className="p-6 rounded-2xl text-destructive">Erro a carregar configuração</Card>;
-
-  return (
-    <div className="space-y-4">
-      <Card className="p-5 rounded-2xl space-y-4">
-        <div className="flex items-center gap-2">
-          <Beaker className="h-4 w-4" style={{ color: RUBY }} />
-          <h2 className="font-semibold">Modo de Teste</h2>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Define como o botão "Testar Transação" (na aba de cada merchant) se comporta.
-        </p>
-        <div className="space-y-3">
-          {[
-            { v: "merchant", title: "Via Merchant", desc: "Simula um merchant real a chamar a API pública. Usa a api_key e payout_mpesa/emola do merchant escolhido. Testa o fluxo completo, incluindo split de lucro." },
-            { v: "general", title: "Via API Geral", desc: "Chama directamente a RLX com as credenciais da plataforma, sem ligar a nenhum merchant. Útil só para confirmar que a ligação à gateway está activa (Bearer token válido, endpoint a responder)." },
-          ].map(opt => {
-            const active = d.test_mode === opt.v;
-            return (
-              <button key={opt.v}
-                onClick={() => upd.mutate({ test_mode: opt.v })}
-                disabled={upd.isPending}
-                className={`w-full text-left p-3 rounded-xl border transition-all ${active ? "border-rose-500/40 bg-rose-500/5" : "border-border bg-card hover:bg-secondary/40"}`}>
-                <div className="flex items-center gap-2">
-                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${active ? "border-rose-500" : "border-muted-foreground"}`}>
-                    {active && <div className="h-2 w-2 rounded-full bg-rose-500" />}
-                  </div>
-                  <span className="font-medium text-sm">{opt.title}</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 ml-6">{opt.desc}</p>
-              </button>
-            );
-          })}
-        </div>
-      </Card>
-
-      <Card className="p-5 rounded-2xl space-y-4">
-        <div className="flex items-center gap-2">
-          <Wallet className="h-4 w-4" style={{ color: RUBY }} />
-          <h2 className="font-semibold">Recepção de Pagamentos (Dashboard)</h2>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Define como a dashboard recebe pagamentos C2B em produção (página "Nova Transação" e cobranças internas).
-        </p>
-        <div className="space-y-3">
-          {[
-            { v: "merchant", title: "Via API da Merchant", desc: "Cada pagamento usa a api_key e payouts do merchant dono da transacção. Aplica split de lucro automaticamente." },
-            { v: "general", title: "Via API Geral", desc: "Todos os pagamentos vão directos para os números de payout da plataforma (abaixo), sem passar por merchant." },
-          ].map(opt => {
-            const active = d.gateway_mode === opt.v;
-            return (
-              <button key={opt.v}
-                onClick={() => upd.mutate({ gateway_mode: opt.v })}
-                disabled={upd.isPending}
-                className={`w-full text-left p-3 rounded-xl border transition-all ${active ? "border-rose-500/40 bg-rose-500/5" : "border-border bg-card hover:bg-secondary/40"}`}>
-                <div className="flex items-center gap-2">
-                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${active ? "border-rose-500" : "border-muted-foreground"}`}>
-                    {active && <div className="h-2 w-2 rounded-full bg-rose-500" />}
-                  </div>
-                  <span className="font-medium text-sm">{opt.title}</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 ml-6">{opt.desc}</p>
-              </button>
-            );
-          })}
-        </div>
-      </Card>
-
-
-
-      <Card className="p-5 rounded-2xl space-y-3">
-        <h2 className="font-semibold flex items-center gap-2"><Wallet className="h-4 w-4" style={{ color: RUBY }} /> Payouts da Plataforma</h2>
-        <p className="text-xs text-muted-foreground">
-          Números usados como destino único em testes "Via API Geral" e para receber o lucro da plataforma.
-        </p>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <div>
-            <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">M-Pesa (84/85)</label>
-            <input value={mpesa} onChange={e => setMpesa(e.target.value.replace(/\D/g,""))} maxLength={9}
-              className="mt-1 w-full h-10 px-3 rounded-lg bg-background border border-border font-mono text-sm" />
-          </div>
-          <div>
-            <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">E-Mola (86/87)</label>
-            <input value={emola} onChange={e => setEmola(e.target.value.replace(/\D/g,""))} maxLength={9}
-              className="mt-1 w-full h-10 px-3 rounded-lg bg-background border border-border font-mono text-sm" />
-          </div>
-        </div>
-        <Button onClick={() => upd.mutate({ profit_payout_mpesa: mpesa, profit_payout_emola: emola })}
-          disabled={upd.isPending} className="text-white" style={{ background: RUBY }}>
-          Gravar
-        </Button>
-      </Card>
-
-      <Card className="p-5 rounded-2xl text-xs space-y-1">
-        <p className="text-muted-foreground">Modo actual: <span className="font-mono font-bold text-foreground">{d.test_mode}</span></p>
-        <p className="text-muted-foreground">Gateway: <span className="font-mono font-bold text-foreground">{d.gateway_mode}</span></p>
-      </Card>
-    </div>
   );
 }

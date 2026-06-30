@@ -2,10 +2,10 @@
 // Docs: https://checkout.rlxl.ink/docs.php
 // Endpoint: POST https://checkout.rlxl.ink/api.php
 // Auth: Authorization: Bearer ${RLX_API_TOKEN}
-// Pay:   { action:"pay", phone, amount, nome_cliente, webhook_url?, payout_phone_mpesa?, payout_phone_emola? }
-// Check: { action:"check", txid }
-// Telefone: 9 dígitos locais (84/85 M-Pesa, 86/87 e-Mola). A RLX infere o canal pelo prefixo.
-// Mínimo C2B: 50 MT. Taxa RLX: 11.99% + 11.99 MT.
+// Actions:
+//   - action="pay"   { phone, amount, nome_cliente, webhook_url } -> { txid, status, ... }
+//   - action="check" { txid }                                      -> { status, ... }
+// Webhook event: payment.success { txid, valor_bruto, valor_liquido, taxa_rlx }
 
 const BASE = process.env.RLX_API_BASE || "https://checkout.rlxl.ink/api.php";
 
@@ -13,9 +13,7 @@ export type RlxMethod = "mpesa" | "emola";
 
 export interface RlxResponse {
   txid?: string;
-  partner_transaction_id?: string;
   status?: string;
-  event?: string;
   message?: string;
   error?: string;
   [k: string]: unknown;
@@ -31,64 +29,46 @@ function digits(s: string) {
   return s.replace(/\D/g, "");
 }
 
-// Doc: telefone em 9 dígitos locais (ex: "841234567"). Sem prefixo 258.
 export function formatPhone(phone: string) {
   const d = digits(phone);
-  return d.startsWith("258") ? d.slice(3) : d;
+  const local = d.startsWith("258") ? d.slice(3) : d;
+  return `258${local}`;
 }
 
 async function rlxPost(payload: Record<string, unknown>) {
   const token = getToken();
-  const ts = new Date().toISOString();
-  // [DIAGNÓSTICO RLX] Log temporário — payload exacto + metadata do token (sem expor valor)
-  console.log("[RLX-DIAG]", ts, "endpoint=", BASE);
-  console.log("[RLX-DIAG] payload=", JSON.stringify(payload));
-  console.log("[RLX-DIAG] headers=", JSON.stringify({
-    "Content-Type": "application/json",
-    Authorization: token ? `Bearer <token len=${token.length} prefix=${token.slice(0, 4)} suffix=${token.slice(-4)}>` : "MISSING",
-  }));
-  console.log("[RLX-DIAG] env var name=RLX_API_TOKEN present=", Boolean(process.env.RLX_API_TOKEN));
+  const body = JSON.stringify(payload);
+  console.log("[RLX] →", JSON.stringify({ ...payload }));
   const res = await fetch(BASE, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(payload),
+    body,
   });
   const raw = await res.text();
-  const cfRay = res.headers.get("cf-ray");
-  console.log("[RLX-DIAG] ← HTTP", res.status, "cf-ray=", cfRay, "body=", raw);
+  console.log("[RLX] ← HTTP", res.status, raw);
   let data: RlxResponse = {};
   try { data = JSON.parse(raw); } catch { /* not json */ }
   return { http: res.status, ok: res.ok, raw, data };
 }
 
 export async function rlxPay(args: {
+  method: RlxMethod;
   phone: string;
   amount: number | string;
   nome_cliente: string;
   webhook_url?: string;
-  payout_phone_mpesa?: string;
-  payout_phone_emola?: string;
-  splits?: Array<{ phone: string; amount: number | string }>;
 }) {
-  const payload: Record<string, unknown> = {
+  return rlxPost({
     action: "pay",
+    method: args.method,
     phone: formatPhone(args.phone),
     amount: String(args.amount),
     nome_cliente: args.nome_cliente,
-  };
-  if (args.webhook_url) payload.webhook_url = args.webhook_url;
-  if (args.payout_phone_mpesa) payload.payout_phone_mpesa = formatPhone(args.payout_phone_mpesa);
-  if (args.payout_phone_emola) payload.payout_phone_emola = formatPhone(args.payout_phone_emola);
-  if (args.splits && args.splits.length) {
-    payload.splits = args.splits.map((s) => ({
-      phone: formatPhone(s.phone),
-      amount: String(s.amount),
-    }));
-  }
-  return rlxPost(payload);
+    webhook_url: args.webhook_url,
+  });
 }
 
 export async function rlxCheck(txid: string) {
@@ -102,7 +82,7 @@ export function mapRlxStatus(s?: string): "paid" | "failed" | "pending" {
   return "pending";
 }
 
-// Ping para healthcheck — usa action=check com txid dummy só para validar token/endpoint.
+// Ping/status — usa action=check com txid vazio só para validar o token/endpoint.
 export async function rlxPing() {
   const token = process.env.RLX_API_TOKEN;
   if (!token) return { ok: false, http: 0, message: "RLX_API_TOKEN não configurada" };

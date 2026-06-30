@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, Package, Receipt, Wallet, LogOut, Menu, X,
   PlusCircle, BarChart3, Plug, BookOpen, Settings as SettingsIcon, Sun, Moon,
-  Users, Link2, Code2, MessageSquare, RotateCcw, User, Shield, Bell, Mail, Store,
+  Users, Link2, Code2, MessageSquare, RotateCcw, User, Shield, Bell, Mail,
 } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 import { FloatingSaleNotification } from "@/components/floating-sale-notification";
@@ -29,7 +29,6 @@ const navItems = [
   { to: "/dashboard/transactions", label: "Transações", icon: Receipt, exact: false },
   { to: "/dashboard/new-transaction", label: "Nova transacção", icon: PlusCircle, exact: false },
   { to: "/dashboard/customers", label: "Clientes", icon: Users, exact: false },
-  { to: "/dashboard/merchants", label: "Merchants", icon: Store, exact: false },
   { to: "/dashboard/products", label: "Produtos", icon: Package, exact: false },
   { to: "/dashboard/payment-links", label: "Links de pagamento", icon: Link2, exact: false },
 
@@ -74,7 +73,7 @@ function AuthedShell() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="bg-sidebar text-sidebar-foreground w-80 max-w-[85vw] p-0 border-r border-white/5 flex flex-col [&>button]:hidden">
+              <SheetContent side="left" className="bg-sidebar text-sidebar-foreground w-80 p-0 border-r border-white/5 [&>button]:hidden">
                 <DrawerContent close={() => setOpen(false)} onSignOut={signOut} />
               </SheetContent>
             </Sheet>
@@ -117,25 +116,23 @@ function DrawerContent({ close, onSignOut }: { close: () => void; onSignOut: () 
         <div className="w-9" />
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto">
-        <p className="px-5 pt-5 pb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Menu</p>
-        <nav className="px-3 pb-3 flex flex-col gap-1">
-          {navItems.map((it) => (
-            <Link
-              key={it.to}
-              to={it.to}
-              onClick={close}
-              activeOptions={{ exact: !!it.exact }}
-              className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground/70 hover:bg-white/5 hover:text-foreground transition-colors"
-              activeProps={{ className: "flex items-center gap-3 rounded-xl px-3 py-3 text-sm bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30 text-foreground font-semibold shadow-[0_0_20px_-8px_var(--primary-glow)]" }}
-            >
-              <it.icon className="h-4 w-4" /> {it.label}
-            </Link>
-          ))}
-        </nav>
-      </div>
+      <p className="px-5 pt-5 pb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Menu</p>
+      <nav className="px-3 flex flex-col gap-1">
+        {navItems.map((it) => (
+          <Link
+            key={it.to}
+            to={it.to}
+            onClick={close}
+            activeOptions={{ exact: !!it.exact }}
+            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground/70 hover:bg-white/5 hover:text-foreground transition-colors"
+            activeProps={{ className: "flex items-center gap-3 rounded-xl px-3 py-3 text-sm bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30 text-foreground font-semibold shadow-[0_0_20px_-8px_var(--primary-glow)]" }}
+          >
+            <it.icon className="h-4 w-4" /> {it.label}
+          </Link>
+        ))}
+      </nav>
 
-      <div className="border-t border-white/5 p-3 space-y-1 shrink-0">
+      <div className="mt-auto border-t border-white/5 p-3 space-y-1">
         <button onClick={toggleTheme} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-foreground/60 hover:bg-white/5">
           {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />} {isDark ? "Modo claro" : "Modo escuro"}
         </button>

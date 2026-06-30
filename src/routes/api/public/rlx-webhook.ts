@@ -1,5 +1,5 @@
-// RLX Webhook — recebe payment.success/failed.
-// Aceita POST simples conforme doc oficial da RLX (sem verificação HMAC).
+// RLX Webhook — recebe payment.success e marca a transação como paga.
+// URL pública: /api/public/rlx-webhook
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/public/rlx-webhook")({
@@ -7,7 +7,11 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
     handlers: {
       POST: async ({ request }) => {
         let payload: any = {};
-        try { payload = await request.json(); } catch { return new Response("invalid json", { status: 400 }); }
+        try {
+          payload = await request.json();
+        } catch {
+          return new Response("invalid json", { status: 400 });
+        }
         console.log("[RLX webhook] ←", JSON.stringify(payload));
 
         const event = String(payload?.event ?? payload?.type ?? "").toLowerCase();
@@ -32,10 +36,12 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
             .select("id")
             .maybeSingle();
           if (changed) {
-            await supabaseAdmin.rpc("increment_balance", {
-              _user_id: tx.user_id,
-              _amount: Number(tx.net_mzn ?? 0),
-            });
+            const { data: prof } = await supabaseAdmin
+              .from("profiles").select("balance_mzn").eq("id", tx.user_id).maybeSingle();
+            await supabaseAdmin
+              .from("profiles")
+              .update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + Number(tx.net_mzn ?? 0) })
+              .eq("id", tx.user_id);
             try {
               const { notifyNewSale } = await import("@/lib/sale-notify.server");
               await notifyNewSale(supabaseAdmin, tx.id);
