@@ -35,19 +35,20 @@ async function call(body: Record<string, unknown>) {
   return json ?? {};
 }
 
+// RLX espera 9 dígitos locais (84/85 M-Pesa, 86/87 e-Mola). Removemos prefixos 258/+258/00258.
 function normalizePhone(raw: string) {
   let n = String(raw || "").replace(/\D/g, "");
   if (n.startsWith("00")) n = n.slice(2);
-  if (n.length === 9 && /^8[2-7]/.test(n)) n = "258" + n;
+  if (n.startsWith("258") && n.length > 9) n = n.slice(3);
   return n;
 }
 
 export async function rlxPay(input: RlxPayInput) {
-  const numero = normalizePhone(input.phone);
-  console.log("[rlxPay] numero=", numero, "amount=", input.amount);
+  const phone = normalizePhone(input.phone);
+  console.log("[rlxPay] phone=", phone, "amount=", input.amount);
   const r = await call({
     action: "pay",
-    numero,
+    phone,
     amount: input.amount,
     nome_cliente: input.nome_cliente,
     webhook_url: input.webhook_url,
