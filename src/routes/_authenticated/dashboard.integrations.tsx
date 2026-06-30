@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import { usePushNotifications } from "@/components/push-setup";
 import { PushReactivateBanner } from "@/components/push-reactivate-banner";
 import { sendTestNotification } from "@/lib/notifications.functions";
+import utmifyLogo from "@/assets/utmify-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated/dashboard/integrations")({
   component: IntegrationsPage,
@@ -203,8 +204,8 @@ function IntegrationsPage() {
 
       {/* 4) UTMify */}
       <IntegrationCard
-        icon={<TrendingUp className="h-5 w-5 text-white" />}
-        iconBg="from-violet-500 to-fuchsia-500"
+        icon={<img src={utmifyLogo.url} alt="UTMify" className="h-7 w-7 object-contain" />}
+        iconBg="bg-white"
         title="UTMify"
         desc="Rastreamento de conversões e atribuição de vendas"
         enabled={!!b.utmify.enabled}
