@@ -16,6 +16,7 @@ export type RlxPayInput = {
   nome_cliente: string;
   webhook_url?: string;
   reference?: string;
+  method?: "mpesa" | "emola";
 };
 
 async function call(body: Record<string, unknown>) {
@@ -44,26 +45,44 @@ function normalizePhone(raw: string) {
   return n;
 }
 
+// Detecta operador a partir do prefixo local (9 dígitos): 84/85 = M-Pesa (Vodacom), 86/87 = e-Mola (Movitel).
+function detectOperator(phone: string): "mpesa" | "emola" | null {
+  const p = phone.slice(0, 2);
+  if (p === "84" || p === "85") return "mpesa";
+  if (p === "86" || p === "87") return "emola";
+  return null;
+}
+
 export async function rlxPay(input: RlxPayInput) {
   const phone = normalizePhone(input.phone);
+  const op = input.method ?? detectOperator(phone);
   // RLX exige reference entre 1 e 20 caracteres. Geramos curta: timestamp base36 + random.
   const reference = (input.reference && input.reference.length > 0 && input.reference.length <= 20)
     ? input.reference
     : (Date.now().toString(36) + Math.random().toString(36).slice(2, 6)).slice(0, 20);
-  console.log("[rlxPay] phone=", phone, "amount=", input.amount, "ref=", reference);
-  const r = await call({
+  const payload: Record<string, unknown> = {
     action: "pay",
     phone,
     amount: input.amount,
     nome_cliente: input.nome_cliente,
     webhook_url: input.webhook_url,
+    callback_url: input.webhook_url,
     reference,
     transaction_reference: reference,
     ref: reference,
-  });
+    // Identificação do operador em múltiplos nomes de campo (a doc do rlxPay é ambígua).
+    method: op,
+    provider: op,
+    network: op,
+    wallet: op,
+    operator: op === "mpesa" ? "vodacom" : op === "emola" ? "movitel" : null,
+  };
+  console.log("[rlxPay] payload=", JSON.stringify(payload));
+  const r = await call(payload);
   console.log("[rlxPay] response=", JSON.stringify(r));
   return r;
 }
+
 
 export async function rlxCheck(txid: string) {
   return call({ action: "check", txid });
