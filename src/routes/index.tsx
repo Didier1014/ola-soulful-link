@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   ShieldCheck, Zap, Smartphone, Code2, Repeat, QrCode, Link2, BarChart3,
   Lock, Fingerprint, KeyRound, CheckCircle2, Star, ArrowRight, MessageCircle,
-  Cpu, TrendingUp, Globe, CreditCard,
+  Cpu, TrendingUp, Globe, CreditCard, Sparkles, ChevronDown, Search, Bell,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
