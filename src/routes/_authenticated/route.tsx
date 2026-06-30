@@ -117,7 +117,7 @@ function DrawerContent({ close, onSignOut }: { close: () => void; onSignOut: () 
       </div>
 
       <p className="px-5 pt-5 pb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Menu</p>
-      <nav className="px-3 flex flex-col gap-1">
+      <nav className="px-3 flex-1 min-h-0 overflow-y-auto flex flex-col gap-1 pb-3">
         {navItems.map((it) => (
           <Link
             key={it.to}
@@ -133,6 +133,7 @@ function DrawerContent({ close, onSignOut }: { close: () => void; onSignOut: () 
       </nav>
 
       <div className="mt-auto border-t border-white/5 p-3 space-y-1">
+
         <button onClick={toggleTheme} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-foreground/60 hover:bg-white/5">
           {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />} {isDark ? "Modo claro" : "Modo escuro"}
         </button>

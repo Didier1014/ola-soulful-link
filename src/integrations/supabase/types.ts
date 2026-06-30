@@ -218,6 +218,116 @@ export type Database = {
         }
         Relationships: []
       }
+      merchant_transactions: {
+        Row: {
+          created_at: string
+          gross: number
+          id: string
+          is_test: boolean
+          merchant_id: string
+          merchant_net: number
+          merchant_phone: string
+          method: string
+          owner_id: string
+          owner_profit: number
+          payer_phone: string
+          platform_fee: number
+          provider_phone: string
+          rlx_cost: number
+          rlx_response: Json | null
+          rlx_txid: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          gross: number
+          id?: string
+          is_test?: boolean
+          merchant_id: string
+          merchant_net: number
+          merchant_phone: string
+          method: string
+          owner_id: string
+          owner_profit: number
+          payer_phone: string
+          platform_fee: number
+          provider_phone: string
+          rlx_cost: number
+          rlx_response?: Json | null
+          rlx_txid?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          gross?: number
+          id?: string
+          is_test?: boolean
+          merchant_id?: string
+          merchant_net?: number
+          merchant_phone?: string
+          method?: string
+          owner_id?: string
+          owner_profit?: number
+          payer_phone?: string
+          platform_fee?: number
+          provider_phone?: string
+          rlx_cost?: number
+          rlx_response?: Json | null
+          rlx_txid?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_transactions_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      merchants: {
+        Row: {
+          active: boolean
+          api_key: string
+          client_id: string
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          owner_id: string
+          payout_emola: string | null
+          payout_mpesa: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          api_key?: string
+          client_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          payout_emola?: string | null
+          payout_mpesa?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          api_key?: string
+          client_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          payout_emola?: string | null
+          payout_mpesa?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -290,6 +400,33 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      platform_config: {
+        Row: {
+          gateway_mode: string
+          id: string
+          profit_payout_emola: string | null
+          profit_payout_mpesa: string | null
+          test_mode: string
+          updated_at: string
+        }
+        Insert: {
+          gateway_mode?: string
+          id?: string
+          profit_payout_emola?: string | null
+          profit_payout_mpesa?: string | null
+          test_mode?: string
+          updated_at?: string
+        }
+        Update: {
+          gateway_mode?: string
+          id?: string
+          profit_payout_emola?: string | null
+          profit_payout_mpesa?: string | null
+          test_mode?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -586,6 +723,7 @@ export type Database = {
           external_ref: string | null
           fee_mzn: number
           id: string
+          is_test: boolean
           metadata: Json | null
           method: string
           net_mzn: number
@@ -603,6 +741,7 @@ export type Database = {
           external_ref?: string | null
           fee_mzn?: number
           id?: string
+          is_test?: boolean
           metadata?: Json | null
           method: string
           net_mzn?: number
@@ -620,6 +759,7 @@ export type Database = {
           external_ref?: string | null
           fee_mzn?: number
           id?: string
+          is_test?: boolean
           metadata?: Json | null
           method?: string
           net_mzn?: number
@@ -706,12 +846,18 @@ export type Database = {
         Returns: number
       }
       gen_api_key: { Args: never; Returns: string }
+      gen_merchant_api_key: { Args: never; Returns: string }
+      gen_merchant_client_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_balance: {
+        Args: { _amount: number; _user_id: string }
+        Returns: number
       }
       move_to_dlq: {
         Args: {
