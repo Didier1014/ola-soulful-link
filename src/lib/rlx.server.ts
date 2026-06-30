@@ -36,7 +36,14 @@ async function call(body: Record<string, unknown>) {
 }
 
 export async function rlxPay(input: RlxPayInput) {
-  return call({ action: "pay", ...input });
+  // RLX espera: numero (não phone), amount, nome_cliente, webhook_url
+  return call({
+    action: "pay",
+    numero: input.phone,
+    amount: input.amount,
+    nome_cliente: input.nome_cliente,
+    webhook_url: input.webhook_url,
+  });
 }
 
 export async function rlxCheck(txid: string) {
