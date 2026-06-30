@@ -288,7 +288,8 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
           .replaceAll("{produto}", productName || "")
           .replaceAll("{valor}", formatted)
           .replaceAll("{email}", tx.customer_email || "")
-          .replaceAll("{suporte}", sms.support_phone || "");
+          .replaceAll("{suporte}", sms.support_phone || "")
+          .replaceAll("{suporte2}", sms.support_phone2 || "");
         const { hexmoSendSms } = await import("@/lib/hexmo.server");
         const r = await hexmoSendSms({
           recipient: String(tx.customer_phone),

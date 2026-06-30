@@ -29,14 +29,14 @@ interface Bundle {
   push_custom: { title?: string; body?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
   pushcut: { enabled?: boolean; webhook_url?: string };
   utmify: { enabled?: boolean; api_token?: string; currency?: "MZN" | "BRL" | "USD" | "EUR" };
-  mozesms: { enabled?: boolean; sender_id?: string; template?: string; test_number?: string; support_phone?: string };
+  mozesms: { enabled?: boolean; sender_id?: string; template?: string; test_number?: string; support_phone?: string; support_phone2?: string };
 }
 
 const DEFAULT_BUNDLE: Bundle = {
   push_custom: { title: "💰 Nova venda aprovada!", body: "{valor} — {cliente}", currency: "MZN" },
   pushcut: { enabled: false, webhook_url: "" },
   utmify: { enabled: false, api_token: "", currency: "BRL" },
-  mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Suporte: {suporte}", test_number: "", support_phone: "" },
+  mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Suporte: {suporte} / {suporte2}", test_number: "", support_phone: "", support_phone2: "" },
 };
 
 function IntegrationsPage() {
@@ -290,7 +290,7 @@ function IntegrationsPage() {
         <div className="flex items-center justify-between">
           <Label>Modelo da Mensagem SMS</Label>
           <div className="flex flex-wrap gap-1">
-            {["{nome}","{produto}","{valor}","{email}","{suporte}"].map((v) => (
+            {["{nome}","{produto}","{valor}","{email}","{suporte}","{suporte2}"].map((v) => (
               <Button key={v} type="button" variant="outline" size="sm" className="h-7 px-2 text-xs"
                 onClick={() => setB({ ...b, mozesms: { ...b.mozesms, template: (b.mozesms.template || "") + v } })}
               >{v}</Button>
@@ -300,13 +300,20 @@ function IntegrationsPage() {
         <Textarea rows={3} value={b.mozesms.template || ""}
           onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, template: e.target.value } })}
         />
-        <p className="text-xs text-muted-foreground -mt-2">Clique nas variáveis acima para inserir. {"{suporte}"} usa o número configurado abaixo.</p>
-        <Label>Número de Suporte (aparece no SMS como {"{suporte}"})</Label>
+        <p className="text-xs text-muted-foreground -mt-2">Clique nas variáveis acima para inserir. {"{suporte}"} e {"{suporte2}"} usam os números configurados abaixo.</p>
+        <Label>Número de Suporte 1 (aparece como {"{suporte}"})</Label>
         <div className="flex gap-2">
           <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+</div>
           <Input value={b.mozesms.support_phone || ""}
             onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, support_phone: e.target.value.replace(/[^\d+]/g, "") } })}
             placeholder="258840000000" />
+        </div>
+        <Label>Número de Suporte 2 (aparece como {"{suporte2}"})</Label>
+        <div className="flex gap-2">
+          <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+</div>
+          <Input value={b.mozesms.support_phone2 || ""}
+            onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, support_phone2: e.target.value.replace(/[^\d+]/g, "") } })}
+            placeholder="258850000000" />
         </div>
         <Label>Número para teste SMS</Label>
         <div className="flex gap-2">
@@ -321,7 +328,7 @@ function IntegrationsPage() {
             try {
               await tSms({ data: {
                 sender_id: b.mozesms.sender_id || "RedoxPay",
-                message: (b.mozesms.template || "").replaceAll("{nome}", "Teste").replaceAll("{produto}", "Produto Teste").replaceAll("{valor}", "100 MT").replaceAll("{email}", "teste@redox.com").replaceAll("{suporte}", b.mozesms.support_phone || ""),
+                message: (b.mozesms.template || "").replaceAll("{nome}", "Teste").replaceAll("{produto}", "Produto Teste").replaceAll("{valor}", "100 MT").replaceAll("{email}", "teste@redox.com").replaceAll("{suporte}", b.mozesms.support_phone || "").replaceAll("{suporte2}", b.mozesms.support_phone2 || ""),
                 number: `258${b.mozesms.test_number}`,
               } });
               toast.success("SMS de teste enviado");
