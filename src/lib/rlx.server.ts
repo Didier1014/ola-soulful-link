@@ -35,15 +35,25 @@ async function call(body: Record<string, unknown>) {
   return json ?? {};
 }
 
+function normalizePhone(raw: string) {
+  let n = String(raw || "").replace(/\D/g, "");
+  if (n.startsWith("00")) n = n.slice(2);
+  if (n.length === 9 && /^8[2-7]/.test(n)) n = "258" + n;
+  return n;
+}
+
 export async function rlxPay(input: RlxPayInput) {
-  // RLX espera: numero (não phone), amount, nome_cliente, webhook_url
-  return call({
+  const numero = normalizePhone(input.phone);
+  console.log("[rlxPay] numero=", numero, "amount=", input.amount);
+  const r = await call({
     action: "pay",
-    numero: input.phone,
+    numero,
     amount: input.amount,
     nome_cliente: input.nome_cliente,
     webhook_url: input.webhook_url,
   });
+  console.log("[rlxPay] response=", JSON.stringify(r));
+  return r;
 }
 
 export async function rlxCheck(txid: string) {
