@@ -41,7 +41,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
     const totalVolume = (vol ?? []).reduce((a: number, r: any) => a + Number(r.amount_mzn || 0), 0);
     // Lucro estimado = seller_fee (15%+15) - custo processador (~10%+10).
-    // Valor real do custo é devolvido por transacção pelo PayBlack (fee_amount).
+    // Modo simulação — sem custo externo de processamento.
     const totalProfit = (fees ?? []).reduce((a: number, r: any) => {
       const amt = Number(r.amount_mzn || 0);
       const sellerFee = Math.round((amt * 0.15 + 15) * 100) / 100;

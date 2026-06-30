@@ -1,7 +1,7 @@
 // @ts-nocheck
 // Centralized "new sale detected" side effects:
 // in-app notification + web push + Utmify + LowTrack.
-// Called from createCheckout/payLink (resposta síncrona do PayBlack) e pelo
+// Called from createCheckout/payLink e pelo
 // safety-net em listMyTransactions/checkTransactionStatus.
 
 async function logIntegrationCall(
