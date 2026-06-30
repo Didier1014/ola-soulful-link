@@ -90,8 +90,11 @@ function Hero() {
         {/* LEFT */}
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-muted-foreground mb-8">
-            <Sparkles className="h-3.5 w-3.5 text-primary-glow" />
-            <span className="text-foreground font-medium">Integre com IA:</span> Claude, ChatGPT, Lovable e mais.
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
+            </span>
+            <span className="text-foreground font-medium">Operando em Moçambique:</span> M-Pesa e e-Mola.
           </div>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02]">
             Receba fácil.<br />
