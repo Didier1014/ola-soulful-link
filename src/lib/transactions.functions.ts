@@ -4,24 +4,9 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const checkApiStatus = createServerFn({ method: "GET" }).handler(async () => {
-  const key = process.env.RLX_API_TOKEN;
-  if (!key) return { ok: false, configured: false, latency_ms: 0, message: "Gateway não configurado" };
-  const started = Date.now();
-  try {
-    const { rlxPing } = await import("@/lib/rlx.server");
-    const { http, ok, message } = await rlxPing();
-    const latency = Date.now() - started;
-    return {
-      ok,
-      configured: true,
-      latency_ms: latency,
-      status: http,
-      message: ok ? "Gateway online (RLX)" : (message ?? `HTTP ${http}`),
-    };
-  } catch (e) {
-    return { ok: false, configured: true, latency_ms: Date.now() - started, message: e instanceof Error ? e.message : "Sem resposta do gateway" };
-  }
+  return { ok: false, configured: false, latency_ms: 0, message: "Gateway não configurado" };
 });
+
 
 
 const checkoutSchema = z.object({
