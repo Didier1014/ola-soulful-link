@@ -90,15 +90,11 @@ function Hero() {
         {/* LEFT */}
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-muted-foreground mb-8">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
-            </span>
+            <span className="h-2 w-2 rounded-full bg-primary"></span>
             <span className="text-foreground font-medium">Operando em Moçambique:</span> M-Pesa e e-Mola.
           </div>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02]">
-            Receba fácil.<br />
-            Cresça <span className="text-gradient-red">rápido.</span>
+            Sua escala é a <span className="text-gradient-red">nossa prioridade.</span>
           </h1>
           <p className="mt-6 text-lg text-muted-foreground max-w-md">
             Pagamentos online sem complicações.<br />
