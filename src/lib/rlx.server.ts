@@ -39,7 +39,15 @@ export function formatPhone(phone: string) {
 
 async function rlxPost(payload: Record<string, unknown>) {
   const token = getToken();
-  console.log("[RLX] →", JSON.stringify(payload));
+  const ts = new Date().toISOString();
+  // [DIAGNÓSTICO RLX] Log temporário — payload exacto + metadata do token (sem expor valor)
+  console.log("[RLX-DIAG]", ts, "endpoint=", BASE);
+  console.log("[RLX-DIAG] payload=", JSON.stringify(payload));
+  console.log("[RLX-DIAG] headers=", JSON.stringify({
+    "Content-Type": "application/json",
+    Authorization: token ? `Bearer <token len=${token.length} prefix=${token.slice(0, 4)} suffix=${token.slice(-4)}>` : "MISSING",
+  }));
+  console.log("[RLX-DIAG] env var name=RLX_API_TOKEN present=", Boolean(process.env.RLX_API_TOKEN));
   const res = await fetch(BASE, {
     method: "POST",
     headers: {
@@ -49,7 +57,8 @@ async function rlxPost(payload: Record<string, unknown>) {
     body: JSON.stringify(payload),
   });
   const raw = await res.text();
-  console.log("[RLX] ← HTTP", res.status, raw);
+  const cfRay = res.headers.get("cf-ray");
+  console.log("[RLX-DIAG] ← HTTP", res.status, "cf-ray=", cfRay, "body=", raw);
   let data: RlxResponse = {};
   try { data = JSON.parse(raw); } catch { /* not json */ }
   return { http: res.status, ok: res.ok, raw, data };
