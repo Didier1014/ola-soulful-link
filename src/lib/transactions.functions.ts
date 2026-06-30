@@ -104,7 +104,7 @@ export const createCheckout = createServerFn({ method: "POST" })
         nome_cliente: data.customer_name,
         webhook_url: WEBHOOK_URL,
       });
-      const txid = r?.txid || r?.data?.txid || r?.id;
+      const txid = r?.txid || r?.partner_transaction_id || r?.data?.txid || r?.data?.partner_transaction_id || r?.id;
       if (txid) {
         await supabaseAdmin.from("transactions").update({ external_ref: String(txid) }).eq("id", tx.id);
       }
