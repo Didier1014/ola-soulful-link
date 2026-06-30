@@ -103,6 +103,7 @@ export const createCheckout = createServerFn({ method: "POST" })
         amount,
         nome_cliente: data.customer_name,
         webhook_url: WEBHOOK_URL,
+        reference: String(tx.id).replace(/-/g, "").slice(0, 20),
       });
       const txid = r?.txid || r?.partner_transaction_id || r?.data?.txid || r?.data?.partner_transaction_id || r?.id;
       if (txid) {
