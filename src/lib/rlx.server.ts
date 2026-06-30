@@ -76,8 +76,10 @@ export async function rlxPay(input: RlxPayInput) {
     nome_cliente: nome,
     webhook_url: input.webhook_url || "https://redoxpay.lovable.app/api/public/rlx-webhook",
   };
-  if (input.payout_phone_mpesa) payload.payout_phone_mpesa = input.payout_phone_mpesa;
-  if (input.payout_phone_emola) payload.payout_phone_emola = input.payout_phone_emola;
+  const payoutMpesa = input.payout_phone_mpesa ? normalizePhone(input.payout_phone_mpesa) : "";
+  const payoutEmola = input.payout_phone_emola ? normalizePhone(input.payout_phone_emola) : "";
+  if (payoutMpesa.length === 9) payload.payout_phone_mpesa = payoutMpesa;
+  if (payoutEmola.length === 9) payload.payout_phone_emola = payoutEmola;
 
   console.log("[rlxPay] payload=", JSON.stringify(payload));
   const r = await call(payload);

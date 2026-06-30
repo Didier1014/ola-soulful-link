@@ -97,12 +97,19 @@ export const createCheckout = createServerFn({ method: "POST" })
 
     // Inicia C2B na RLX (M-Pesa / e-Mola)
     try {
+      const { data: rlxConfig } = await supabaseAdmin
+        .from("platform_config")
+        .select("profit_payout_mpesa,profit_payout_emola")
+        .eq("id", "config")
+        .maybeSingle();
       const { rlxPay } = await import("@/lib/rlx.server");
       const r = await rlxPay({
         phone: data.customer_phone,
         amount,
         nome_cliente: data.customer_name,
         webhook_url: WEBHOOK_URL,
+        payout_phone_mpesa: rlxConfig?.profit_payout_mpesa || undefined,
+        payout_phone_emola: rlxConfig?.profit_payout_emola || undefined,
       });
       const txid = r?.txid || r?.partner_transaction_id || r?.data?.txid || r?.data?.partner_transaction_id || r?.id;
       if (txid) {
