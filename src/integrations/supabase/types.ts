@@ -735,6 +735,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      expire_stuck_pending_transactions: { Args: never; Returns: number }
       gen_api_key: { Args: never; Returns: string }
       has_role: {
         Args: {
