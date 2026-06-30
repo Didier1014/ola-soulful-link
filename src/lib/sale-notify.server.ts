@@ -275,6 +275,46 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
     }
   }
 
+  // ---------- MozeSMS (Hexmo) ----------
+  try {
+    const sms = bundle?.mozesms as any;
+    if (sms?.enabled && sms?.template && tx.customer_phone) {
+      if (await hasSuccessfulIntegration(supabaseAdmin, userId, tx.id, "mozesms")) {
+        console.log(`[sale:${tx.id}][mozesms] already sent — skipping`);
+      } else {
+        const formatted = `${Number(tx.amount_mzn).toLocaleString("pt-MZ", { style: "currency", currency: "MZN" })}`;
+        const message = String(sms.template)
+          .replaceAll("{nome}", tx.customer_name || "Cliente")
+          .replaceAll("{produto}", productName || "")
+          .replaceAll("{valor}", formatted)
+          .replaceAll("{email}", tx.customer_email || "")
+          .replaceAll("{suporte}", sms.support_phone || "");
+        const { hexmoSendSms } = await import("@/lib/hexmo.server");
+        const r = await hexmoSendSms({
+          recipient: String(tx.customer_phone),
+          sender_id: (sms.sender_id || "RedoxPay").slice(0, 11),
+          message,
+        });
+        await logIntegrationCall(supabaseAdmin, {
+          userId, txId: tx.id, provider: "mozesms",
+          statusCode: r.status, ok: r.ok,
+          payload: { to: tx.customer_phone, sender_id: sms.sender_id, message },
+          response: typeof r.raw === "string" ? r.raw : JSON.stringify(r.raw ?? null),
+          error: r.ok ? null : (r.error || "sms_failed"),
+        });
+        await supabaseAdmin.from("sms_logs").insert({
+          user_id: userId,
+          phone: tx.customer_phone,
+          message,
+          status: r.ok ? "sent" : "failed",
+        });
+      }
+    }
+  } catch (e) {
+    await logIntegrationCall(supabaseAdmin, { userId, txId: tx.id, provider: "mozesms", ok: false, error: String((e as any)?.message ?? e) });
+    console.log(`[sale:${tx.id}][mozesms] error`, e);
+  }
+
   // ---------- Utmify ----------
   try {
     let utmifyToken = bundle?.utmify?.enabled ? (bundle?.utmify?.api_token as string | undefined) : undefined;
