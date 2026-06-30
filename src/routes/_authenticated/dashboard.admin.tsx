@@ -36,6 +36,13 @@ function AdminPage() {
   const [tab, setTab] = useState<Tab>("overview");
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [smsTest, setSmsTest] = useState({ sender_id: "RedoxPay", number: "", message: "Teste admin RedoxPay" });
+  const fnTestSms = useServerFn(sendTestSms);
+  const testSmsM = useMutation({
+    mutationFn: () => fnTestSms({ data: { sender_id: smsTest.sender_id || "RedoxPay", number: `258${smsTest.number.replace(/\D/g, "")}`, message: smsTest.message } }),
+    onSuccess: () => toast.success("SMS de teste enviado"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+  });
 
   const fnOverview = useServerFn(getAdminOverview);
   const fnProfiles = useServerFn(listAllProfiles);
