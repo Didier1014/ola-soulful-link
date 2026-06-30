@@ -50,20 +50,26 @@ function Landing() {
 function Nav() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/70 border-b border-white/5">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 h-18 py-3 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-bold text-lg tracking-tight">
-          <span className="h-2.5 w-2.5 rounded-full bg-primary-glow shadow-[0_0_14px_var(--primary-glow)]" />
+          <span className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-[0_0_18px_var(--primary-glow)]">
+            <span className="h-2 w-2 rounded-full bg-white" />
+          </span>
           REDOX <span className="text-gradient-red">PAY</span>
         </Link>
-        <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-          <a href="#features" className="hover:text-foreground transition">Funcionalidades</a>
-          <a href="#security" className="hover:text-foreground transition">Segurança</a>
-          <a href="#dashboard" className="hover:text-foreground transition">Painel</a>
-          <a href="#contact" className="hover:text-foreground transition">Contacto</a>
+        <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
+          <a href="#features" className="flex items-center gap-1 hover:text-foreground transition">Produtos <ChevronDown className="h-3.5 w-3.5" /></a>
+          <a href="#security" className="flex items-center gap-1 hover:text-foreground transition">Soluções <ChevronDown className="h-3.5 w-3.5" /></a>
+          <a href="#dashboard" className="flex items-center gap-1 hover:text-foreground transition">Recursos <ChevronDown className="h-3.5 w-3.5" /></a>
+          <a href="#contact" className="hover:text-foreground transition">Preços</a>
         </nav>
         <div className="flex items-center gap-2">
-          <Link to="/auth"><Button variant="ghost" className="text-foreground hover:bg-white/5">Entrar</Button></Link>
-          <Link to="/auth"><Button className="bg-primary hover:bg-primary/90 text-primary-foreground red-glow">Criar conta</Button></Link>
+          <Link to="/auth" className="hidden sm:block"><Button variant="ghost" className="text-foreground hover:bg-white/5">Entrar</Button></Link>
+          <Link to="/auth">
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground red-glow rounded-full h-11 px-5">
+              Acessar Plataforma <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </div>
     </header>
@@ -73,44 +79,131 @@ function Nav() {
 /* ---------------- HERO ---------------- */
 function Hero() {
   return (
-    <section className="max-w-7xl mx-auto px-6 pt-20 pb-24 text-center">
-      <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs text-muted-foreground mb-8">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-        Operando em Moçambique · M-Pesa & e-Mola
+    <section className="relative max-w-7xl mx-auto px-6 pt-16 pb-28">
+      {/* corner grid accents (AbacatePay-style) */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.06]">
+        <div className="absolute top-0 left-0 h-40 w-40 [background-image:repeating-linear-gradient(45deg,white_0,white_1px,transparent_1px,transparent_10px)]" />
+        <div className="absolute top-0 right-0 h-40 w-40 [background-image:repeating-linear-gradient(-45deg,white_0,white_1px,transparent_1px,transparent_10px)]" />
       </div>
-      <h1 className="text-5xl md:text-7xl font-bold tracking-tight max-w-4xl mx-auto leading-[1.05]">
-        Receba pagamentos online em{" "}
-        <span className="text-gradient-red">Moçambique</span> com rapidez e segurança
-      </h1>
-      <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-        Aqui a sua escala é a nossa prioridade. Aceitamos pagamentos via M-Pesa e e-Mola no seu site, app ou link, com 98% de conversão.
-      </p>
-      <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-        <Link to="/auth">
-          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground red-glow h-12 px-7 text-base">
-            Criar conta grátis <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
-        <Link to="/auth">
-          <Button size="lg" variant="outline" className="border-white/15 bg-white/5 hover:bg-white/10 h-12 px-7 text-base">
-            Entrar
-          </Button>
-        </Link>
-        <a href={WHATSAPP} target="_blank" rel="noreferrer">
-          <Button size="lg" variant="ghost" className="h-12 px-7 text-base text-muted-foreground hover:text-foreground">
-            <MessageCircle className="mr-2 h-4 w-4" /> Falar com suporte
-          </Button>
-        </a>
+
+      <div className="relative grid lg:grid-cols-2 gap-12 items-center">
+        {/* LEFT */}
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-muted-foreground mb-8">
+            <Sparkles className="h-3.5 w-3.5 text-primary-glow" />
+            <span className="text-foreground font-medium">Integre com IA:</span> Claude, ChatGPT, Lovable e mais.
+          </div>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02]">
+            Receba fácil.<br />
+            Cresça <span className="text-gradient-red">rápido.</span>
+          </h1>
+          <p className="mt-6 text-lg text-muted-foreground max-w-md">
+            Pagamentos online sem complicações.<br />
+            Link de pagamentos, Checkout ou API simples para M-Pesa e e-Mola.
+          </p>
+
+          <div className="mt-10 flex items-center gap-5">
+            <Link to="/auth">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground red-glow rounded-full h-13 px-7 text-base">
+                Começar agora <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <a href="#features" className="text-sm font-medium text-foreground/80 hover:text-foreground transition underline-offset-4 hover:underline">
+              Nosso manifesto
+            </a>
+          </div>
+
+          {/* mini features */}
+          <div className="mt-14 grid grid-cols-2 gap-6 max-w-md">
+            <MiniFeature icon={Zap} title="Rápido" desc="Integre em minutos, não dias." />
+            <MiniFeature icon={Lock} title="Seguro" desc="Criptografia de ponta." />
+          </div>
+        </div>
+
+        {/* RIGHT — floating dashboard mock */}
+        <div className="relative h-[560px] hidden lg:block">
+          <div className="absolute -inset-10 bg-gradient-to-tr from-primary/30 via-primary-glow/20 to-transparent rounded-[3rem] blur-3xl" />
+          {/* desktop card */}
+          <div className="absolute top-8 right-0 w-[440px] rounded-2xl border border-white/10 bg-card/90 backdrop-blur-xl shadow-2xl shadow-primary/20 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 text-xs text-muted-foreground">
+              <Search className="h-3.5 w-3.5" /> <span className="flex-1">Pesquisar</span>
+              <span className="rounded border border-white/10 px-1.5 py-0.5 text-[10px]">⌘F</span>
+              <Bell className="h-3.5 w-3.5 ml-2" />
+            </div>
+            <div className="p-5">
+              <p className="text-xs text-muted-foreground">Total em vendas</p>
+              <p className="text-3xl font-bold mt-1">MZN 482.110</p>
+              <div className="flex gap-1 mt-4">
+                {["Hoje","Ontem","Semana","Mês"].map((t,i)=>(
+                  <span key={t} className={`text-[11px] px-2.5 py-1 rounded-md ${i===0?"bg-primary/20 text-primary-glow":"text-muted-foreground"}`}>{t}</span>
+                ))}
+              </div>
+              {/* fake chart */}
+              <svg viewBox="0 0 400 130" className="mt-4 w-full h-32">
+                <defs>
+                  <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="oklch(0.58 0.22 25)" stopOpacity="0.5"/>
+                    <stop offset="100%" stopColor="oklch(0.58 0.22 25)" stopOpacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,100 C40,90 60,60 100,70 C140,80 160,40 200,35 C240,30 270,55 310,45 C350,35 380,25 400,30 L400,130 L0,130 Z" fill="url(#g1)"/>
+                <path d="M0,100 C40,90 60,60 100,70 C140,80 160,40 200,35 C240,30 270,55 310,45 C350,35 380,25 400,30" stroke="oklch(0.62 0.22 18)" strokeWidth="2.5" fill="none"/>
+              </svg>
+              <div className="grid grid-cols-3 gap-3 mt-4 text-center">
+                <MockMini label="Pedidos" v="652" delta="+12" up />
+                <MockMini label="Pagos" v="231" delta="-04" />
+                <MockMini label="Pendentes" v="245" delta="+8" up />
+              </div>
+            </div>
+          </div>
+          {/* phone card overlapping */}
+          <div className="absolute bottom-0 left-0 w-[230px] rounded-[2rem] border border-white/10 bg-card/95 backdrop-blur-xl shadow-2xl shadow-primary/30 p-4 rotate-[-4deg]">
+            <div className="flex justify-between text-[10px] text-muted-foreground mb-2"><span>9:41</span><span>●●●</span></div>
+            <p className="text-[10px] text-muted-foreground">Total em vendas</p>
+            <p className="text-xl font-bold">MZN 8.283</p>
+            <div className="mt-3 h-16 rounded-lg bg-gradient-to-tr from-primary/30 to-primary-glow/10 relative overflow-hidden">
+              <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-primary/20 to-transparent" />
+            </div>
+            <div className="mt-3 space-y-1.5">
+              <div className="flex justify-between text-[10px]"><span className="text-muted-foreground">Pedidos</span><span className="font-semibold">652</span></div>
+              <div className="flex justify-between text-[10px]"><span className="text-muted-foreground">Pagos</span><span className="font-semibold">231</span></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+      <div className="relative mt-24 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
         <Stat value="1.6M+" label="Transações" />
         <Stat value="800k+" label="Movimentados/dia" />
         <Stat value="<24h" label="Saque disponível" />
         <Stat value="99.4%" label="Taxa de sucesso" />
       </div>
     </section>
+  );
+}
+
+function MiniFeature({ icon: Icon, title, desc }: { icon: React.ElementType; title: string; desc: string }) {
+  return (
+    <div className="flex gap-3">
+      <div className="h-10 w-10 shrink-0 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
+        <Icon className="h-5 w-5 text-primary-glow" />
+      </div>
+      <div>
+        <p className="font-semibold text-sm">{title}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
+function MockMini({ label, v, delta, up }: { label: string; v: string; delta: string; up?: boolean }) {
+  return (
+    <div className="rounded-lg border border-white/5 bg-white/[0.02] p-2">
+      <p className="text-[9px] uppercase text-muted-foreground">{label}</p>
+      <p className="text-sm font-bold mt-0.5">{v}</p>
+      <p className={`text-[9px] ${up?"text-emerald-400":"text-rose-400"}`}>{delta}</p>
+    </div>
   );
 }
 
