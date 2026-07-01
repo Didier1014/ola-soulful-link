@@ -294,8 +294,33 @@ function IntegrationsPage() {
 SUPORTE ou Reclamações: {suporte1} , {suporte2}
 {suporte3}`}</pre>
           <p className="text-xs text-muted-foreground pt-1">
-            <b>{"{suporte1}"}</b> e <b>{"{suporte2}"}</b> são os seus números, configurados em <a href="/dashboard/profile" className="underline text-primary">Perfil</a>. <b>{"{suporte3}"}</b> é o número do admin (usado caso não atenda).
+            <b>{"{suporte1}"}</b> e <b>{"{suporte2}"}</b> são os seus números (edite abaixo ou em <a href="/dashboard/profile" className="underline text-primary">Perfil</a>). <b>{"{suporte3}"}</b> é o número do admin (usado caso não atenda).
           </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label>Suporte 1 (o seu número)</Label>
+            <div className="flex gap-2">
+              <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+258</div>
+              <Input
+                value={b.mozesms.support_phone || ""}
+                onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, support_phone: e.target.value.replace(/\D/g, "") } })}
+                placeholder="84XXXXXXX"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Suporte 2 (alternativo)</Label>
+            <div className="flex gap-2">
+              <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+258</div>
+              <Input
+                value={b.mozesms.support_phone2 || ""}
+                onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, support_phone2: e.target.value.replace(/\D/g, "") } })}
+                placeholder="85XXXXXXX"
+              />
+            </div>
+          </div>
         </div>
 
         <Label>Número para teste SMS</Label>
