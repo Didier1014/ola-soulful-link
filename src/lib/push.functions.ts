@@ -115,22 +115,6 @@ export async function sendPushToUser(
   if (rowsErr) console.log(`[push] user=${userId} table read error`, rowsErr.message);
   if (rows && rows.length) subs.push(...rows);
 
-  try {
-    const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
-    const legacy = user?.user?.user_metadata?.push_subscription as
-      | { endpoint: string; p256dh: string; auth: string }
-      | undefined;
-    if (legacy && !subs.some((s) => s.endpoint === legacy.endpoint)) {
-      subs.push(legacy);
-      // Migrate legacy subscription into the table for next time
-      try {
-        await supabaseAdmin
-          .from("push_subscriptions")
-          .upsert({ user_id: userId, ...legacy }, { onConflict: "endpoint" });
-      } catch {}
-    }
-  } catch {}
-
   if (subs.length === 0) {
     console.log(`[push] user=${userId} no_subscription`);
     return { ok: false, reason: "no_subscription", attempts: [] };
