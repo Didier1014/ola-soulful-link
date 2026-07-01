@@ -41,8 +41,9 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
 
           const { data: merchant } = await supabaseAdmin
             .from("profiles")
-            .select("id")
+            .select("id,api_key_active")
             .eq("api_key", apiKey)
+            .eq("api_key_active", true)
             .maybeSingle();
           if (!merchant) return Response.json({ error: "unauthorized" }, { status: 401 });
 
