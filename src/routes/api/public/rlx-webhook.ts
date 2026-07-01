@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
           // Find transaction by external_ref (txid stored at create time) — fallback to metadata
           const { data: tx } = await supabaseAdmin
             .from("transactions")
-            .select("id,user_id,net_mzn,status")
+            .select("id,user_id,net_mzn,status,metadata,external_ref")
             .eq("external_ref", String(txid))
             .maybeSingle();
           if (!tx) return Response.json({ ok: false, reason: "tx_not_found" }, { status: 200 });
@@ -39,11 +39,28 @@ export const Route = createFileRoute("/api/public/rlx-webhook")({
             .update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + Number(tx.net_mzn) })
             .eq("id", tx.user_id);
 
-          try {
-            const { notifyNewSale } = await import("@/lib/sale-notify.server");
-            await notifyNewSale(supabaseAdmin, tx.id);
-          } catch (e) {
-            console.log("[rlx-webhook] notifyNewSale failed", e);
+          const meta = (tx.metadata ?? {}) as any;
+          const merchantWebhook = meta?.source === "merchant_api" ? meta?.webhook_url : null;
+          if (merchantWebhook) {
+            try {
+              await fetch(String(merchantWebhook), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  status: "paid",
+                  partner_transaction_id: tx.external_ref,
+                }),
+              });
+            } catch (e) {
+              console.log("[rlx-webhook] merchant forward failed", e);
+            }
+          } else {
+            try {
+              const { notifyNewSale } = await import("@/lib/sale-notify.server");
+              await notifyNewSale(supabaseAdmin, tx.id);
+            } catch (e) {
+              console.log("[rlx-webhook] notifyNewSale failed", e);
+            }
           }
           return Response.json({ ok: true });
         } catch (e) {
