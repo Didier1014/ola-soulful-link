@@ -2,7 +2,7 @@ import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router"
 import { useServerFn } from "@tanstack/react-start";
 import { checkTransactionStatus } from "@/lib/transactions.functions";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, ExternalLink, Loader2, X, Users } from "lucide-react";
+import { CheckCircle2, ExternalLink, Loader2, X, Users, Download } from "lucide-react";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 
