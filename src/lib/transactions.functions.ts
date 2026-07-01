@@ -150,11 +150,26 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
 
     if (tx.status === "paid" && tx.product_id) {
       const { data: prod } = await supabaseAdmin
-        .from("products").select("delivery_url").eq("id", tx.product_id).maybeSingle();
-      return { status: tx.status, delivery_url: prod?.delivery_url ?? undefined };
+        .from("products").select("name,delivery_url,product_type,digital_file_path,thank_you_url").eq("id", tx.product_id).maybeSingle();
+      let download_url: string | undefined;
+      if (prod?.product_type === "digital" && prod?.digital_file_path) {
+        const { data: signed } = await supabaseAdmin.storage
+          .from("product-digital")
+          .createSignedUrl(prod.digital_file_path, 60 * 60 * 24 * 7, { download: true });
+        download_url = signed?.signedUrl ?? undefined;
+      }
+      return {
+        status: tx.status,
+        delivery_url: prod?.delivery_url ?? undefined,
+        thank_you_url: prod?.thank_you_url ?? undefined,
+        product_type: prod?.product_type ?? undefined,
+        product_name: prod?.name ?? undefined,
+        download_url,
+      };
     }
     return { status: tx.status };
   });
+
 
 
 
