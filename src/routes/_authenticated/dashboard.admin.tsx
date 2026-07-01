@@ -460,7 +460,8 @@ function AdminPage() {
             </div>
             <div className="divide-y divide-border">
               {(prods.data ?? []).map((p: any) => (
-                <div key={p.id} className="grid grid-cols-12 px-4 py-3 items-center text-sm hover:bg-secondary/30 transition-colors">
+                <div key={p.id} onClick={() => setHistoryProduct(p)}
+                  className="grid grid-cols-12 px-4 py-3 items-center text-sm hover:bg-secondary/30 transition-colors cursor-pointer">
                   <div className="col-span-3 flex items-center gap-3 min-w-0">
                     {p.cover_url ? (
                       <img src={p.cover_url} alt={p.name} className="h-10 w-10 rounded-lg object-cover shrink-0" />
@@ -476,7 +477,11 @@ function AdminPage() {
                           : <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground shrink-0" />}
                         {p.name}
                       </p>
-                      <p className="text-[10px] text-muted-foreground uppercase">{p.product_type || "external"}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        <span className="uppercase">{p.product_type || "external"}</span>
+                        <span className="mx-1">·</span>
+                        <span>{new Date(p.created_at).toLocaleDateString("pt-MZ")}</span>
+                      </p>
                     </div>
                   </div>
                   <div className="col-span-2 text-xs text-muted-foreground truncate">
@@ -488,6 +493,7 @@ function AdminPage() {
                       {fmt(Number(p.clicks_count ?? 0))}
                     </p>
                   </div>
+
                   <div className="col-span-2 text-right">
                     <p className="font-mono font-bold text-sm" style={{ color: p.sales_count > 0 ? RUBY : undefined }}>
                       {fmt(Number(p.sales_count ?? 0))}
