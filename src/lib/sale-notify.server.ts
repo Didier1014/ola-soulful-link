@@ -151,6 +151,14 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
     .eq("integration_key", "_bundle")
     .maybeSingle();
 
+  // Read support phones from user profile (source of truth for {suporte}/{suporte2})
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("support_phone, support_phone2")
+    .eq("id", userId)
+    .maybeSingle();
+
+
   let productName: string | null = null;
   let productUtmifyId: string | null = null;
   let productLowtrackId: string | null = null;
