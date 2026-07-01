@@ -8,6 +8,13 @@ async function requireAdmin(context: { supabase: any; userId: string }) {
   if (!isAdmin) throw new Error("Acesso restrito a administradores");
 }
 
+async function signCover(supabase: any, path: string | null): Promise<string | null> {
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path)) return path;
+  const { data } = await supabase.storage.from("product-images").createSignedUrl(path, 60 * 60 * 24 * 7);
+  return data?.signedUrl ?? null;
+}
+
 export const getAdminOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
