@@ -473,6 +473,8 @@ export type Database = {
           full_name: string | null
           id: string
           phone: string | null
+          support_phone: string | null
+          support_phone2: string | null
           updated_at: string
           whatsapp: string | null
         }
@@ -486,6 +488,8 @@ export type Database = {
           full_name?: string | null
           id: string
           phone?: string | null
+          support_phone?: string | null
+          support_phone2?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
@@ -499,6 +503,8 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          support_phone?: string | null
+          support_phone2?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
