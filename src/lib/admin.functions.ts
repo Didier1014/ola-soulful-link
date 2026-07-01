@@ -319,6 +319,22 @@ export const getProductHistory = createServerFn({ method: "POST" })
     return rows ?? [];
   });
 
+export const getProductClicks = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }: { context: any; data: { product_id: string } }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("product_clicks")
+      .select("id, created_at, user_agent, referrer")
+      .eq("product_id", data.product_id)
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+
 export const getDigitalSignedUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }: { context: any; data: { path: string } }) => {

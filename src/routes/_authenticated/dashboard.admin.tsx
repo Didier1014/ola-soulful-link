@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdminOverview, listAllProfiles, listAllTransactions,
   listAllWithdrawals, listAllProducts, approveWithdrawal, rejectWithdrawal,
-  listUserProducts, getDigitalSignedUrl, getProductHistory,
+  listUserProducts, getDigitalSignedUrl, getProductHistory, getProductClicks,
 } from "@/lib/admin.functions";
 import { sendTestSms } from "@/lib/integrations.functions";
 import { Input } from "@/components/ui/input";
@@ -56,6 +56,7 @@ function AdminPage() {
   const fnSigned = useServerFn(getDigitalSignedUrl);
 
   const fnHistory = useServerFn(getProductHistory);
+  const fnClicks = useServerFn(getProductClicks);
   const [historyProduct, setHistoryProduct] = useState<any | null>(null);
 
   const userProducts = useQuery({
@@ -69,6 +70,13 @@ function AdminPage() {
     queryFn: () => fnHistory({ data: { product_id: historyProduct!.id } }),
     enabled: !!historyProduct,
   });
+
+  const productClicks = useQuery({
+    queryKey: ["admin_product_clicks", historyProduct?.id],
+    queryFn: () => fnClicks({ data: { product_id: historyProduct!.id } }),
+    enabled: !!historyProduct,
+  });
+
 
 
   const openDigital = async (path: string) => {
@@ -452,7 +460,8 @@ function AdminPage() {
             </div>
             <div className="divide-y divide-border">
               {(prods.data ?? []).map((p: any) => (
-                <div key={p.id} className="grid grid-cols-12 px-4 py-3 items-center text-sm hover:bg-secondary/30 transition-colors">
+                <div key={p.id} onClick={() => setHistoryProduct(p)}
+                  className="grid grid-cols-12 px-4 py-3 items-center text-sm hover:bg-secondary/30 transition-colors cursor-pointer">
                   <div className="col-span-3 flex items-center gap-3 min-w-0">
                     {p.cover_url ? (
                       <img src={p.cover_url} alt={p.name} className="h-10 w-10 rounded-lg object-cover shrink-0" />
@@ -468,7 +477,11 @@ function AdminPage() {
                           : <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground shrink-0" />}
                         {p.name}
                       </p>
-                      <p className="text-[10px] text-muted-foreground uppercase">{p.product_type || "external"}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        <span className="uppercase">{p.product_type || "external"}</span>
+                        <span className="mx-1">·</span>
+                        <span>{new Date(p.created_at).toLocaleDateString("pt-MZ")}</span>
+                      </p>
                     </div>
                   </div>
                   <div className="col-span-2 text-xs text-muted-foreground truncate">
@@ -480,13 +493,14 @@ function AdminPage() {
                       {fmt(Number(p.clicks_count ?? 0))}
                     </p>
                   </div>
+
                   <div className="col-span-2 text-right">
                     <p className="font-mono font-bold text-sm" style={{ color: p.sales_count > 0 ? RUBY : undefined }}>
                       {fmt(Number(p.sales_count ?? 0))}
                     </p>
                     <p className="text-[10px] text-muted-foreground font-mono">{fmtMT(Number(p.sales_total_mzn ?? 0))}</p>
                   </div>
-                  <div className="col-span-2 flex items-center gap-2 min-w-0">
+                  <div className="col-span-2 flex items-center gap-2 min-w-0" onClick={(e) => e.stopPropagation()}>
                     {p.delivery_url && (
                       <a href={p.delivery_url} target="_blank" rel="noreferrer"
                         className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary hover:bg-secondary/70 truncate max-w-[180px]">
@@ -503,11 +517,11 @@ function AdminPage() {
                   </div>
                   <div className="col-span-1 text-right font-mono font-semibold">{fmtMT(Number(p.price_mzn))}</div>
                   <div className="col-span-1 text-right">
-                    <button onClick={() => setHistoryProduct(p)}
-                      className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary hover:bg-secondary/70">
-                      <History className="h-3 w-3" /> Histórico
-                    </button>
+                    <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary">
+                      <History className="h-3 w-3" /> Investigar
+                    </span>
                   </div>
+
                 </div>
               ))}
               {!prods.data?.length && <p className="p-8 text-center text-sm text-muted-foreground">Nenhum produto.</p>}
@@ -516,46 +530,95 @@ function AdminPage() {
         )}
 
         <Dialog open={!!historyProduct} onOpenChange={(o) => !o && setHistoryProduct(null)}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <History className="h-4 w-4" /> Histórico · {historyProduct?.name}
+                <Package className="h-4 w-4" style={{ color: RUBY }} /> Investigar · {historyProduct?.name}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-3 mt-3">
-              {productHistory.isLoading && <p className="text-sm text-muted-foreground">A carregar…</p>}
-              {!productHistory.isLoading && !productHistory.data?.length && (
-                <p className="text-sm text-muted-foreground p-8 text-center border border-dashed border-border rounded-xl">
-                  Nenhuma alteração registada ainda.
-                </p>
-              )}
-              {(productHistory.data ?? []).map((h: any) => (
-                <div key={h.id} className="p-3 rounded-xl border border-border bg-card">
-                  <p className="text-[11px] text-muted-foreground mb-2 font-mono">
-                    {new Date(h.changed_at).toLocaleString("pt-MZ")}
+
+            {historyProduct && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
+                <div className="p-3 rounded-lg border border-border bg-card">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Vendedor</p>
+                  <p className="text-sm font-medium truncate">{(historyProduct as any).profiles?.business_name || (historyProduct as any).profiles?.full_name || "—"}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-border bg-card">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Cliques</p>
+                  <p className="text-sm font-bold font-mono" style={{ color: RUBY }}>{fmt(Number(historyProduct.clicks_count ?? 0))}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-border bg-card">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Vendas</p>
+                  <p className="text-sm font-bold font-mono">{fmt(Number(historyProduct.sales_count ?? 0))} · {fmtMT(Number(historyProduct.sales_total_mzn ?? 0))}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-border bg-card">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Criado</p>
+                  <p className="text-sm font-medium">{new Date(historyProduct.created_at).toLocaleDateString("pt-MZ")}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2">
+                <MousePointerClick className="h-3.5 w-3.5" /> Cliques recentes ({productClicks.data?.length ?? 0})
+              </h3>
+              <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                {productClicks.isLoading && <p className="text-xs text-muted-foreground">A carregar…</p>}
+                {!productClicks.isLoading && !productClicks.data?.length && (
+                  <p className="text-xs text-muted-foreground p-4 text-center border border-dashed border-border rounded-lg">Sem cliques registados.</p>
+                )}
+                {(productClicks.data ?? []).map((c: any) => (
+                  <div key={c.id} className="p-2 rounded-lg border border-border bg-card text-[11px]">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-muted-foreground">{new Date(c.created_at).toLocaleString("pt-MZ")}</span>
+                      {c.referrer && <span className="truncate max-w-[200px] text-muted-foreground">← {c.referrer}</span>}
+                    </div>
+                    {c.user_agent && <p className="text-muted-foreground truncate mt-0.5">{c.user_agent}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2">
+                <History className="h-3.5 w-3.5" /> Alterações ({productHistory.data?.length ?? 0})
+              </h3>
+              <div className="space-y-3">
+                {productHistory.isLoading && <p className="text-sm text-muted-foreground">A carregar…</p>}
+                {!productHistory.isLoading && !productHistory.data?.length && (
+                  <p className="text-sm text-muted-foreground p-8 text-center border border-dashed border-border rounded-xl">
+                    Nenhuma alteração registada ainda.
                   </p>
-                  <div className="space-y-1.5">
-                    {Object.entries(h.changes || {}).map(([field, diff]: any) => (
-                      <div key={field} className="text-xs">
-                        <span className="font-semibold uppercase text-[10px] text-muted-foreground">{field}</span>
-                        <div className="grid grid-cols-2 gap-2 mt-0.5">
-                          <div className="px-2 py-1 rounded bg-red-500/10 text-red-600 dark:text-red-400 truncate">
-                            <span className="opacity-60 text-[10px]">antes: </span>
-                            {String(diff?.old ?? "—")}
-                          </div>
-                          <div className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 truncate">
-                            <span className="opacity-60 text-[10px]">depois: </span>
-                            {String(diff?.new ?? "—")}
+                )}
+                {(productHistory.data ?? []).map((h: any) => (
+                  <div key={h.id} className="p-3 rounded-xl border border-border bg-card">
+                    <p className="text-[11px] text-muted-foreground mb-2 font-mono">
+                      {new Date(h.changed_at).toLocaleString("pt-MZ")}
+                    </p>
+                    <div className="space-y-1.5">
+                      {Object.entries(h.changes || {}).map(([field, diff]: any) => (
+                        <div key={field} className="text-xs">
+                          <span className="font-semibold uppercase text-[10px] text-muted-foreground">{field}</span>
+                          <div className="grid grid-cols-2 gap-2 mt-0.5">
+                            <div className="px-2 py-1 rounded bg-red-500/10 text-red-600 dark:text-red-400 truncate">
+                              <span className="opacity-60 text-[10px]">antes: </span>
+                              {String(diff?.old ?? "—")}
+                            </div>
+                            <div className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 truncate">
+                              <span className="opacity-60 text-[10px]">depois: </span>
+                              {String(diff?.new ?? "—")}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
+
 
 
         <Sheet open={!!selectedUser} onOpenChange={(o) => !o && setSelectedUser(null)}>
