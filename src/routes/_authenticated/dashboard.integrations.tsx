@@ -288,20 +288,15 @@ function IntegrationsPage() {
         <Input value={b.mozesms.sender_id || ""}
           onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, sender_id: e.target.value } })}
           maxLength={11} placeholder="RedoxPay" />
-        <div className="flex items-center justify-between">
-          <Label>Modelo da Mensagem SMS</Label>
-          <div className="flex flex-wrap gap-1">
-            {["{nome}","{produto}","{valor}","{email}","{link}","{suporte}","{suporte2}"].map((v) => (
-              <Button key={v} type="button" variant="outline" size="sm" className="h-7 px-2 text-xs"
-                onClick={() => setB({ ...b, mozesms: { ...b.mozesms, template: (b.mozesms.template || "") + v } })}
-              >{v}</Button>
-            ))}
-          </div>
+        <div className="rounded-lg border border-border/40 bg-muted/40 p-3 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground">Modelo de mensagem (fixo — igual para todos)</p>
+          <pre className="text-xs whitespace-pre-wrap font-mono leading-relaxed">{`{nome}, pagamento recebido com sucesso de {valor} para {produto}
+SUPORTE ou Reclamações: {suporte1} , {suporte2}
+{suporte3}`}</pre>
+          <p className="text-xs text-muted-foreground pt-1">
+            <b>{"{suporte1}"}</b> e <b>{"{suporte2}"}</b> são os seus números, configurados em <a href="/dashboard/profile" className="underline text-primary">Perfil</a>. <b>{"{suporte3}"}</b> é o número do admin (usado caso não atenda).
+          </p>
         </div>
-        <Textarea rows={3} value={b.mozesms.template || ""}
-          onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, template: e.target.value } })}
-        />
-        <p className="text-xs text-muted-foreground -mt-2">Clique nas variáveis acima para inserir. {"{suporte}"} e {"{suporte2}"} usam os números configurados no seu <a href="/dashboard/profile" className="underline text-primary">Perfil</a>.</p>
 
         <Label>Número para teste SMS</Label>
         <div className="flex gap-2">
@@ -311,12 +306,21 @@ function IntegrationsPage() {
             placeholder="84XXXXXXX" />
         </div>
         <Button variant="outline" size="sm"
-          disabled={!b.mozesms.test_number || !b.mozesms.template}
+          disabled={!b.mozesms.test_number}
           onClick={async () => {
             try {
+              const { buildFixedSmsTemplate } = await import("@/lib/sms-template");
+              const message = buildFixedSmsTemplate({
+                nome: "Teste",
+                produto: "Produto Teste",
+                valor: "100 MT",
+                suporte1: b.mozesms.support_phone || "",
+                suporte2: b.mozesms.support_phone2 || "",
+                suporte3: "(número do admin)",
+              });
               await tSms({ data: {
                 sender_id: b.mozesms.sender_id || "RedoxPay",
-                message: (b.mozesms.template || "").replaceAll("{nome}", "Teste").replaceAll("{produto}", "Produto Teste").replaceAll("{valor}", "100 MT").replaceAll("{email}", "teste@redox.com").replaceAll("{link}", "https://exemplo.com/produto").replaceAll("{suporte}", b.mozesms.support_phone || "").replaceAll("{suporte2}", b.mozesms.support_phone2 || ""),
+                message,
                 number: `258${b.mozesms.test_number}`,
               } });
               toast.success("SMS de teste enviado");

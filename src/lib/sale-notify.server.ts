@@ -3,6 +3,8 @@
 // in-app notification + web push + Utmify + LowTrack.
 // Called from createCheckout/payLink e pelo
 // safety-net em listMyTransactions/checkTransactionStatus.
+import { buildFixedSmsTemplate } from "@/lib/sms-template";
+
 
 async function logIntegrationCall(
   supabaseAdmin: any,
@@ -300,19 +302,20 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
   // ---------- MozeSMS (Hexmo) ----------
   try {
     const sms = bundle?.mozesms as any;
-    if (sms?.enabled && sms?.template && tx.customer_phone) {
+    if (sms?.enabled && tx.customer_phone) {
       if (await hasSuccessfulIntegration(supabaseAdmin, userId, tx.id, "mozesms")) {
         console.log(`[sale:${tx.id}][mozesms] already sent — skipping`);
       } else {
         const formatted = `${Number(tx.amount_mzn).toLocaleString("pt-MZ", { style: "currency", currency: "MZN" })}`;
-        const message = String(sms.template)
-          .replaceAll("{nome}", tx.customer_name || "Cliente")
-          .replaceAll("{produto}", productName || "")
-          .replaceAll("{valor}", formatted)
-          .replaceAll("{email}", tx.customer_email || "")
-          .replaceAll("{link}", productLink)
-          .replaceAll("{suporte}", profile?.support_phone || sms.support_phone || "")
-          .replaceAll("{suporte2}", profile?.support_phone2 || sms.support_phone2 || "");
+        const suporte1 = profile?.support_phone || sms.support_phone || "";
+        const suporte2 = profile?.support_phone2 || sms.support_phone2 || "";
+        const suporte3 = process.env.ADMIN_SUPPORT_PHONE || "";
+        const message = buildFixedSmsTemplate({
+          nome: tx.customer_name || "Cliente",
+          produto: productName || "",
+          valor: formatted,
+          suporte1, suporte2, suporte3,
+        });
 
         const { hexmoSendSms } = await import("@/lib/hexmo.server");
         const r = await hexmoSendSms({
