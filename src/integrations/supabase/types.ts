@@ -320,6 +320,73 @@ export type Database = {
         }
         Relationships: []
       }
+      product_clicks: {
+        Row: {
+          created_at: string
+          id: string
+          ip_hash: string | null
+          product_id: string
+          referrer: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          product_id: string
+          referrer?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          product_id?: string
+          referrer?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_clicks_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_history: {
+        Row: {
+          changed_at: string
+          changes: Json
+          id: string
+          product_id: string
+          user_id: string | null
+        }
+        Insert: {
+          changed_at?: string
+          changes?: Json
+          id?: string
+          product_id: string
+          user_id?: string | null
+        }
+        Update: {
+          changed_at?: string
+          changes?: Json
+          id?: string
+          product_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           active: boolean

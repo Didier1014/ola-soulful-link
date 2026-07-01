@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdminOverview, listAllProfiles, listAllTransactions,
   listAllWithdrawals, listAllProducts, approveWithdrawal, rejectWithdrawal,
-  listUserProducts, getDigitalSignedUrl,
+  listUserProducts, getDigitalSignedUrl, getProductHistory,
 } from "@/lib/admin.functions";
 import { sendTestSms } from "@/lib/integrations.functions";
 import { Input } from "@/components/ui/input";
@@ -19,8 +19,9 @@ import { toast } from "sonner";
 import {
   Shield, Users, Receipt, Package, TrendingUp, AlertTriangle,
   ArrowUpDown, Wallet, DollarSign, CheckCircle2, XCircle, Search,
-  Activity, Zap, Clock, ExternalLink, FileDown, ChevronRight, Send, MessageSquare,
+  Activity, Zap, Clock, ExternalLink, FileDown, ChevronRight, Send, MessageSquare, History, MousePointerClick,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/dashboard/admin")({ component: AdminPage });
 
@@ -54,11 +55,21 @@ function AdminPage() {
   const fnUserProds = useServerFn(listUserProducts);
   const fnSigned = useServerFn(getDigitalSignedUrl);
 
+  const fnHistory = useServerFn(getProductHistory);
+  const [historyProduct, setHistoryProduct] = useState<any | null>(null);
+
   const userProducts = useQuery({
     queryKey: ["admin_user_products", selectedUser?.id],
     queryFn: () => fnUserProds({ data: { user_id: selectedUser!.id } }),
     enabled: !!selectedUser,
   });
+
+  const productHistory = useQuery({
+    queryKey: ["admin_product_history", historyProduct?.id],
+    queryFn: () => fnHistory({ data: { product_id: historyProduct!.id } }),
+    enabled: !!historyProduct,
+  });
+
 
   const openDigital = async (path: string) => {
     try {
@@ -431,17 +442,18 @@ function AdminPage() {
         {tab === "products" && (
           <Card className="rounded-2xl overflow-hidden">
             <div className="grid grid-cols-12 px-4 py-3 text-[10px] uppercase tracking-wider font-bold text-muted-foreground border-b border-border bg-secondary/40">
-              <div className="col-span-4">Produto</div>
+              <div className="col-span-3">Produto</div>
               <div className="col-span-2">Vendedor</div>
+              <div className="col-span-1 text-right">Cliques</div>
               <div className="col-span-2 text-right">Vendas</div>
               <div className="col-span-2">Entrega</div>
               <div className="col-span-1 text-right">Preço</div>
-              <div className="col-span-1 text-right">Status</div>
+              <div className="col-span-1 text-right">Acções</div>
             </div>
             <div className="divide-y divide-border">
               {(prods.data ?? []).map((p: any) => (
                 <div key={p.id} className="grid grid-cols-12 px-4 py-3 items-center text-sm hover:bg-secondary/30 transition-colors">
-                  <div className="col-span-4 flex items-center gap-3 min-w-0">
+                  <div className="col-span-3 flex items-center gap-3 min-w-0">
                     {p.cover_url ? (
                       <img src={p.cover_url} alt={p.name} className="h-10 w-10 rounded-lg object-cover shrink-0" />
                     ) : (
@@ -450,12 +462,23 @@ function AdminPage() {
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="font-medium truncate">{p.name}</p>
+                      <p className="font-medium truncate flex items-center gap-1.5">
+                        {p.active
+                          ? <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                          : <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground shrink-0" />}
+                        {p.name}
+                      </p>
                       <p className="text-[10px] text-muted-foreground uppercase">{p.product_type || "external"}</p>
                     </div>
                   </div>
                   <div className="col-span-2 text-xs text-muted-foreground truncate">
                     {(p as any).profiles?.business_name || (p as any).profiles?.full_name || "—"}
+                  </div>
+                  <div className="col-span-1 text-right">
+                    <p className="font-mono font-bold text-sm inline-flex items-center gap-1 justify-end" style={{ color: p.clicks_count > 0 ? RUBY : undefined }}>
+                      <MousePointerClick className="h-3 w-3 opacity-70" />
+                      {fmt(Number(p.clicks_count ?? 0))}
+                    </p>
                   </div>
                   <div className="col-span-2 text-right">
                     <p className="font-mono font-bold text-sm" style={{ color: p.sales_count > 0 ? RUBY : undefined }}>
@@ -480,9 +503,10 @@ function AdminPage() {
                   </div>
                   <div className="col-span-1 text-right font-mono font-semibold">{fmtMT(Number(p.price_mzn))}</div>
                   <div className="col-span-1 text-right">
-                    {p.active
-                      ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">●</span>
-                      : <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">○</span>}
+                    <button onClick={() => setHistoryProduct(p)}
+                      className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary hover:bg-secondary/70">
+                      <History className="h-3 w-3" /> Histórico
+                    </button>
                   </div>
                 </div>
               ))}
@@ -490,6 +514,49 @@ function AdminPage() {
             </div>
           </Card>
         )}
+
+        <Dialog open={!!historyProduct} onOpenChange={(o) => !o && setHistoryProduct(null)}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <History className="h-4 w-4" /> Histórico · {historyProduct?.name}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 mt-3">
+              {productHistory.isLoading && <p className="text-sm text-muted-foreground">A carregar…</p>}
+              {!productHistory.isLoading && !productHistory.data?.length && (
+                <p className="text-sm text-muted-foreground p-8 text-center border border-dashed border-border rounded-xl">
+                  Nenhuma alteração registada ainda.
+                </p>
+              )}
+              {(productHistory.data ?? []).map((h: any) => (
+                <div key={h.id} className="p-3 rounded-xl border border-border bg-card">
+                  <p className="text-[11px] text-muted-foreground mb-2 font-mono">
+                    {new Date(h.changed_at).toLocaleString("pt-MZ")}
+                  </p>
+                  <div className="space-y-1.5">
+                    {Object.entries(h.changes || {}).map(([field, diff]: any) => (
+                      <div key={field} className="text-xs">
+                        <span className="font-semibold uppercase text-[10px] text-muted-foreground">{field}</span>
+                        <div className="grid grid-cols-2 gap-2 mt-0.5">
+                          <div className="px-2 py-1 rounded bg-red-500/10 text-red-600 dark:text-red-400 truncate">
+                            <span className="opacity-60 text-[10px]">antes: </span>
+                            {String(diff?.old ?? "—")}
+                          </div>
+                          <div className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 truncate">
+                            <span className="opacity-60 text-[10px]">depois: </span>
+                            {String(diff?.new ?? "—")}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+
 
         <Sheet open={!!selectedUser} onOpenChange={(o) => !o && setSelectedUser(null)}>
           <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">

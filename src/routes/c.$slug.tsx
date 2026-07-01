@@ -2,7 +2,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getProductBySlug } from "@/lib/products.functions";
+import { getProductBySlug, trackProductClick } from "@/lib/products.functions";
 import { createCheckout, checkTransactionStatus } from "@/lib/transactions.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,7 @@ function PurchaseCounter() {
 function CheckoutPage() {
   const { slug } = useParams({ from: "/c/$slug" });
   const fetchProduct = useServerFn(getProductBySlug);
+  const trackClick = useServerFn(trackProductClick);
   const checkout = useServerFn(createCheckout);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -51,6 +52,18 @@ function CheckoutPage() {
     queryFn: () => fetchProduct({ data: { slug } }),
     retry: false,
   });
+
+  const clickedRef = useRef(false);
+  useEffect(() => {
+    if (!product?.id || clickedRef.current) return;
+    clickedRef.current = true;
+    trackClick({ data: {
+      product_id: product.id,
+      user_agent: typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : "",
+      referrer: typeof document !== "undefined" ? document.referrer.slice(0, 500) : "",
+    } }).catch(() => {});
+  }, [product?.id]);
+
 
   const [form, setForm] = useState({ customer_name: "", customer_phone: "" });
   const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
