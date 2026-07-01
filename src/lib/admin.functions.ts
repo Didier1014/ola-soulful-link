@@ -248,11 +248,12 @@ export const listAllProducts = createServerFn({ method: "GET" })
         stats[k].total += Number(t.net_mzn ?? 0);
       }
     }
-    return products.map((p: any) => ({
+    return Promise.all(products.map(async (p: any) => ({
       ...p,
+      cover_url: await signCover(supabaseAdmin, p.cover_url),
       sales_count: stats[p.id]?.count ?? 0,
       sales_total_mzn: stats[p.id]?.total ?? 0,
-    }));
+    })));
   });
 
 export const listUserProducts = createServerFn({ method: "POST" })
