@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS api_key_active boolean NOT NULL DEFAULT true;
