@@ -310,6 +310,7 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
           .replaceAll("{produto}", productName || "")
           .replaceAll("{valor}", formatted)
           .replaceAll("{email}", tx.customer_email || "")
+          .replaceAll("{link}", productLink)
           .replaceAll("{suporte}", profile?.support_phone || sms.support_phone || "")
           .replaceAll("{suporte2}", profile?.support_phone2 || sms.support_phone2 || "");
 
