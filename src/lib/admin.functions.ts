@@ -8,6 +8,13 @@ async function requireAdmin(context: { supabase: any; userId: string }) {
   if (!isAdmin) throw new Error("Acesso restrito a administradores");
 }
 
+async function signCover(supabase: any, path: string | null): Promise<string | null> {
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path)) return path;
+  const { data } = await supabase.storage.from("product-images").createSignedUrl(path, 60 * 60 * 24 * 7);
+  return data?.signedUrl ?? null;
+}
+
 export const getAdminOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -241,11 +248,12 @@ export const listAllProducts = createServerFn({ method: "GET" })
         stats[k].total += Number(t.net_mzn ?? 0);
       }
     }
-    return products.map((p: any) => ({
+    return Promise.all(products.map(async (p: any) => ({
       ...p,
+      cover_url: await signCover(supabaseAdmin, p.cover_url),
       sales_count: stats[p.id]?.count ?? 0,
       sales_total_mzn: stats[p.id]?.total ?? 0,
-    }));
+    })));
   });
 
 export const listUserProducts = createServerFn({ method: "POST" })
@@ -273,11 +281,12 @@ export const listUserProducts = createServerFn({ method: "POST" })
         stats[k].total += Number(t.net_mzn ?? 0);
       }
     }
-    return list.map((p: any) => ({
+    return Promise.all(list.map(async (p: any) => ({
       ...p,
+      cover_url: await signCover(supabaseAdmin, p.cover_url),
       sales_count: stats[p.id]?.count ?? 0,
       sales_total_mzn: stats[p.id]?.total ?? 0,
-    }));
+    })));
   });
 
 export const getDigitalSignedUrl = createServerFn({ method: "POST" })
