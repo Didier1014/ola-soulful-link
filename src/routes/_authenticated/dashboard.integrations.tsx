@@ -291,7 +291,7 @@ function IntegrationsPage() {
         <div className="flex items-center justify-between">
           <Label>Modelo da Mensagem SMS</Label>
           <div className="flex flex-wrap gap-1">
-            {["{nome}","{produto}","{valor}","{email}","{suporte}","{suporte2}"].map((v) => (
+            {["{nome}","{produto}","{valor}","{email}","{link}","{suporte}","{suporte2}"].map((v) => (
               <Button key={v} type="button" variant="outline" size="sm" className="h-7 px-2 text-xs"
                 onClick={() => setB({ ...b, mozesms: { ...b.mozesms, template: (b.mozesms.template || "") + v } })}
               >{v}</Button>
