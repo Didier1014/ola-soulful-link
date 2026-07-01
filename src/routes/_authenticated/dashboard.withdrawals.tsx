@@ -101,8 +101,9 @@ function WdPage() {
       <Card className="rounded-2xl shadow-sm p-5 space-y-4">
         <h2 className="text-sm font-semibold">Novo pedido</h2>
         <div className="space-y-2">
-          <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Valor (MT) — mínimo 100</Label>
-          <Input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" min={100} className="h-12 bg-secondary border-0 rounded-xl" />
+          <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Valor (MT) — mínimo 600</Label>
+          <Input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" min={600} className="h-12 bg-secondary border-0 rounded-xl" />
+
           {amount && Number(amount) > available && (
             <p className="text-xs text-red-500">Excede o disponível ({fmt(available)})</p>
           )}
