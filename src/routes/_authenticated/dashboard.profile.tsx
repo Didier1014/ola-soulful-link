@@ -22,7 +22,7 @@ function Page() {
   const [email, setEmail] = useState("");
   const [currency, setCurrency] = useState<Currency>("MZN");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [form, setForm] = useState({ full_name: "", business_name: "", whatsapp: "", city: "", account_type: "person" });
+  const [form, setForm] = useState({ full_name: "", business_name: "", whatsapp: "", city: "", account_type: "person", support_phone: "", support_phone2: "" });
 
   useEffect(() => {
     (async () => {
@@ -30,7 +30,7 @@ function Page() {
       if (!u.user) { setLoading(false); return; }
       setEmail(u.user.email || "");
       const { data: p } = await supabase.from("profiles").select("*").eq("id", u.user.id).single();
-      if (p) setForm({ full_name: p.full_name || "", business_name: p.business_name || "", whatsapp: p.whatsapp || "", city: p.city || "", account_type: p.account_type || "person" });
+      if (p) setForm({ full_name: p.full_name || "", business_name: p.business_name || "", whatsapp: p.whatsapp || "", city: p.city || "", account_type: p.account_type || "person", support_phone: (p as any).support_phone || "", support_phone2: (p as any).support_phone2 || "" });
       const prefs = await getCurrencyPref();
       setCurrency(prefs.currency);
       setNotificationsEnabled(prefs.notifications_enabled);
@@ -89,6 +89,18 @@ function Page() {
                 <SelectItem value="company">Empresa</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Suporte 1 (SMS pós-venda)</Label>
+              <Input value={form.support_phone} placeholder="258840000000"
+                onChange={(e) => setForm({ ...form, support_phone: e.target.value.replace(/[^\d+]/g, "") })} />
+            </div>
+            <div>
+              <Label>Suporte 2 (SMS pós-venda)</Label>
+              <Input value={form.support_phone2} placeholder="258850000000"
+                onChange={(e) => setForm({ ...form, support_phone2: e.target.value.replace(/[^\d+]/g, "") })} />
+            </div>
           </div>
           <div>
             <Label>Moeda preferida (notificações)</Label>

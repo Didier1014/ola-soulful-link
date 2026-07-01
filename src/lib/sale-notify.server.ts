@@ -151,6 +151,14 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
     .eq("integration_key", "_bundle")
     .maybeSingle();
 
+  // Read support phones from user profile (source of truth for {suporte}/{suporte2})
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("support_phone, support_phone2")
+    .eq("id", userId)
+    .maybeSingle();
+
+
   let productName: string | null = null;
   let productUtmifyId: string | null = null;
   let productLowtrackId: string | null = null;
@@ -288,8 +296,9 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
           .replaceAll("{produto}", productName || "")
           .replaceAll("{valor}", formatted)
           .replaceAll("{email}", tx.customer_email || "")
-          .replaceAll("{suporte}", sms.support_phone || "")
-          .replaceAll("{suporte2}", sms.support_phone2 || "");
+          .replaceAll("{suporte}", profile?.support_phone || sms.support_phone || "")
+          .replaceAll("{suporte2}", profile?.support_phone2 || sms.support_phone2 || "");
+
         const { hexmoSendSms } = await import("@/lib/hexmo.server");
         const r = await hexmoSendSms({
           recipient: String(tx.customer_phone),
