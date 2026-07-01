@@ -224,6 +224,17 @@ export const listAllWithdrawals = createServerFn({ method: "GET" })
   });
 
 
+async function computeClickCounts(supabase: any, ids: string[]): Promise<Record<string, number>> {
+  const clicks: Record<string, number> = {};
+  if (!ids.length) return clicks;
+  const { data: cs } = await supabase.from("product_clicks").select("product_id").in("product_id", ids);
+  for (const c of cs ?? []) {
+    const k = c.product_id as string;
+    clicks[k] = (clicks[k] || 0) + 1;
+  }
+  return clicks;
+}
+
 export const listAllProducts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -248,11 +259,13 @@ export const listAllProducts = createServerFn({ method: "GET" })
         stats[k].total += Number(t.net_mzn ?? 0);
       }
     }
+    const clicks = await computeClickCounts(supabaseAdmin, ids);
     return Promise.all(products.map(async (p: any) => ({
       ...p,
       cover_url: await signCover(supabaseAdmin, p.cover_url),
       sales_count: stats[p.id]?.count ?? 0,
       sales_total_mzn: stats[p.id]?.total ?? 0,
+      clicks_count: clicks[p.id] ?? 0,
     })));
   });
 
@@ -281,12 +294,29 @@ export const listUserProducts = createServerFn({ method: "POST" })
         stats[k].total += Number(t.net_mzn ?? 0);
       }
     }
+    const clicks = await computeClickCounts(supabaseAdmin, ids);
     return Promise.all(list.map(async (p: any) => ({
       ...p,
       cover_url: await signCover(supabaseAdmin, p.cover_url),
       sales_count: stats[p.id]?.count ?? 0,
       sales_total_mzn: stats[p.id]?.total ?? 0,
+      clicks_count: clicks[p.id] ?? 0,
     })));
+  });
+
+export const getProductHistory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }: { context: any; data: { product_id: string } }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("product_history")
+      .select("id, changed_at, user_id, changes")
+      .eq("product_id", data.product_id)
+      .order("changed_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+    return rows ?? [];
   });
 
 export const getDigitalSignedUrl = createServerFn({ method: "POST" })
