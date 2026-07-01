@@ -55,11 +55,21 @@ function AdminPage() {
   const fnUserProds = useServerFn(listUserProducts);
   const fnSigned = useServerFn(getDigitalSignedUrl);
 
+  const fnHistory = useServerFn(getProductHistory);
+  const [historyProduct, setHistoryProduct] = useState<any | null>(null);
+
   const userProducts = useQuery({
     queryKey: ["admin_user_products", selectedUser?.id],
     queryFn: () => fnUserProds({ data: { user_id: selectedUser!.id } }),
     enabled: !!selectedUser,
   });
+
+  const productHistory = useQuery({
+    queryKey: ["admin_product_history", historyProduct?.id],
+    queryFn: () => fnHistory({ data: { product_id: historyProduct!.id } }),
+    enabled: !!historyProduct,
+  });
+
 
   const openDigital = async (path: string) => {
     try {
