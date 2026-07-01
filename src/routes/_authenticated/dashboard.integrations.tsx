@@ -316,7 +316,7 @@ function IntegrationsPage() {
             try {
               await tSms({ data: {
                 sender_id: b.mozesms.sender_id || "RedoxPay",
-                message: (b.mozesms.template || "").replaceAll("{nome}", "Teste").replaceAll("{produto}", "Produto Teste").replaceAll("{valor}", "100 MT").replaceAll("{email}", "teste@redox.com").replaceAll("{suporte}", b.mozesms.support_phone || "").replaceAll("{suporte2}", b.mozesms.support_phone2 || ""),
+                message: (b.mozesms.template || "").replaceAll("{nome}", "Teste").replaceAll("{produto}", "Produto Teste").replaceAll("{valor}", "100 MT").replaceAll("{email}", "teste@redox.com").replaceAll("{link}", "https://exemplo.com/produto").replaceAll("{suporte}", b.mozesms.support_phone || "").replaceAll("{suporte2}", b.mozesms.support_phone2 || ""),
                 number: `258${b.mozesms.test_number}`,
               } });
               toast.success("SMS de teste enviado");
