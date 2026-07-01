@@ -500,7 +500,7 @@ function AdminPage() {
                     </p>
                     <p className="text-[10px] text-muted-foreground font-mono">{fmtMT(Number(p.sales_total_mzn ?? 0))}</p>
                   </div>
-                  <div className="col-span-2 flex items-center gap-2 min-w-0">
+                  <div className="col-span-2 flex items-center gap-2 min-w-0" onClick={(e) => e.stopPropagation()}>
                     {p.delivery_url && (
                       <a href={p.delivery_url} target="_blank" rel="noreferrer"
                         className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary hover:bg-secondary/70 truncate max-w-[180px]">
@@ -517,11 +517,11 @@ function AdminPage() {
                   </div>
                   <div className="col-span-1 text-right font-mono font-semibold">{fmtMT(Number(p.price_mzn))}</div>
                   <div className="col-span-1 text-right">
-                    <button onClick={() => setHistoryProduct(p)}
-                      className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary hover:bg-secondary/70">
-                      <History className="h-3 w-3" /> Histórico
-                    </button>
+                    <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary">
+                      <History className="h-3 w-3" /> Investigar
+                    </span>
                   </div>
+
                 </div>
               ))}
               {!prods.data?.length && <p className="p-8 text-center text-sm text-muted-foreground">Nenhum produto.</p>}
