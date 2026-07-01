@@ -36,6 +36,25 @@ export const subscribePush = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // If this endpoint was previously owned by another user (shared device),
+    // scrub their stale legacy metadata so push doesn't cross accounts.
+    try {
+      const { data: prev } = await supabaseAdmin
+        .from("push_subscriptions")
+        .select("user_id")
+        .eq("endpoint", data.endpoint)
+        .maybeSingle();
+      if (prev?.user_id && prev.user_id !== context.userId) {
+        try {
+          const { data: prevUser } = await supabaseAdmin.auth.admin.getUserById(prev.user_id);
+          const meta = prevUser?.user?.user_metadata ?? {};
+          if ((meta as any)?.push_subscription?.endpoint === data.endpoint) {
+            const cleaned = Object.fromEntries(Object.entries(meta).filter(([k]) => k !== "push_subscription"));
+            await supabaseAdmin.auth.admin.updateUserById(prev.user_id, { user_metadata: cleaned });
+          }
+        } catch {}
+      }
+    } catch {}
     // Upsert into dedicated table (multi-device, survives user_metadata changes)
     const { error: tblErr } = await supabaseAdmin
       .from("push_subscriptions")
@@ -55,14 +74,6 @@ export const subscribePush = createServerFn({ method: "POST" })
       console.log("[push] subscribe table error", tblErr.message);
       throw new Error(tblErr.message);
     }
-    // Also mirror to user_metadata for legacy reads (best-effort)
-    try {
-      const { data: user } = await supabaseAdmin.auth.admin.getUserById(context.userId);
-      const meta = user?.user?.user_metadata ?? {};
-      await supabaseAdmin.auth.admin.updateUserById(context.userId, {
-        user_metadata: { ...meta, push_subscription: { endpoint: data.endpoint, p256dh: data.p256dh, auth: data.auth } },
-      });
-    } catch {}
     console.log(`[push] subscribed user=${context.userId} endpoint=${data.endpoint.slice(0, 50)}...`);
     return { ok: true };
   });
