@@ -34,7 +34,7 @@ interface Bundle {
 }
 
 const DEFAULT_BUNDLE: Bundle = {
-  push_custom: { title: "💰 Nova venda aprovada!", body: "{valor} — {cliente}", currency: "MZN" },
+  push_custom: { title: "💰 Nova venda aprovada!", body: "{valor}", currency: "MZN" },
   pushcut: { enabled: false, webhook_url: "" },
   utmify: { enabled: false, api_token: "", currency: "BRL" },
   mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Suporte: {suporte} / {suporte2}", test_number: "", support_phone: "", support_phone2: "" },
