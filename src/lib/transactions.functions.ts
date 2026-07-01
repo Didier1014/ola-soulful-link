@@ -73,7 +73,7 @@ export const createCheckout = createServerFn({ method: "POST" })
     if (!product || !product.active) throw new Error("Produto indisponível");
 
     const amount = data.amount_mzn ?? Number(product.price_mzn);
-    if (amount < 100) throw new Error("Valor mínimo é 100 MT");
+    if (amount < 50) throw new Error("Valor mínimo é 50 MT");
     const { seller_fee, seller_net } = calcFee(amount);
 
     const trackingClean = data.tracking
