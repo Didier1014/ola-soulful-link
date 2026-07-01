@@ -92,7 +92,10 @@ function ThankYouPage() {
     );
   }
 
-  if (result.status === "paid") {
+  const isDigital = (result as any)?.product_type === "digital";
+  const downloadUrl: string | undefined = (result as any)?.download_url;
+
+  if (result.status === "paid" && !isDigital) {
     const deliveryUrl = result.delivery_url;
     if (deliveryUrl) {
       window.location.href = deliveryUrl;
@@ -108,8 +111,24 @@ function ThankYouPage() {
           <>
             <CheckCircle2 className="h-16 w-16 mx-auto" style={{ color: "#ff3333" }} />
             <h1 className="text-2xl font-bold text-gray-900">Obrigado!</h1>
-            <p className="text-gray-500">Pagamento confirmado com sucesso.</p>
-            {result.delivery_url && (
+            <p className="text-gray-500">
+              {isDigital ? "Pagamento confirmado. O seu produto está pronto para download." : "Pagamento confirmado com sucesso."}
+            </p>
+            {isDigital && downloadUrl && (
+              <>
+                <a href={downloadUrl} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110"
+                  style={{ background: "linear-gradient(135deg, #ff3333, #cc0000)" }}>
+                  <Download className="h-4 w-4" />
+                  Acessar Produto (Download)
+                </a>
+                <p className="text-xs text-gray-400">Link válido por 7 dias. Guarde o ficheiro após descarregar.</p>
+              </>
+            )}
+            {isDigital && !downloadUrl && (
+              <p className="text-sm text-gray-400">Produto será enviado para o seu email em instantes.</p>
+            )}
+            {!isDigital && result.delivery_url && (
               <a href={result.delivery_url} target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110"
                 style={{ background: "linear-gradient(135deg, #ff3333, #cc0000)" }}>
@@ -117,7 +136,7 @@ function ThankYouPage() {
                 Acessar Produto
               </a>
             )}
-            {!result.delivery_url && (
+            {!isDigital && !result.delivery_url && (
               <p className="text-sm text-gray-400">Produto disponível em breve, verifique seu email.</p>
             )}
             <WhatsappPopup />
