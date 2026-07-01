@@ -90,6 +90,18 @@ function Page() {
               </SelectContent>
             </Select>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Suporte 1 (SMS pós-venda)</Label>
+              <Input value={form.support_phone} placeholder="258840000000"
+                onChange={(e) => setForm({ ...form, support_phone: e.target.value.replace(/[^\d+]/g, "") })} />
+            </div>
+            <div>
+              <Label>Suporte 2 (SMS pós-venda)</Label>
+              <Input value={form.support_phone2} placeholder="258850000000"
+                onChange={(e) => setForm({ ...form, support_phone2: e.target.value.replace(/[^\d+]/g, "") })} />
+            </div>
+          </div>
           <div>
             <Label>Moeda preferida (notificações)</Label>
             <Select value={currency} onValueChange={(v) => setCurrency(v as Currency)}>
