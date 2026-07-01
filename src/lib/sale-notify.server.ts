@@ -163,16 +163,30 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
   let productUtmifyId: string | null = null;
   let productLowtrackId: string | null = null;
   let productPushcutUrl: string | null = null;
+  let productLink: string = "";
   if (tx.product_id) {
     const { data: prod } = await supabaseAdmin
       .from("products")
-      .select("name,utimify_id,lawtracker_id,config")
+      .select("name,utimify_id,lawtracker_id,config,product_type,digital_file_path,delivery_url,thank_you_url")
       .eq("id", tx.product_id)
       .maybeSingle();
     productName = prod?.name ?? null;
     productUtmifyId = prod?.utimify_id ?? null;
     productLowtrackId = prod?.lawtracker_id ?? null;
     productPushcutUrl = (prod?.config as any)?.pushcut_webhook_url || null;
+
+    if ((prod as any)?.product_type === "digital" && (prod as any)?.digital_file_path) {
+      try {
+        const { data: signed } = await supabaseAdmin
+          .storage
+          .from("product-digital")
+          .createSignedUrl((prod as any).digital_file_path, 60 * 60 * 24 * 7, { download: true });
+        productLink = signed?.signedUrl || "";
+      } catch (e) {
+        console.log(`[sale:${tx.id}] signed url error`, e);
+      }
+    }
+    if (!productLink) productLink = (prod as any)?.delivery_url || (prod as any)?.thank_you_url || "";
   }
 
   const { convertAmount } = await import("@/lib/currency.functions");
