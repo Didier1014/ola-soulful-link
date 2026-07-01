@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getAdminOverview, listAllProfiles, listAllTransactions,
   listAllWithdrawals, listAllProducts, approveWithdrawal, rejectWithdrawal,
-  listUserProducts, getDigitalSignedUrl,
+  listUserProducts, getDigitalSignedUrl, getProductHistory,
 } from "@/lib/admin.functions";
 import { sendTestSms } from "@/lib/integrations.functions";
 import { Input } from "@/components/ui/input";
