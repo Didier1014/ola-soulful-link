@@ -339,6 +339,7 @@ SUPORTE ou Reclamações: {suporte1} , {suporte2}
                 nome: "Teste",
                 produto: "Produto Teste",
                 valor: "100 MT",
+                link: "https://exemplo.com/produto",
                 suporte1: b.mozesms.support_phone || "",
                 suporte2: b.mozesms.support_phone2 || "",
                 suporte3: "(número do admin)",
