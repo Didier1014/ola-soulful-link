@@ -19,8 +19,9 @@ import { toast } from "sonner";
 import {
   Shield, Users, Receipt, Package, TrendingUp, AlertTriangle,
   ArrowUpDown, Wallet, DollarSign, CheckCircle2, XCircle, Search,
-  Activity, Zap, Clock, ExternalLink, FileDown, ChevronRight, Send, MessageSquare,
+  Activity, Zap, Clock, ExternalLink, FileDown, ChevronRight, Send, MessageSquare, History, MousePointerClick,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/dashboard/admin")({ component: AdminPage });
 
