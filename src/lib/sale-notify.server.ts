@@ -314,6 +314,7 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
           nome: tx.customer_name || "Cliente",
           produto: productName || "",
           valor: formatted,
+          link: productLink,
           suporte1, suporte2, suporte3,
         });
 
