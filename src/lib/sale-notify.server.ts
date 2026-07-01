@@ -3,6 +3,8 @@
 // in-app notification + web push + Utmify + LowTrack.
 // Called from createCheckout/payLink e pelo
 // safety-net em listMyTransactions/checkTransactionStatus.
+import { buildFixedSmsTemplate } from "@/lib/sms-template";
+
 
 async function logIntegrationCall(
   supabaseAdmin: any,
