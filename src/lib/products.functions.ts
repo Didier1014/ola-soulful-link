@@ -193,3 +193,21 @@ export const getProductBySlug = createServerFn({ method: "GET" })
     if (!row) throw new Error("Produto não encontrado");
     return { ...row, cover_url: await signCover(supabaseAdmin, row.cover_url) };
   });
+
+// Public — register a checkout page view (click)
+export const trackProductClick = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({
+    product_id: z.string().uuid(),
+    user_agent: z.string().max(500).optional().default(""),
+    referrer: z.string().max(500).optional().default(""),
+  }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("product_clicks").insert({
+      product_id: data.product_id,
+      user_agent: data.user_agent || null,
+      referrer: data.referrer || null,
+    });
+    return { ok: true };
+  });
+
