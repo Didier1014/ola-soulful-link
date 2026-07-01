@@ -301,21 +301,8 @@ function IntegrationsPage() {
         <Textarea rows={3} value={b.mozesms.template || ""}
           onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, template: e.target.value } })}
         />
-        <p className="text-xs text-muted-foreground -mt-2">Clique nas variáveis acima para inserir. {"{suporte}"} e {"{suporte2}"} usam os números configurados abaixo.</p>
-        <Label>Número de Suporte 1 (aparece como {"{suporte}"})</Label>
-        <div className="flex gap-2">
-          <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+</div>
-          <Input value={b.mozesms.support_phone || ""}
-            onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, support_phone: e.target.value.replace(/[^\d+]/g, "") } })}
-            placeholder="258840000000" />
-        </div>
-        <Label>Número de Suporte 2 (aparece como {"{suporte2}"})</Label>
-        <div className="flex gap-2">
-          <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+</div>
-          <Input value={b.mozesms.support_phone2 || ""}
-            onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, support_phone2: e.target.value.replace(/[^\d+]/g, "") } })}
-            placeholder="258850000000" />
-        </div>
+        <p className="text-xs text-muted-foreground -mt-2">Clique nas variáveis acima para inserir. {"{suporte}"} e {"{suporte2}"} usam os números configurados no seu <a href="/dashboard/profile" className="underline text-primary">Perfil</a>.</p>
+
         <Label>Número para teste SMS</Label>
         <div className="flex gap-2">
           <div className="h-10 px-3 rounded-md bg-secondary flex items-center text-sm">+258</div>
