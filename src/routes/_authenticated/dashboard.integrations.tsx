@@ -290,7 +290,7 @@ function IntegrationsPage() {
           maxLength={11} placeholder="RedoxPay" />
         <div className="rounded-lg border border-border/40 bg-muted/40 p-3 space-y-1">
           <p className="text-xs font-medium text-muted-foreground">Modelo de mensagem (fixo — igual para todos)</p>
-          <pre className="text-xs whitespace-pre-wrap font-mono leading-relaxed">{`{nome}, pagamento recebido com sucesso de {valor} para {produto}
+          <pre className="text-xs whitespace-pre-wrap font-mono leading-relaxed">{`{nome}, pagamento recebido com sucesso de {valor} para {produto}, se nao conseguiu acessa aqui esta o link {link}
 SUPORTE ou Reclamações: {suporte1} , {suporte2}
 {suporte3}`}</pre>
           <p className="text-xs text-muted-foreground pt-1">
