@@ -72,35 +72,50 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           if (!payoutPhone) {
             return Response.json({ error: `merchant sem payout ${channel} configurado para este canal` }, { status: 422 });
           }
-          const splits: { phone: string; method: SplitMethod; value: string }[] = [
-            { phone: payoutPhone, method: channel, value: payout_comerciante.toFixed(2) },
-          ];
-
           const rlxToken = process.env.RLX_API_TOKEN;
           if (!rlxToken) {
             return Response.json({ error: "gateway_unavailable" }, { status: 503 });
           }
 
-          const rlxPayload = {
-            action: "pay",
-            phone,
-            amount: amount.toFixed(2),
-            nome_cliente,
-            webhook_url: "https://redoxpay.lovable.app/api/public/rlx-webhook",
-            splits,
+          // Alguns prefixos foram portados entre operadoras — a nossa detecção por
+          // prefixo pode divergir do canal que o RLX realmente atribui ao número.
+          // Fazemos uma tentativa com o método detectado e, se o RLX responder
+          // "método de split deve coincidir com o canal de recebimento", tentamos
+          // com o método oposto (desde que o merchant tenha esse payout configurado).
+          const tryChannel = async (m: SplitMethod, ph: string) => {
+            const splits = [{ phone: ph, method: m, value: payout_comerciante.toFixed(2) }];
+            const res = await fetch(RLX_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${rlxToken}` },
+              body: JSON.stringify({
+                action: "pay",
+                phone,
+                amount: amount.toFixed(2),
+                nome_cliente,
+                webhook_url: "https://redoxpay.lovable.app/api/public/rlx-webhook",
+                splits,
+              }),
+            });
+            const text = await res.text();
+            let json: any = null;
+            try { json = JSON.parse(text); } catch {}
+            return { res, text, json, splits, method: m, phone: ph };
           };
 
-          const rlxRes = await fetch(RLX_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${rlxToken}`,
-            },
-            body: JSON.stringify(rlxPayload),
-          });
-          const rlxText = await rlxRes.text();
-          let rlxJson: any = null;
-          try { rlxJson = JSON.parse(rlxText); } catch {}
+          let attempt = await tryChannel(channel, payoutPhone);
+          const isMismatch =
+            attempt.json && String(attempt.json.status).toLowerCase() === "error"
+            && /coincidir com o canal/i.test(String(attempt.json.msg || ""));
+          if (isMismatch) {
+            const alt: SplitMethod = channel === "mpesa" ? "emola" : "mpesa";
+            const altPhone = alt === "mpesa" ? mpesaPhone : emolaPhone;
+            if (altPhone) {
+              console.log("[create-merchant-payment] retry with alt channel", alt);
+              attempt = await tryChannel(alt, altPhone);
+            }
+          }
+
+          const { res: rlxRes, text: rlxText, json: rlxJson, splits, method: usedMethod, phone: usedPayoutPhone } = attempt;
           if (!rlxRes.ok || (rlxJson && String(rlxJson.status).toLowerCase() === "error")) {
             console.log("[create-merchant-payment] rlx error", rlxRes.status, rlxText);
             return Response.json({ error: "gateway_error" }, { status: 502 });
