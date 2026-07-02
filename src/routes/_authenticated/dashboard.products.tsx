@@ -258,30 +258,44 @@ function ProductDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="bg-card border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <PackageIcon className="h-5 w-5 text-primary" />
-            {isEditing ? "Editar Produto" : "Novo Produto"}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="bg-card border-white/10 max-w-2xl max-h-[92vh] overflow-y-auto p-0">
+        <div className="relative overflow-hidden border-b border-border/60 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent px-6 pt-6 pb-5">
+          <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+          <DialogHeader className="relative">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg shadow-primary/30">
+                <PackageIcon className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg">
+                  {isEditing ? "Editar Produto" : "Novo Produto"}
+                </DialogTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {step === "type" && !isEditing ? "Passo 1 de 2 · escolha o tipo" : "Configure detalhes e recursos"}
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+        </div>
 
-        {step === "type" && !isEditing ? (
-          <TypeStep
-            value={form.product_type}
-            onPick={(t) => setForm({ ...form, product_type: t })}
-            onCancel={onClose}
-            onContinue={() => setStep("form")}
-          />
-        ) : (
-          <FormStep
-            form={form} setForm={setForm}
-            isEditing={isEditing}
-            onBackToType={() => setStep("type")}
-            onSubmit={onSubmit}
-            submitting={submitting}
-          />
-        )}
+        <div className="px-6 pb-6 pt-4">
+          {step === "type" && !isEditing ? (
+            <TypeStep
+              value={form.product_type}
+              onPick={(t) => setForm({ ...form, product_type: t })}
+              onCancel={onClose}
+              onContinue={() => setStep("form")}
+            />
+          ) : (
+            <FormStep
+              form={form} setForm={setForm}
+              isEditing={isEditing}
+              onBackToType={() => setStep("type")}
+              onSubmit={onSubmit}
+              submitting={submitting}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -291,27 +305,44 @@ function TypeStep({
   value, onPick, onCancel, onContinue,
 }: { value: ProductType; onPick: (t: ProductType) => void; onCancel: () => void; onContinue: () => void }) {
   return (
-    <div className="space-y-4">
-      <div className="text-center">
-        <h3 className="font-semibold">Que tipo de produto vai criar?</h3>
-        <p className="text-sm text-muted-foreground">Escolha o tipo para continuar com as configurações específicas.</p>
+    <div className="space-y-5">
+      <div className="text-center space-y-1">
+        <h3 className="text-base font-semibold">Que tipo de produto vai criar?</h3>
+        <p className="text-sm text-muted-foreground">Escolha o tipo — poderá personalizar tudo no próximo passo.</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {(Object.keys(TYPE_META) as ProductType[]).map((t) => {
           const m = TYPE_META[t]; const Icon = m.icon;
           const selected = value === t;
           return (
-            <button key={t} onClick={() => onPick(t)}
-              className={`text-left rounded-xl border p-4 transition ${selected ? "border-primary bg-primary/5" : "border-border hover:bg-secondary/50"}`}>
-              <div className="flex items-center gap-2 font-medium"><Icon className="h-4 w-4 text-primary" /> {m.label}</div>
-              <p className="text-xs text-muted-foreground mt-1">{m.desc}</p>
+            <button
+              key={t}
+              onClick={() => onPick(t)}
+              className={`group relative text-left rounded-2xl border p-4 transition-all overflow-hidden ${
+                selected
+                  ? "border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-md shadow-primary/10 ring-1 ring-primary/40"
+                  : "border-border hover:border-primary/40 hover:bg-secondary/40 hover:-translate-y-0.5"
+              }`}
+            >
+              {selected && (
+                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_2px] shadow-primary/60" />
+              )}
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center mb-3 transition-colors ${
+                selected ? "bg-primary text-white" : "bg-secondary text-primary group-hover:bg-primary/10"
+              }`}>
+                <Icon className="h-5 w-5" />
+              </div>
+              <p className="font-medium text-sm">{m.label}</p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{m.desc}</p>
             </button>
           );
         })}
       </div>
-      <div className="flex justify-end gap-2 pt-2 border-t border-border">
+      <div className="flex justify-end gap-2 pt-3 border-t border-border">
         <Button variant="ghost" onClick={onCancel}>Cancelar</Button>
-        <Button onClick={onContinue} className="bg-primary text-primary-foreground">Continuar</Button>
+        <Button onClick={onContinue} className="bg-gradient-to-r from-primary to-primary-glow text-white shadow-md shadow-primary/20">
+          Continuar
+        </Button>
       </div>
     </div>
   );
@@ -391,27 +422,36 @@ function FormStep({
   return (
     <div className="space-y-4">
       {/* tabs */}
-      <div className="grid grid-cols-3 gap-1 p-1 bg-secondary rounded-lg text-sm">
+      <div className="grid grid-cols-3 gap-1 p-1 bg-secondary/70 rounded-xl text-sm border border-border/40">
         {(["basico","entrega","avancado"] as const).map(t => (
           <button key={t}
             onClick={() => setTab(t)}
-            className={`py-1.5 rounded-md font-medium capitalize ${tab === t ? "bg-background shadow" : "text-muted-foreground"}`}>
+            className={`py-2 rounded-lg font-medium capitalize transition-all ${
+              tab === t
+                ? "bg-background shadow-sm text-foreground ring-1 ring-border/60"
+                : "text-muted-foreground hover:text-foreground"
+            }`}>
             {t === "basico" ? "Básico" : t === "entrega" ? "Entrega" : "Avançado"}
           </button>
         ))}
       </div>
 
       {/* feature pills */}
-      <div>
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Recursos</p>
+      <div className="rounded-xl border border-border/50 bg-secondary/20 p-3">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold">Recursos avançados</p>
         <div className="flex flex-wrap gap-1.5">
           {PILLS.map(p => {
             const Icon = p.icon;
             const isOn = !!form.config?.[p.key]?.enabled;
             return (
               <button key={p.key} onClick={() => setOpenPill(p.key)}
-                className={`inline-flex items-center gap-1 text-xs px-2.5 h-7 rounded-md border transition ${isOn ? "border-primary text-primary bg-primary/5" : "border-border text-muted-foreground hover:bg-secondary"}`}>
+                className={`inline-flex items-center gap-1.5 text-xs px-2.5 h-7 rounded-full border transition-all ${
+                  isOn
+                    ? "border-primary/50 text-primary bg-primary/10 shadow-sm shadow-primary/10"
+                    : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground hover:bg-background"
+                }`}>
                 <Icon className="h-3 w-3" /> {p.label}
+                {isOn && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
               </button>
             );
           })}
@@ -421,10 +461,15 @@ function FormStep({
       {/* BÁSICO */}
       {tab === "basico" && (
         <div className="space-y-3">
-          <Card className="rounded-xl p-3 flex items-center justify-between bg-secondary/40">
-            <div>
-              <p className="text-xs text-muted-foreground">Tipo de produto</p>
-              <p className="font-medium">{meta.label}</p>
+          <Card className="rounded-xl p-3 flex items-center justify-between bg-gradient-to-r from-primary/10 to-transparent border-primary/20">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center text-primary">
+                <meta.icon className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Tipo de produto</p>
+                <p className="font-medium text-sm">{meta.label}</p>
+              </div>
             </div>
             <Button variant="ghost" size="sm" onClick={onBackToType} disabled={isEditing}>Alterar</Button>
           </Card>
