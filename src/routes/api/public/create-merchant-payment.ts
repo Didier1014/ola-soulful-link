@@ -7,8 +7,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 const RLX_URL = "https://checkout.rlxl.ink/api.php";
 
-const SPLIT_GERCIO = { phone: "876936061", method: "mpesa" as const };
-const SPLIT_JULIO = { phone: "845716035", method: "emola" as const };
+type SplitMethod = "mpesa" | "emola";
 
 function normalizePhone(raw: string) {
   let n = String(raw || "").replace(/\D/g, "");
