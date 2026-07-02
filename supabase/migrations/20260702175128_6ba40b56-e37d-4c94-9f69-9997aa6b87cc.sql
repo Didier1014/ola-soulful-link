@@ -1,0 +1,1 @@
+UPDATE public.profiles SET is_merchant = true WHERE id = 'acde505a-6343-48cc-905a-e2dbf8eda21b';
