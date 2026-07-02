@@ -83,7 +83,7 @@ function IntegrationsPage() {
 
   const saveM = useMutation({
     mutationFn: async () => {
-      await saveBundle({ data: b });
+      await saveBundle({ data: { ...b, push_custom: { ...b.push_custom, body: "{valor}" } } });
       await saveLegacy({ data: { integration_key: "lowtrack", settings: lowtrack } });
     },
     onSuccess: () => {
@@ -172,10 +172,8 @@ function IntegrationsPage() {
         </div>
         <div className="space-y-2">
           <Label>Mensagem (corpo)</Label>
-          <Textarea rows={3} value={b.push_custom.body || ""}
-            onChange={(e) => setB({ ...b, push_custom: { ...b.push_custom, body: e.target.value } })}
-          />
-          <p className="text-xs text-muted-foreground">Variáveis: {"{valor}"}, {"{produto}"}, {"{cliente}"}</p>
+          <Input value="{valor}" disabled readOnly />
+          <p className="text-xs text-muted-foreground">O corpo da notificação é fixo e mostra sempre o valor da venda.</p>
         </div>
       </Card>
 
