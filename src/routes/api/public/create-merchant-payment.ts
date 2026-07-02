@@ -114,11 +114,11 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             return Response.json({ error: "gateway_error" }, { status: 502 });
           }
 
-          await supabaseAdmin.from("transactions").insert({
+          const { error: insErr } = await supabaseAdmin.from("transactions").insert({
             user_id: merchant.id,
             customer_name: nome_cliente,
             customer_phone: phone,
-            method: "merchant_api",
+            method: channel,
             amount_mzn: amount,
             fee_mzn: taxa_comerciante,
             net_mzn: payout_comerciante,
@@ -130,8 +130,12 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
               taxa_rlx,
               taxa_comerciante,
               payout_comerciante,
+              payout_phone: payoutPhone,
+              payout_method: channel,
+              splits,
             },
           });
+          if (insErr) console.log("[create-merchant-payment] insert error", insErr.message);
 
           return Response.json({
             status: "pending",
