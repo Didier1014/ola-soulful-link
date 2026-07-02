@@ -422,27 +422,36 @@ function FormStep({
   return (
     <div className="space-y-4">
       {/* tabs */}
-      <div className="grid grid-cols-3 gap-1 p-1 bg-secondary rounded-lg text-sm">
+      <div className="grid grid-cols-3 gap-1 p-1 bg-secondary/70 rounded-xl text-sm border border-border/40">
         {(["basico","entrega","avancado"] as const).map(t => (
           <button key={t}
             onClick={() => setTab(t)}
-            className={`py-1.5 rounded-md font-medium capitalize ${tab === t ? "bg-background shadow" : "text-muted-foreground"}`}>
+            className={`py-2 rounded-lg font-medium capitalize transition-all ${
+              tab === t
+                ? "bg-background shadow-sm text-foreground ring-1 ring-border/60"
+                : "text-muted-foreground hover:text-foreground"
+            }`}>
             {t === "basico" ? "Básico" : t === "entrega" ? "Entrega" : "Avançado"}
           </button>
         ))}
       </div>
 
       {/* feature pills */}
-      <div>
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Recursos</p>
+      <div className="rounded-xl border border-border/50 bg-secondary/20 p-3">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold">Recursos avançados</p>
         <div className="flex flex-wrap gap-1.5">
           {PILLS.map(p => {
             const Icon = p.icon;
             const isOn = !!form.config?.[p.key]?.enabled;
             return (
               <button key={p.key} onClick={() => setOpenPill(p.key)}
-                className={`inline-flex items-center gap-1 text-xs px-2.5 h-7 rounded-md border transition ${isOn ? "border-primary text-primary bg-primary/5" : "border-border text-muted-foreground hover:bg-secondary"}`}>
+                className={`inline-flex items-center gap-1.5 text-xs px-2.5 h-7 rounded-full border transition-all ${
+                  isOn
+                    ? "border-primary/50 text-primary bg-primary/10 shadow-sm shadow-primary/10"
+                    : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground hover:bg-background"
+                }`}>
                 <Icon className="h-3 w-3" /> {p.label}
+                {isOn && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
               </button>
             );
           })}
