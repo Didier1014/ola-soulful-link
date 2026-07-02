@@ -473,6 +473,8 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          payout_emola_phone: string | null
+          payout_mpesa_phone: string | null
           phone: string | null
           support_phone: string | null
           support_phone2: string | null
@@ -489,6 +491,8 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id: string
+          payout_emola_phone?: string | null
+          payout_mpesa_phone?: string | null
           phone?: string | null
           support_phone?: string | null
           support_phone2?: string | null
@@ -505,6 +509,8 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          payout_emola_phone?: string | null
+          payout_mpesa_phone?: string | null
           phone?: string | null
           support_phone?: string | null
           support_phone2?: string | null
