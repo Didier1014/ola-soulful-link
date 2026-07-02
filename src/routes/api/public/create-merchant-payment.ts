@@ -40,7 +40,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
 
           const { data: merchant } = await supabaseAdmin
             .from("profiles")
-            .select("id,api_key_active,payout_mpesa_phone,payout_emola_phone")
+            .select("id,api_key_active,payout_mpesa_phone,payout_emola_phone,merchant_fee_percent,merchant_fee_fixed")
             .eq("api_key", apiKey)
             .eq("api_key_active", true)
             .maybeSingle();
@@ -54,9 +54,11 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             return Response.json({ error: "merchant sem métodos de payout configurados" }, { status: 422 });
           }
 
-          // Fees (internos, nunca expostos)
+          // Fees (internos, nunca expostos). Taxa do comerciante é configurável por perfil.
+          const feePct = Number((merchant as any).merchant_fee_percent ?? 15);
+          const feeFix = Number((merchant as any).merchant_fee_fixed ?? 15);
           const taxa_rlx = r2(amount * 0.12 + 12);
-          const taxa_comerciante = r2(amount * 0.15 + 15);
+          const taxa_comerciante = r2(amount * (feePct / 100) + feeFix);
           const payout_comerciante = r2(amount - taxa_comerciante);
 
           // O RLX exige que o método dos splits coincida com o canal do cliente
