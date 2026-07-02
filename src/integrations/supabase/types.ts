@@ -390,6 +390,7 @@ export type Database = {
       products: {
         Row: {
           active: boolean
+          approval_status: string
           config: Json
           cover_url: string | null
           created_at: string
@@ -403,6 +404,7 @@ export type Database = {
           pixel_id: string | null
           price_mzn: number
           product_type: string
+          rejection_reason: string | null
           slug: string
           sms_sender_id: string | null
           sms_template: string | null
@@ -414,6 +416,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          approval_status?: string
           config?: Json
           cover_url?: string | null
           created_at?: string
@@ -427,6 +430,7 @@ export type Database = {
           pixel_id?: string | null
           price_mzn: number
           product_type?: string
+          rejection_reason?: string | null
           slug: string
           sms_sender_id?: string | null
           sms_template?: string | null
@@ -438,6 +442,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          approval_status?: string
           config?: Json
           cover_url?: string | null
           created_at?: string
@@ -451,6 +456,7 @@ export type Database = {
           pixel_id?: string | null
           price_mzn?: number
           product_type?: string
+          rejection_reason?: string | null
           slug?: string
           sms_sender_id?: string | null
           sms_template?: string | null
