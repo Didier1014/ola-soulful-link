@@ -29,6 +29,30 @@ export const Route = createFileRoute("/_authenticated/dashboard/products")({
 
 const fmtMT = (n: number) => `${new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(n)} MZN`;
 
+function ApprovalBadge({ status, reason }: { status?: string; reason?: string | null }) {
+  const s = status || "pending";
+  if (s === "approved") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">
+        <CheckCircle2 className="h-3 w-3" /> ACTIVO
+      </span>
+    );
+  }
+  if (s === "rejected") {
+    return (
+      <span title={reason || "Rejeitado pelo admin"} className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-600">
+        <XCircle className="h-3 w-3" /> NEGADO
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 animate-pulse">
+      <Clock className="h-3 w-3" /> EM REVISÃO
+    </span>
+  );
+}
+
+
 type ProductType = "external" | "digital" | "physical" | "lead";
 
 const TYPE_META: Record<ProductType, { label: string; desc: string; icon: any }> = {
