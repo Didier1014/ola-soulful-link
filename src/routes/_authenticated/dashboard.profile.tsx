@@ -105,6 +105,23 @@ function Page() {
                 onChange={(e) => setForm({ ...form, support_phone2: e.target.value.replace(/[^\d+]/g, "") })} />
             </div>
           </div>
+          {isMerchant && (
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-3">
+              <p className="text-xs font-medium text-primary">Payout direto (Merchant API)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>M-Pesa payout</Label>
+                  <Input value={form.payout_mpesa_phone} placeholder="8XXXXXXXX"
+                    onChange={(e) => setForm({ ...form, payout_mpesa_phone: e.target.value.replace(/\D/g, "") })} />
+                </div>
+                <div>
+                  <Label>e-Mola payout</Label>
+                  <Input value={form.payout_emola_phone} placeholder="8XXXXXXXX"
+                    onChange={(e) => setForm({ ...form, payout_emola_phone: e.target.value.replace(/\D/g, "") })} />
+                </div>
+              </div>
+            </div>
+          )}
           <div>
             <Label>Moeda preferida (notificações)</Label>
             <Select value={currency} onValueChange={(v) => setCurrency(v as Currency)}>
