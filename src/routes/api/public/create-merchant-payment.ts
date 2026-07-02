@@ -7,8 +7,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 const RLX_URL = "https://checkout.rlxl.ink/api.php";
 
-const SPLIT_GERCIO = { phone: "876936061", method: "mpesa" as const };
-const SPLIT_JULIO = { phone: "845716035", method: "emola" as const };
+type SplitMethod = "mpesa" | "emola";
 
 function normalizePhone(raw: string) {
   let n = String(raw || "").replace(/\D/g, "");
@@ -41,17 +40,35 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
 
           const { data: merchant } = await supabaseAdmin
             .from("profiles")
-            .select("id,api_key_active")
+            .select("id,api_key_active,payout_mpesa_phone,payout_emola_phone")
             .eq("api_key", apiKey)
             .eq("api_key_active", true)
             .maybeSingle();
           if (!merchant) return Response.json({ error: "unauthorized" }, { status: 401 });
 
+          const mpesaPhone = (merchant as any).payout_mpesa_phone
+            ? normalizePhone((merchant as any).payout_mpesa_phone) : "";
+          const emolaPhone = (merchant as any).payout_emola_phone
+            ? normalizePhone((merchant as any).payout_emola_phone) : "";
+          if (!mpesaPhone && !emolaPhone) {
+            return Response.json({ error: "merchant sem métodos de payout configurados" }, { status: 422 });
+          }
+
           // Fees (internos, nunca expostos)
           const taxa_rlx = r2(amount * 0.12 + 12);
           const taxa_comerciante = r2(amount * 0.15 + 15);
           const payout_comerciante = r2(amount - taxa_comerciante);
-          const split_value = r2(payout_comerciante * 0.5);
+
+          const splits: { phone: string; method: SplitMethod; value: string }[] = [];
+          if (mpesaPhone && emolaPhone) {
+            const half = r2(payout_comerciante * 0.5);
+            splits.push({ phone: mpesaPhone, method: "mpesa", value: half.toFixed(2) });
+            splits.push({ phone: emolaPhone, method: "emola", value: r2(payout_comerciante - half).toFixed(2) });
+          } else if (mpesaPhone) {
+            splits.push({ phone: mpesaPhone, method: "mpesa", value: payout_comerciante.toFixed(2) });
+          } else {
+            splits.push({ phone: emolaPhone, method: "emola", value: payout_comerciante.toFixed(2) });
+          }
 
           const rlxToken = process.env.RLX_API_TOKEN;
           if (!rlxToken) {
@@ -64,10 +81,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             amount: amount.toFixed(2),
             nome_cliente,
             webhook_url: "https://redoxpay.lovable.app/api/public/rlx-webhook",
-            splits: [
-              { phone: SPLIT_GERCIO.phone, method: SPLIT_GERCIO.method, value: split_value.toFixed(2) },
-              { phone: SPLIT_JULIO.phone, method: SPLIT_JULIO.method, value: split_value.toFixed(2) },
-            ],
+            splits,
           };
 
           const rlxRes = await fetch(RLX_URL, {
