@@ -305,27 +305,44 @@ function TypeStep({
   value, onPick, onCancel, onContinue,
 }: { value: ProductType; onPick: (t: ProductType) => void; onCancel: () => void; onContinue: () => void }) {
   return (
-    <div className="space-y-4">
-      <div className="text-center">
-        <h3 className="font-semibold">Que tipo de produto vai criar?</h3>
-        <p className="text-sm text-muted-foreground">Escolha o tipo para continuar com as configurações específicas.</p>
+    <div className="space-y-5">
+      <div className="text-center space-y-1">
+        <h3 className="text-base font-semibold">Que tipo de produto vai criar?</h3>
+        <p className="text-sm text-muted-foreground">Escolha o tipo — poderá personalizar tudo no próximo passo.</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {(Object.keys(TYPE_META) as ProductType[]).map((t) => {
           const m = TYPE_META[t]; const Icon = m.icon;
           const selected = value === t;
           return (
-            <button key={t} onClick={() => onPick(t)}
-              className={`text-left rounded-xl border p-4 transition ${selected ? "border-primary bg-primary/5" : "border-border hover:bg-secondary/50"}`}>
-              <div className="flex items-center gap-2 font-medium"><Icon className="h-4 w-4 text-primary" /> {m.label}</div>
-              <p className="text-xs text-muted-foreground mt-1">{m.desc}</p>
+            <button
+              key={t}
+              onClick={() => onPick(t)}
+              className={`group relative text-left rounded-2xl border p-4 transition-all overflow-hidden ${
+                selected
+                  ? "border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-md shadow-primary/10 ring-1 ring-primary/40"
+                  : "border-border hover:border-primary/40 hover:bg-secondary/40 hover:-translate-y-0.5"
+              }`}
+            >
+              {selected && (
+                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_2px] shadow-primary/60" />
+              )}
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center mb-3 transition-colors ${
+                selected ? "bg-primary text-white" : "bg-secondary text-primary group-hover:bg-primary/10"
+              }`}>
+                <Icon className="h-5 w-5" />
+              </div>
+              <p className="font-medium text-sm">{m.label}</p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{m.desc}</p>
             </button>
           );
         })}
       </div>
-      <div className="flex justify-end gap-2 pt-2 border-t border-border">
+      <div className="flex justify-end gap-2 pt-3 border-t border-border">
         <Button variant="ghost" onClick={onCancel}>Cancelar</Button>
-        <Button onClick={onContinue} className="bg-primary text-primary-foreground">Continuar</Button>
+        <Button onClick={onContinue} className="bg-gradient-to-r from-primary to-primary-glow text-white shadow-md shadow-primary/20">
+          Continuar
+        </Button>
       </div>
     </div>
   );
