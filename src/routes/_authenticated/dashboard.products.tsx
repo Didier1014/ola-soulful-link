@@ -258,30 +258,44 @@ function ProductDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="bg-card border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <PackageIcon className="h-5 w-5 text-primary" />
-            {isEditing ? "Editar Produto" : "Novo Produto"}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="bg-card border-white/10 max-w-2xl max-h-[92vh] overflow-y-auto p-0">
+        <div className="relative overflow-hidden border-b border-border/60 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent px-6 pt-6 pb-5">
+          <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+          <DialogHeader className="relative">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg shadow-primary/30">
+                <PackageIcon className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg">
+                  {isEditing ? "Editar Produto" : "Novo Produto"}
+                </DialogTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {step === "type" && !isEditing ? "Passo 1 de 2 · escolha o tipo" : "Configure detalhes e recursos"}
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+        </div>
 
-        {step === "type" && !isEditing ? (
-          <TypeStep
-            value={form.product_type}
-            onPick={(t) => setForm({ ...form, product_type: t })}
-            onCancel={onClose}
-            onContinue={() => setStep("form")}
-          />
-        ) : (
-          <FormStep
-            form={form} setForm={setForm}
-            isEditing={isEditing}
-            onBackToType={() => setStep("type")}
-            onSubmit={onSubmit}
-            submitting={submitting}
-          />
-        )}
+        <div className="px-6 pb-6 pt-4">
+          {step === "type" && !isEditing ? (
+            <TypeStep
+              value={form.product_type}
+              onPick={(t) => setForm({ ...form, product_type: t })}
+              onCancel={onClose}
+              onContinue={() => setStep("form")}
+            />
+          ) : (
+            <FormStep
+              form={form} setForm={setForm}
+              isEditing={isEditing}
+              onBackToType={() => setStep("type")}
+              onSubmit={onSubmit}
+              submitting={submitting}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
