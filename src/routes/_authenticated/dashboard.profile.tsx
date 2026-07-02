@@ -43,7 +43,9 @@ function Page() {
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) { setSaving(false); return; }
-    const { error } = await supabase.from("profiles").update(form).eq("id", u.user.id);
+    const payload: any = { ...form };
+    if (!isMerchant) { delete payload.payout_mpesa_phone; delete payload.payout_emola_phone; }
+    const { error } = await supabase.from("profiles").update(payload).eq("id", u.user.id);
     if (error) { setSaving(false); toast.error(error.message); return; }
     const r = await updateUserPreferences({ currency, notifications_enabled: notificationsEnabled }).catch(() => null);
     setSaving(false);
