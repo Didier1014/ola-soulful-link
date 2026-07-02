@@ -22,7 +22,8 @@ function Page() {
   const [email, setEmail] = useState("");
   const [currency, setCurrency] = useState<Currency>("MZN");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [form, setForm] = useState({ full_name: "", business_name: "", whatsapp: "", city: "", account_type: "person", support_phone: "", support_phone2: "" });
+  const [isMerchant, setIsMerchant] = useState(false);
+  const [form, setForm] = useState({ full_name: "", business_name: "", whatsapp: "", city: "", account_type: "person", support_phone: "", support_phone2: "", payout_mpesa_phone: "", payout_emola_phone: "" });
 
   useEffect(() => {
     (async () => {
@@ -30,7 +31,7 @@ function Page() {
       if (!u.user) { setLoading(false); return; }
       setEmail(u.user.email || "");
       const { data: p } = await supabase.from("profiles").select("*").eq("id", u.user.id).single();
-      if (p) setForm({ full_name: p.full_name || "", business_name: p.business_name || "", whatsapp: p.whatsapp || "", city: p.city || "", account_type: p.account_type || "person", support_phone: (p as any).support_phone || "", support_phone2: (p as any).support_phone2 || "" });
+      if (p) { setForm({ full_name: p.full_name || "", business_name: p.business_name || "", whatsapp: p.whatsapp || "", city: p.city || "", account_type: p.account_type || "person", support_phone: (p as any).support_phone || "", support_phone2: (p as any).support_phone2 || "", payout_mpesa_phone: (p as any).payout_mpesa_phone || "", payout_emola_phone: (p as any).payout_emola_phone || "" }); setIsMerchant(Boolean((p as any).is_merchant)); }
       const prefs = await getCurrencyPref();
       setCurrency(prefs.currency);
       setNotificationsEnabled(prefs.notifications_enabled);
@@ -42,7 +43,9 @@ function Page() {
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) { setSaving(false); return; }
-    const { error } = await supabase.from("profiles").update(form).eq("id", u.user.id);
+    const payload: any = { ...form };
+    if (!isMerchant) { delete payload.payout_mpesa_phone; delete payload.payout_emola_phone; }
+    const { error } = await supabase.from("profiles").update(payload).eq("id", u.user.id);
     if (error) { setSaving(false); toast.error(error.message); return; }
     const r = await updateUserPreferences({ currency, notifications_enabled: notificationsEnabled }).catch(() => null);
     setSaving(false);
@@ -102,6 +105,23 @@ function Page() {
                 onChange={(e) => setForm({ ...form, support_phone2: e.target.value.replace(/[^\d+]/g, "") })} />
             </div>
           </div>
+          {isMerchant && (
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-3">
+              <p className="text-xs font-medium text-primary">Payout direto (Merchant API)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>M-Pesa payout</Label>
+                  <Input value={form.payout_mpesa_phone} placeholder="8XXXXXXXX"
+                    onChange={(e) => setForm({ ...form, payout_mpesa_phone: e.target.value.replace(/\D/g, "") })} />
+                </div>
+                <div>
+                  <Label>e-Mola payout</Label>
+                  <Input value={form.payout_emola_phone} placeholder="8XXXXXXXX"
+                    onChange={(e) => setForm({ ...form, payout_emola_phone: e.target.value.replace(/\D/g, "") })} />
+                </div>
+              </div>
+            </div>
+          )}
           <div>
             <Label>Moeda preferida (notificações)</Label>
             <Select value={currency} onValueChange={(v) => setCurrency(v as Currency)}>
