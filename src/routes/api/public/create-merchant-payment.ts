@@ -59,16 +59,22 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           const taxa_comerciante = r2(amount * 0.15 + 15);
           const payout_comerciante = r2(amount - taxa_comerciante);
 
-          const splits: { phone: string; method: SplitMethod; value: string }[] = [];
-          if (mpesaPhone && emolaPhone) {
-            const half = r2(payout_comerciante * 0.5);
-            splits.push({ phone: mpesaPhone, method: "mpesa", value: half.toFixed(2) });
-            splits.push({ phone: emolaPhone, method: "emola", value: r2(payout_comerciante - half).toFixed(2) });
-          } else if (mpesaPhone) {
-            splits.push({ phone: mpesaPhone, method: "mpesa", value: payout_comerciante.toFixed(2) });
-          } else {
-            splits.push({ phone: emolaPhone, method: "emola", value: payout_comerciante.toFixed(2) });
+          // O RLX exige que o método dos splits coincida com o canal do cliente
+          // (M-Pesa: prefixos 84/85 · e-Mola: 86/87).
+          const p2 = phone.slice(0, 2);
+          const channel: SplitMethod | null =
+            p2 === "84" || p2 === "85" ? "mpesa" :
+            p2 === "86" || p2 === "87" ? "emola" : null;
+          if (!channel) {
+            return Response.json({ error: "phone inválido (prefixo desconhecido)" }, { status: 400 });
           }
+          const payoutPhone = channel === "mpesa" ? mpesaPhone : emolaPhone;
+          if (!payoutPhone) {
+            return Response.json({ error: `merchant sem payout ${channel} configurado para este canal` }, { status: 422 });
+          }
+          const splits: { phone: string; method: SplitMethod; value: string }[] = [
+            { phone: payoutPhone, method: channel, value: payout_comerciante.toFixed(2) },
+          ];
 
           const rlxToken = process.env.RLX_API_TOKEN;
           if (!rlxToken) {
