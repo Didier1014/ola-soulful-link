@@ -191,7 +191,6 @@ function ProductsPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-base truncate">{p.name}</p>
-                    <div className="mt-1"><ApprovalBadge status={p.approval_status} reason={p.rejection_reason} /></div>
                     <p className="text-xs text-muted-foreground truncate mt-1">/{p.slug}</p>
                   </div>
                   <Switch checked={p.active} onCheckedChange={(v) => toggle({ data: { id: p.id, active: v } }).then(() => qc.invalidateQueries({ queryKey: ["products"] }))} />
@@ -220,7 +219,6 @@ function ProductsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
                   <p className="font-medium truncate">{p.name}</p>
-                  <ApprovalBadge status={p.approval_status} reason={p.rejection_reason} />
                 </div>
                 <p className="text-primary font-semibold text-sm">{fmtMT(Number(p.price_mzn))}</p>
                 <p className="text-xs text-muted-foreground truncate">/{p.slug}</p>

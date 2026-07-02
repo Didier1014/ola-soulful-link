@@ -187,8 +187,8 @@ export const getProductBySlug = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
       .from("products")
-      .select("id,user_id,slug,name,description,price_mzn,cover_url,delivery_url,thank_you_url,product_type,discount_no_balance,active,pixel_id,utimify_id,lawtracker_id,support_phone,config,approval_status")
-      .eq("slug", data.slug).eq("active", true).eq("approval_status", "approved").maybeSingle();
+      .select("id,user_id,slug,name,description,price_mzn,cover_url,delivery_url,thank_you_url,product_type,discount_no_balance,active,pixel_id,utimify_id,lawtracker_id,support_phone,config")
+      .eq("slug", data.slug).eq("active", true).maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) throw new Error("Produto não encontrado");
     return { ...row, cover_url: await signCover(supabaseAdmin, row.cover_url) };
