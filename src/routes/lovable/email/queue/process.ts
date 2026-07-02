@@ -1,4 +1,34 @@
-import { sendLovableEmail } from '@lovable.dev/email-js'
+// Resend replaces sendLovableEmail as the transport
+async function sendViaResend(payload: any, apiKey: string) {
+  const fromDomain = payload.sender_domain || payload.from?.split('@')[1] || 'resend.dev'
+  const fromName = payload.from_name || 'Redoxpay'
+  const fromAddr = payload.from && payload.from.includes('@')
+    ? payload.from
+    : `${fromName} <onboarding@${fromDomain === 'resend.dev' ? 'resend.dev' : fromDomain}>`
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: fromAddr,
+      to: Array.isArray(payload.to) ? payload.to : [payload.to],
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text,
+    }),
+  })
+  if (!res.ok) {
+    const body = await res.text()
+    const err: any = new Error(`Resend ${res.status}: ${body}`)
+    err.status = res.status
+    const ra = res.headers.get('retry-after')
+    err.retryAfterSeconds = ra ? Number(ra) : null
+    throw err
+  }
+  return res.json()
+}
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
 
