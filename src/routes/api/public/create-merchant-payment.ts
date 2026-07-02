@@ -93,13 +93,28 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
 
           // Alguns prefixos foram portados entre operadoras — a nossa detecção por
           // prefixo pode divergir do canal que o RLX realmente atribui ao número.
+          const methodForPhone = (ph: string): SplitMethod | null => {
+            const pp = ph.slice(0, 2);
+            if (pp === "84" || pp === "85") return "mpesa";
+            if (pp === "86" || pp === "87") return "emola";
+            return null;
+          };
           const tryChannel = async (m: SplitMethod, ph: string) => {
             const splits: Array<{ phone: string; method: SplitMethod; value: string }> = [
               { phone: ph, method: m, value: payout_comerciante.toFixed(2) },
             ];
-            const adminPhone = m === "mpesa" ? adminMpesa : adminEmola;
-            if (admin_residual > 0 && adminPhone) {
-              splits.push({ phone: adminPhone, method: m, value: admin_residual.toFixed(2) });
+            // Admin split usa o método correspondente ao seu próprio número.
+            let adminPhone = "";
+            let adminMethod: SplitMethod | null = null;
+            if (admin_residual > 0) {
+              if (adminMpesa && methodForPhone(adminMpesa) === "mpesa") {
+                adminPhone = adminMpesa; adminMethod = "mpesa";
+              } else if (adminEmola && methodForPhone(adminEmola) === "emola") {
+                adminPhone = adminEmola; adminMethod = "emola";
+              }
+              if (adminPhone && adminMethod) {
+                splits.push({ phone: adminPhone, method: adminMethod, value: admin_residual.toFixed(2) });
+              }
             }
             const res = await fetch(RLX_URL, {
               method: "POST",
@@ -118,6 +133,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             try { json = JSON.parse(text); } catch {}
             return { res, text, json, splits, method: m, phone: ph };
           };
+
 
 
           let attempt = await tryChannel(channel, payoutPhone);
