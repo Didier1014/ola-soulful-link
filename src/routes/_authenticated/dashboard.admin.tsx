@@ -6,6 +6,7 @@ import {
   getAdminOverview, listAllProfiles, listAllTransactions,
   listAllWithdrawals, listAllProducts, approveWithdrawal, rejectWithdrawal,
   listUserProducts, getDigitalSignedUrl, getProductHistory, getProductClicks,
+  setProductApproval,
 } from "@/lib/admin.functions";
 import { sendTestSms } from "@/lib/integrations.functions";
 import { Input } from "@/components/ui/input";
