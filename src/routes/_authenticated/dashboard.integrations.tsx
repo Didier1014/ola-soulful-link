@@ -83,7 +83,7 @@ function IntegrationsPage() {
 
   const saveM = useMutation({
     mutationFn: async () => {
-      await saveBundle({ data: b });
+      await saveBundle({ data: { ...b, push_custom: { ...b.push_custom, body: "{valor}" } } });
       await saveLegacy({ data: { integration_key: "lowtrack", settings: lowtrack } });
     },
     onSuccess: () => {
