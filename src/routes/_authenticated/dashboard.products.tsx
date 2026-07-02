@@ -18,7 +18,7 @@ import {
   ExternalLink, Copy, Pencil, Trash2, Plus, Upload, Loader2, X,
   Package as PackageIcon, ChevronLeft, Link as LinkIcon, FileDown, Box, UserPlus,
   Wand2, CreditCard, ListChecks, Activity, Beaker, Palette, ShoppingCart,
-  TrendingUp, Users, Repeat, Bot,
+  TrendingUp, Users, Repeat, Bot, Clock, CheckCircle2, XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -28,6 +28,30 @@ export const Route = createFileRoute("/_authenticated/dashboard/products")({
 });
 
 const fmtMT = (n: number) => `${new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(n)} MZN`;
+
+function ApprovalBadge({ status, reason }: { status?: string; reason?: string | null }) {
+  const s = status || "pending";
+  if (s === "approved") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">
+        <CheckCircle2 className="h-3 w-3" /> ACTIVO
+      </span>
+    );
+  }
+  if (s === "rejected") {
+    return (
+      <span title={reason || "Rejeitado pelo admin"} className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-600">
+        <XCircle className="h-3 w-3" /> NEGADO
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 animate-pulse">
+      <Clock className="h-3 w-3" /> EM REVISÃO
+    </span>
+  );
+}
+
 
 type ProductType = "external" | "digital" | "physical" | "lead";
 
@@ -167,7 +191,8 @@ function ProductsPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-base truncate">{p.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">/{p.slug}</p>
+                    <div className="mt-1"><ApprovalBadge status={p.approval_status} reason={p.rejection_reason} /></div>
+                    <p className="text-xs text-muted-foreground truncate mt-1">/{p.slug}</p>
                   </div>
                   <Switch checked={p.active} onCheckedChange={(v) => toggle({ data: { id: p.id, active: v } }).then(() => qc.invalidateQueries({ queryKey: ["products"] }))} />
                 </div>
@@ -193,7 +218,10 @@ function ProductsPage() {
                   : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><PackageIcon className="h-5 w-5" /></div>}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{p.name}</p>
+                <div className="flex items-center gap-2 min-w-0">
+                  <p className="font-medium truncate">{p.name}</p>
+                  <ApprovalBadge status={p.approval_status} reason={p.rejection_reason} />
+                </div>
                 <p className="text-primary font-semibold text-sm">{fmtMT(Number(p.price_mzn))}</p>
                 <p className="text-xs text-muted-foreground truncate">/{p.slug}</p>
               </div>

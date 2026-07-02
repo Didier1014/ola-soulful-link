@@ -119,8 +119,14 @@ function ThankYouPage() {
                 <a href={downloadUrl} target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:brightness-110"
                   style={{ background: "linear-gradient(135deg, #ff3333, #cc0000)" }}>
+                  <ExternalLink className="h-4 w-4" />
+                  Abrir no navegador
+                </a>
+                <a href={downloadUrl} download
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold border-2 transition-all hover:bg-gray-50"
+                  style={{ borderColor: "#ff3333", color: "#ff3333" }}>
                   <Download className="h-4 w-4" />
-                  Acessar Produto (Download)
+                  Descarregar ficheiro
                 </a>
                 <p className="text-xs text-gray-400">Link válido por 7 dias. Guarde o ficheiro após descarregar.</p>
               </>
@@ -139,7 +145,7 @@ function ThankYouPage() {
             {!isDigital && !result.delivery_url && (
               <p className="text-sm text-gray-400">Produto disponível em breve, verifique seu email.</p>
             )}
-            <WhatsappPopup />
+            {!isDigital && <WhatsappPopup />}
             <button onClick={() => navigate({ to: "/" })}
               className="text-sm text-gray-400 hover:text-gray-600 underline">
               Voltar ao início
