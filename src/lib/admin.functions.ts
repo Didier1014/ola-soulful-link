@@ -345,3 +345,14 @@ export const getDigitalSignedUrl = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { url: signed?.signedUrl ?? null };
   });
+
+export const setProductApproval = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }: { context: any; data: { product_id: string; status: "approved" | "rejected" | "pending"; reason?: string } }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const patch: any = { approval_status: data.status, rejection_reason: data.status === "rejected" ? (data.reason || null) : null };
+    const { error } = await supabaseAdmin.from("products").update(patch).eq("id", data.product_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
