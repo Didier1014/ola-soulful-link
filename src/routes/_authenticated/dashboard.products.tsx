@@ -461,10 +461,15 @@ function FormStep({
       {/* BÁSICO */}
       {tab === "basico" && (
         <div className="space-y-3">
-          <Card className="rounded-xl p-3 flex items-center justify-between bg-secondary/40">
-            <div>
-              <p className="text-xs text-muted-foreground">Tipo de produto</p>
-              <p className="font-medium">{meta.label}</p>
+          <Card className="rounded-xl p-3 flex items-center justify-between bg-gradient-to-r from-primary/10 to-transparent border-primary/20">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center text-primary">
+                <meta.icon className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Tipo de produto</p>
+                <p className="font-medium text-sm">{meta.label}</p>
+              </div>
             </div>
             <Button variant="ghost" size="sm" onClick={onBackToType} disabled={isEditing}>Alterar</Button>
           </Card>
