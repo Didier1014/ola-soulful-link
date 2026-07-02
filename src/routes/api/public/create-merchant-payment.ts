@@ -40,11 +40,14 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
 
           const { data: merchant } = await supabaseAdmin
             .from("profiles")
-            .select("id,api_key_active,payout_mpesa_phone,payout_emola_phone,merchant_fee_percent,merchant_fee_fixed")
+            .select("id,api_key_active,is_merchant,payout_mpesa_phone,payout_emola_phone,merchant_fee_percent,merchant_fee_fixed")
             .eq("api_key", apiKey)
             .eq("api_key_active", true)
             .maybeSingle();
           if (!merchant) return Response.json({ error: "unauthorized" }, { status: 401 });
+          if (!(merchant as any).is_merchant) {
+            return Response.json({ error: "forbidden: conta não habilitada para merchant API" }, { status: 403 });
+          }
 
           const mpesaPhone = (merchant as any).payout_mpesa_phone
             ? normalizePhone((merchant as any).payout_mpesa_phone) : "";
