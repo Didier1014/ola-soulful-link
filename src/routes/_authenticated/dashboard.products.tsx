@@ -218,10 +218,12 @@ function ProductsPage() {
                   : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><PackageIcon className="h-5 w-5" /></div>}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{p.name}</p>
+                <div className="flex items-center gap-2 min-w-0">
+                  <p className="font-medium truncate">{p.name}</p>
+                  <ApprovalBadge status={p.approval_status} reason={p.rejection_reason} />
+                </div>
                 <p className="text-primary font-semibold text-sm">{fmtMT(Number(p.price_mzn))}</p>
                 <p className="text-xs text-muted-foreground truncate">/{p.slug}</p>
-              </div>
               <div className="flex items-center gap-1 shrink-0">
                 <Button variant="ghost" size="icon" onClick={() => window.open(`/c/${p.slug}`, "_blank")}><ExternalLink className="h-4 w-4" /></Button>
                 <Button variant="ghost" size="icon" onClick={() => copyLink(p.slug)}><Copy className="h-4 w-4" /></Button>
