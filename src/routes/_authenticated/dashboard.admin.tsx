@@ -55,6 +55,13 @@ function AdminPage() {
   const fnReject = useServerFn(rejectWithdrawal);
   const fnUserProds = useServerFn(listUserProducts);
   const fnSigned = useServerFn(getDigitalSignedUrl);
+  const fnSetApproval = useServerFn(setProductApproval);
+  const approveProdM = useMutation({
+    mutationFn: (v: { id: string; status: "approved" | "rejected"; reason?: string }) =>
+      fnSetApproval({ data: { product_id: v.id, status: v.status, reason: v.reason } }),
+    onSuccess: (_r, v) => { toast.success(v.status === "approved" ? "Produto aprovado" : "Produto rejeitado"); qc.invalidateQueries({ queryKey: ["admin_prods"] }); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+  });
 
   const fnHistory = useServerFn(getProductHistory);
   const fnClicks = useServerFn(getProductClicks);
