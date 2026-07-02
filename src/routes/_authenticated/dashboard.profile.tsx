@@ -31,7 +31,7 @@ function Page() {
       if (!u.user) { setLoading(false); return; }
       setEmail(u.user.email || "");
       const { data: p } = await supabase.from("profiles").select("*").eq("id", u.user.id).single();
-      if (p) setForm({ full_name: p.full_name || "", business_name: p.business_name || "", whatsapp: p.whatsapp || "", city: p.city || "", account_type: p.account_type || "person", support_phone: (p as any).support_phone || "", support_phone2: (p as any).support_phone2 || "" });
+      if (p) { setForm({ full_name: p.full_name || "", business_name: p.business_name || "", whatsapp: p.whatsapp || "", city: p.city || "", account_type: p.account_type || "person", support_phone: (p as any).support_phone || "", support_phone2: (p as any).support_phone2 || "", payout_mpesa_phone: (p as any).payout_mpesa_phone || "", payout_emola_phone: (p as any).payout_emola_phone || "" }); setIsMerchant(Boolean((p as any).is_merchant)); }
       const prefs = await getCurrencyPref();
       setCurrency(prefs.currency);
       setNotificationsEnabled(prefs.notifications_enabled);
