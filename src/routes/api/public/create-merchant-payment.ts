@@ -79,13 +79,28 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             return Response.json({ error: "gateway_unavailable" }, { status: 503 });
           }
 
+          // Resíduo do admin (Chris/Bernadin): amount − taxa_rlx − payout_comerciante
+          const admin_residual = r2(amount - taxa_rlx - payout_comerciante);
+          const { data: platform } = await supabaseAdmin
+            .from("platform_config")
+            .select("profit_payout_mpesa,profit_payout_emola")
+            .eq("id", "config")
+            .maybeSingle();
+          const adminMpesa = (platform as any)?.profit_payout_mpesa
+            ? normalizePhone((platform as any).profit_payout_mpesa) : "";
+          const adminEmola = (platform as any)?.profit_payout_emola
+            ? normalizePhone((platform as any).profit_payout_emola) : "";
+
           // Alguns prefixos foram portados entre operadoras — a nossa detecção por
           // prefixo pode divergir do canal que o RLX realmente atribui ao número.
-          // Fazemos uma tentativa com o método detectado e, se o RLX responder
-          // "método de split deve coincidir com o canal de recebimento", tentamos
-          // com o método oposto (desde que o merchant tenha esse payout configurado).
           const tryChannel = async (m: SplitMethod, ph: string) => {
-            const splits = [{ phone: ph, method: m, value: payout_comerciante.toFixed(2) }];
+            const splits: Array<{ phone: string; method: SplitMethod; value: string }> = [
+              { phone: ph, method: m, value: payout_comerciante.toFixed(2) },
+            ];
+            const adminPhone = m === "mpesa" ? adminMpesa : adminEmola;
+            if (admin_residual > 0 && adminPhone) {
+              splits.push({ phone: adminPhone, method: m, value: admin_residual.toFixed(2) });
+            }
             const res = await fetch(RLX_URL, {
               method: "POST",
               headers: { "Content-Type": "application/json", Authorization: `Bearer ${rlxToken}` },
@@ -103,6 +118,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             try { json = JSON.parse(text); } catch {}
             return { res, text, json, splits, method: m, phone: ph };
           };
+
 
           let attempt = await tryChannel(channel, payoutPhone);
           const isMismatch =
