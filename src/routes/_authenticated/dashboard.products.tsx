@@ -18,7 +18,7 @@ import {
   ExternalLink, Copy, Pencil, Trash2, Plus, Upload, Loader2, X,
   Package as PackageIcon, ChevronLeft, Link as LinkIcon, FileDown, Box, UserPlus,
   Wand2, CreditCard, ListChecks, Activity, Beaker, Palette, ShoppingCart,
-  TrendingUp, Users, Repeat, Bot,
+  TrendingUp, Users, Repeat, Bot, Clock, CheckCircle2, XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
