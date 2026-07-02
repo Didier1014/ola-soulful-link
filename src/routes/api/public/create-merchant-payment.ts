@@ -97,28 +97,30 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             const splits: Array<{ phone: string; method: SplitMethod; value: string }> = [
               { phone: ph, method: m, value: payout_comerciante.toFixed(2) },
             ];
-            // Admin split usa o MESMO método do canal do cliente (regra RLX).
             const adminPhone = m === "mpesa" ? adminMpesa : adminEmola;
             if (admin_residual > 0 && adminPhone) {
               splits.push({ phone: adminPhone, method: m, value: admin_residual.toFixed(2) });
             }
+            const payload = {
+              action: "pay",
+              phone,
+              amount: amount.toFixed(2),
+              nome_cliente,
+              webhook_url: "https://redoxpay.lovable.app/api/public/rlx-webhook",
+              splits,
+            };
+            console.log("[create-merchant-payment] rlx payload=", JSON.stringify(payload));
             const res = await fetch(RLX_URL, {
               method: "POST",
               headers: { "Content-Type": "application/json", Authorization: `Bearer ${rlxToken}` },
-              body: JSON.stringify({
-                action: "pay",
-                phone,
-                amount: amount.toFixed(2),
-                nome_cliente,
-                webhook_url: "https://redoxpay.lovable.app/api/public/rlx-webhook",
-                splits,
-              }),
+              body: JSON.stringify(payload),
             });
             const text = await res.text();
             let json: any = null;
             try { json = JSON.parse(text); } catch {}
             return { res, text, json, splits, method: m, phone: ph };
           };
+
 
 
 
