@@ -22,7 +22,8 @@ function Page() {
   const [email, setEmail] = useState("");
   const [currency, setCurrency] = useState<Currency>("MZN");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [form, setForm] = useState({ full_name: "", business_name: "", whatsapp: "", city: "", account_type: "person", support_phone: "", support_phone2: "" });
+  const [isMerchant, setIsMerchant] = useState(false);
+  const [form, setForm] = useState({ full_name: "", business_name: "", whatsapp: "", city: "", account_type: "person", support_phone: "", support_phone2: "", payout_mpesa_phone: "", payout_emola_phone: "" });
 
   useEffect(() => {
     (async () => {
