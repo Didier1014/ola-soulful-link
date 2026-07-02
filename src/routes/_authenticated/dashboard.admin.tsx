@@ -524,10 +524,35 @@ function AdminPage() {
                     {!p.delivery_url && !p.digital_file_path && <span className="text-[11px] text-muted-foreground">—</span>}
                   </div>
                   <div className="col-span-1 text-right font-mono font-semibold">{fmtMT(Number(p.price_mzn))}</div>
-                  <div className="col-span-1 text-right">
-                    <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary">
-                      <History className="h-3 w-3" /> Investigar
-                    </span>
+                  <div className="col-span-1 text-right space-y-1" onClick={(e) => e.stopPropagation()}>
+                    {p.approval_status === "approved" && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
+                        <CheckCircle2 className="h-3 w-3" /> APROVADO
+                      </span>
+                    )}
+                    {p.approval_status === "rejected" && (
+                      <span title={p.rejection_reason || ""} className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">
+                        <XCircle className="h-3 w-3" /> NEGADO
+                      </span>
+                    )}
+                    {(!p.approval_status || p.approval_status === "pending") && (
+                      <div className="flex items-center gap-1 justify-end">
+                        <button onClick={() => approveProdM.mutate({ id: p.id, status: "approved" })}
+                          className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20">
+                          <CheckCircle2 className="h-3 w-3" /> Aprovar
+                        </button>
+                        <button onClick={() => { const r = prompt("Motivo (opcional):") ?? undefined; approveProdM.mutate({ id: p.id, status: "rejected", reason: r || undefined }); }}
+                          className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-md bg-red-500/10 text-red-500 hover:bg-red-500/20">
+                          <XCircle className="h-3 w-3" /> Negar
+                        </button>
+                      </div>
+                    )}
+                    {p.approval_status && p.approval_status !== "pending" && (
+                      <button onClick={() => approveProdM.mutate({ id: p.id, status: p.approval_status === "approved" ? "rejected" : "approved" })}
+                        className="text-[10px] underline text-muted-foreground hover:text-foreground block ml-auto">
+                        {p.approval_status === "approved" ? "negar" : "aprovar"}
+                      </button>
+                    )}
                   </div>
 
                 </div>
