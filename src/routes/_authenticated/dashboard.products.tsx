@@ -219,7 +219,6 @@ function ProductsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
                   <p className="font-medium truncate">{p.name}</p>
-                  <ApprovalBadge status={p.approval_status} reason={p.rejection_reason} />
                 </div>
                 <p className="text-primary font-semibold text-sm">{fmtMT(Number(p.price_mzn))}</p>
                 <p className="text-xs text-muted-foreground truncate">/{p.slug}</p>
