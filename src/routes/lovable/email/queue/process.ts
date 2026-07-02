@@ -1,4 +1,34 @@
-import { sendLovableEmail } from '@lovable.dev/email-js'
+// Resend replaces sendLovableEmail as the transport
+async function sendViaResend(payload: any, apiKey: string) {
+  const fromDomain = payload.sender_domain || payload.from?.split('@')[1] || 'resend.dev'
+  const fromName = payload.from_name || 'Redoxpay'
+  const fromAddr = payload.from && payload.from.includes('@')
+    ? payload.from
+    : `${fromName} <onboarding@${fromDomain === 'resend.dev' ? 'resend.dev' : fromDomain}>`
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: fromAddr,
+      to: Array.isArray(payload.to) ? payload.to : [payload.to],
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text,
+    }),
+  })
+  if (!res.ok) {
+    const body = await res.text()
+    const err: any = new Error(`Resend ${res.status}: ${body}`)
+    err.status = res.status
+    const ra = res.headers.get('retry-after')
+    err.retryAfterSeconds = ra ? Number(ra) : null
+    throw err
+  }
+  return res.json()
+}
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
 
@@ -221,23 +251,9 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
             }
 
             try {
-              await sendLovableEmail(
-                {
-                  run_id: payload.run_id,
-                  to: payload.to,
-                  from: payload.from,
-                  sender_domain: payload.sender_domain,
-                  subject: payload.subject,
-                  html: payload.html,
-                  text: payload.text,
-                  purpose: payload.purpose,
-                  label: payload.label,
-                  idempotency_key: payload.idempotency_key,
-                  unsubscribe_token: payload.unsubscribe_token,
-                  message_id: payload.message_id,
-                },
-                { apiKey, sendUrl: process.env.LOVABLE_SEND_URL }
-              )
+              const resendKey = process.env.RESEND_API_KEY
+              if (!resendKey) throw new Error('RESEND_API_KEY not configured')
+              await sendViaResend(payload, resendKey)
 
               // Log success
               await supabase.from('email_send_log').insert({
