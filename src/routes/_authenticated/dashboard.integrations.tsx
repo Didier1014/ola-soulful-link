@@ -170,11 +170,6 @@ function IntegrationsPage() {
           </Select>
           <p className="text-xs text-muted-foreground">A variável {"{valor}"} será mostrada na moeda selecionada.</p>
         </div>
-        <div className="space-y-2">
-          <Label>Mensagem (corpo)</Label>
-          <Input value="{valor}" disabled readOnly />
-          <p className="text-xs text-muted-foreground">O corpo da notificação é fixo e mostra sempre o valor da venda.</p>
-        </div>
       </Card>
 
       {/* 3) PUSHcut */}
