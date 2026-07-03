@@ -49,6 +49,7 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 import { Route as ApiPublicNotificationsPollRouteImport } from './routes/api/public/notifications.poll'
 import { Route as ApiPublicEmbedScriptRouteImport } from './routes/api/public/embed.script'
 import { Route as AuthenticatedDashboardNotificationsConfigRouteImport } from './routes/_authenticated/dashboard.notifications.config'
+import { Route as AuthenticatedDashboardAdminUsuariosRouteImport } from './routes/_authenticated/dashboard.admin.usuarios'
 import { Route as AuthenticatedDashboardAdminProdutosRouteImport } from './routes/_authenticated/dashboard.admin.produtos'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
@@ -275,6 +276,12 @@ const AuthenticatedDashboardNotificationsConfigRoute =
     path: '/config',
     getParentRoute: () => AuthenticatedDashboardNotificationsRoute,
   } as any)
+const AuthenticatedDashboardAdminUsuariosRoute =
+  AuthenticatedDashboardAdminUsuariosRouteImport.update({
+    id: '/usuarios',
+    path: '/usuarios',
+    getParentRoute: () => AuthenticatedDashboardAdminRoute,
+  } as any)
 const AuthenticatedDashboardAdminProdutosRoute =
   AuthenticatedDashboardAdminProdutosRouteImport.update({
     id: '/produtos',
@@ -315,6 +322,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
+  '/dashboard/admin/usuarios': typeof AuthenticatedDashboardAdminUsuariosRoute
   '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
@@ -357,6 +365,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
+  '/dashboard/admin/usuarios': typeof AuthenticatedDashboardAdminUsuariosRoute
   '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
@@ -401,6 +410,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
+  '/_authenticated/dashboard/admin/usuarios': typeof AuthenticatedDashboardAdminUsuariosRoute
   '/_authenticated/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
@@ -445,6 +455,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/dashboard/'
     | '/dashboard/admin/produtos'
+    | '/dashboard/admin/usuarios'
     | '/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
@@ -487,6 +498,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/dashboard'
     | '/dashboard/admin/produtos'
+    | '/dashboard/admin/usuarios'
     | '/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
@@ -530,6 +542,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/admin/produtos'
+    | '/_authenticated/dashboard/admin/usuarios'
     | '/_authenticated/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
@@ -846,6 +859,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardNotificationsConfigRouteImport
       parentRoute: typeof AuthenticatedDashboardNotificationsRoute
     }
+    '/_authenticated/dashboard/admin/usuarios': {
+      id: '/_authenticated/dashboard/admin/usuarios'
+      path: '/usuarios'
+      fullPath: '/dashboard/admin/usuarios'
+      preLoaderRoute: typeof AuthenticatedDashboardAdminUsuariosRouteImport
+      parentRoute: typeof AuthenticatedDashboardAdminRoute
+    }
     '/_authenticated/dashboard/admin/produtos': {
       id: '/_authenticated/dashboard/admin/produtos'
       path: '/produtos'
@@ -858,12 +878,15 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedDashboardAdminRouteChildren {
   AuthenticatedDashboardAdminProdutosRoute: typeof AuthenticatedDashboardAdminProdutosRoute
+  AuthenticatedDashboardAdminUsuariosRoute: typeof AuthenticatedDashboardAdminUsuariosRoute
 }
 
 const AuthenticatedDashboardAdminRouteChildren: AuthenticatedDashboardAdminRouteChildren =
   {
     AuthenticatedDashboardAdminProdutosRoute:
       AuthenticatedDashboardAdminProdutosRoute,
+    AuthenticatedDashboardAdminUsuariosRoute:
+      AuthenticatedDashboardAdminUsuariosRoute,
   }
 
 const AuthenticatedDashboardAdminRouteWithChildren =
