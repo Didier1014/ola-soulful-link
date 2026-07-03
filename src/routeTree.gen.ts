@@ -49,6 +49,7 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 import { Route as ApiPublicNotificationsPollRouteImport } from './routes/api/public/notifications.poll'
 import { Route as ApiPublicEmbedScriptRouteImport } from './routes/api/public/embed.script'
 import { Route as AuthenticatedDashboardNotificationsConfigRouteImport } from './routes/_authenticated/dashboard.notifications.config'
+import { Route as AuthenticatedDashboardAdminProdutosRouteImport } from './routes/_authenticated/dashboard.admin.produtos'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -274,6 +275,12 @@ const AuthenticatedDashboardNotificationsConfigRoute =
     path: '/config',
     getParentRoute: () => AuthenticatedDashboardNotificationsRoute,
   } as any)
+const AuthenticatedDashboardAdminProdutosRoute =
+  AuthenticatedDashboardAdminProdutosRouteImport.update({
+    id: '/produtos',
+    path: '/produtos',
+    getParentRoute: () => AuthenticatedDashboardAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -285,7 +292,7 @@ export interface FileRoutesByFullPath {
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/l/$slug': typeof LSlugRoute
-  '/dashboard/admin': typeof AuthenticatedDashboardAdminRoute
+  '/dashboard/admin': typeof AuthenticatedDashboardAdminRouteWithChildren
   '/dashboard/api': typeof AuthenticatedDashboardApiRoute
   '/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
   '/dashboard/email-logs': typeof AuthenticatedDashboardEmailLogsRoute
@@ -307,6 +314,7 @@ export interface FileRoutesByFullPath {
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
   '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
@@ -326,7 +334,7 @@ export interface FileRoutesByTo {
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/l/$slug': typeof LSlugRoute
-  '/dashboard/admin': typeof AuthenticatedDashboardAdminRoute
+  '/dashboard/admin': typeof AuthenticatedDashboardAdminRouteWithChildren
   '/dashboard/api': typeof AuthenticatedDashboardApiRoute
   '/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
   '/dashboard/email-logs': typeof AuthenticatedDashboardEmailLogsRoute
@@ -348,6 +356,7 @@ export interface FileRoutesByTo {
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
   '/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
@@ -369,7 +378,7 @@ export interface FileRoutesById {
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/l/$slug': typeof LSlugRoute
-  '/_authenticated/dashboard/admin': typeof AuthenticatedDashboardAdminRoute
+  '/_authenticated/dashboard/admin': typeof AuthenticatedDashboardAdminRouteWithChildren
   '/_authenticated/dashboard/api': typeof AuthenticatedDashboardApiRoute
   '/_authenticated/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
   '/_authenticated/dashboard/email-logs': typeof AuthenticatedDashboardEmailLogsRoute
@@ -391,6 +400,7 @@ export interface FileRoutesById {
   '/api/public/rlx-webhook': typeof ApiPublicRlxWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
   '/_authenticated/dashboard/notifications/config': typeof AuthenticatedDashboardNotificationsConfigRoute
   '/api/public/embed/script': typeof ApiPublicEmbedScriptRoute
   '/api/public/notifications/poll': typeof ApiPublicNotificationsPollRoute
@@ -434,6 +444,7 @@ export interface FileRouteTypes {
     | '/api/public/rlx-webhook'
     | '/lovable/email/suppression'
     | '/dashboard/'
+    | '/dashboard/admin/produtos'
     | '/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
@@ -475,6 +486,7 @@ export interface FileRouteTypes {
     | '/api/public/rlx-webhook'
     | '/lovable/email/suppression'
     | '/dashboard'
+    | '/dashboard/admin/produtos'
     | '/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
@@ -517,6 +529,7 @@ export interface FileRouteTypes {
     | '/api/public/rlx-webhook'
     | '/lovable/email/suppression'
     | '/_authenticated/dashboard/'
+    | '/_authenticated/dashboard/admin/produtos'
     | '/_authenticated/dashboard/notifications/config'
     | '/api/public/embed/script'
     | '/api/public/notifications/poll'
@@ -833,8 +846,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardNotificationsConfigRouteImport
       parentRoute: typeof AuthenticatedDashboardNotificationsRoute
     }
+    '/_authenticated/dashboard/admin/produtos': {
+      id: '/_authenticated/dashboard/admin/produtos'
+      path: '/produtos'
+      fullPath: '/dashboard/admin/produtos'
+      preLoaderRoute: typeof AuthenticatedDashboardAdminProdutosRouteImport
+      parentRoute: typeof AuthenticatedDashboardAdminRoute
+    }
   }
 }
+
+interface AuthenticatedDashboardAdminRouteChildren {
+  AuthenticatedDashboardAdminProdutosRoute: typeof AuthenticatedDashboardAdminProdutosRoute
+}
+
+const AuthenticatedDashboardAdminRouteChildren: AuthenticatedDashboardAdminRouteChildren =
+  {
+    AuthenticatedDashboardAdminProdutosRoute:
+      AuthenticatedDashboardAdminProdutosRoute,
+  }
+
+const AuthenticatedDashboardAdminRouteWithChildren =
+  AuthenticatedDashboardAdminRoute._addFileChildren(
+    AuthenticatedDashboardAdminRouteChildren,
+  )
 
 interface AuthenticatedDashboardNotificationsRouteChildren {
   AuthenticatedDashboardNotificationsConfigRoute: typeof AuthenticatedDashboardNotificationsConfigRoute
@@ -852,7 +887,7 @@ const AuthenticatedDashboardNotificationsRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedDashboardAdminRoute: typeof AuthenticatedDashboardAdminRoute
+  AuthenticatedDashboardAdminRoute: typeof AuthenticatedDashboardAdminRouteWithChildren
   AuthenticatedDashboardApiRoute: typeof AuthenticatedDashboardApiRoute
   AuthenticatedDashboardCustomersRoute: typeof AuthenticatedDashboardCustomersRoute
   AuthenticatedDashboardEmailLogsRoute: typeof AuthenticatedDashboardEmailLogsRoute
@@ -873,7 +908,8 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedDashboardAdminRoute: AuthenticatedDashboardAdminRoute,
+  AuthenticatedDashboardAdminRoute:
+    AuthenticatedDashboardAdminRouteWithChildren,
   AuthenticatedDashboardApiRoute: AuthenticatedDashboardApiRoute,
   AuthenticatedDashboardCustomersRoute: AuthenticatedDashboardCustomersRoute,
   AuthenticatedDashboardEmailLogsRoute: AuthenticatedDashboardEmailLogsRoute,
