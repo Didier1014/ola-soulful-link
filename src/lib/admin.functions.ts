@@ -356,3 +356,53 @@ export const setProductApproval = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const getUserDetails = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }: { context: any; data: { user_id: string } }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const uid = data.user_id;
+
+    const [profileR, authR, prodsR, txsR, wdsR, notifsR, rolesR] = await Promise.all([
+      supabaseAdmin.from("profiles").select("*").eq("id", uid).maybeSingle(),
+      supabaseAdmin.auth.admin.getUserById(uid),
+      supabaseAdmin.from("products").select("id,name,slug,price_mzn,active,product_type,created_at").eq("user_id", uid).order("created_at", { ascending: false }),
+      supabaseAdmin.from("transactions").select("id,amount_mzn,net_mzn,fee_mzn,status,created_at,product_id,external_ref").eq("user_id", uid).order("created_at", { ascending: false }).limit(100),
+      supabaseAdmin.from("withdrawals").select("id,amount_mzn,status,created_at,method,destination").eq("user_id", uid).order("created_at", { ascending: false }).limit(100),
+      supabaseAdmin.from("notifications").select("id,type,title,message,created_at").eq("user_id", uid).order("created_at", { ascending: false }).limit(50),
+      supabaseAdmin.from("user_roles").select("role").eq("user_id", uid),
+    ]);
+
+    if (profileR.error) throw new Error(profileR.error.message);
+    const txs = txsR.data ?? [];
+    const paid = txs.filter((t: any) => t.status === "paid");
+    const totalRevenue = paid.reduce((a: number, t: any) => a + Number(t.net_mzn ?? 0), 0);
+    const totalVolume = paid.reduce((a: number, t: any) => a + Number(t.amount_mzn ?? 0), 0);
+    const totalFees = paid.reduce((a: number, t: any) => a + Number(t.fee_mzn ?? 0), 0);
+    const wds = wdsR.data ?? [];
+    const paidWd = wds.filter((w: any) => w.status === "paid").reduce((a: number, w: any) => a + Number(w.amount_mzn ?? 0), 0);
+    const pendingWd = wds.filter((w: any) => w.status === "pending").reduce((a: number, w: any) => a + Number(w.amount_mzn ?? 0), 0);
+
+    return {
+      profile: profileR.data,
+      email: authR.data?.user?.email ?? null,
+      last_sign_in_at: authR.data?.user?.last_sign_in_at ?? null,
+      email_confirmed_at: authR.data?.user?.email_confirmed_at ?? null,
+      roles: (rolesR.data ?? []).map((r: any) => r.role),
+      products: prodsR.data ?? [],
+      transactions: txs,
+      withdrawals: wds,
+      notifications: notifsR.data ?? [],
+      stats: {
+        products_count: (prodsR.data ?? []).length,
+        transactions_count: txs.length,
+        paid_count: paid.length,
+        total_revenue_mzn: totalRevenue,
+        total_volume_mzn: totalVolume,
+        total_fees_mzn: totalFees,
+        withdrawals_paid_mzn: paidWd,
+        withdrawals_pending_mzn: pendingWd,
+      },
+    };
+  });
