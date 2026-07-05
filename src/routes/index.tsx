@@ -24,6 +24,8 @@ const WHATSAPP = "https://wa.me/258840000000";
 function Landing() {
   return (
     <div className="min-h-screen text-foreground overflow-x-hidden">
+      <SplashCursor COLOR="#f00909" />
+
 
       {/* Ambient glow */}
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
