@@ -158,6 +158,8 @@ function AdminPage() {
   const isAdmin = !overview.error;
 
   const pendingCount = (wds.data ?? []).filter((w: any) => w.status === "pending").length;
+  const pendingProdsList = ((prods.data ?? []) as any[]).filter((p: any) => !p.approval_status || p.approval_status === "pending");
+  const pendingProds = pendingProdsList.length;
 
   const tabs: { id: Tab; label: string; icon: any; badge?: number }[] = [
     { id: "overview", label: "Visão Geral", icon: TrendingUp },
@@ -165,6 +167,7 @@ function AdminPage() {
     { id: "transactions", label: "Transações", icon: Receipt },
     { id: "withdrawals", label: "Saques", icon: ArrowUpDown, badge: pendingCount },
     { id: "products", label: "Produtos", icon: Package },
+    { id: "approvals", label: "Aprovações", icon: CheckCircle2, badge: pendingProds },
   ];
 
   if (!isAdmin) {
