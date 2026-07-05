@@ -31,7 +31,7 @@ const fmtMT = (n: number) => `${fmt(n)} MT`;
 const fmt2 = (n: number) => new Intl.NumberFormat("pt-MZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 const RUBY = "#e11d48";
 
-type Tab = "overview" | "users" | "transactions" | "withdrawals" | "products";
+type Tab = "overview" | "users" | "transactions" | "withdrawals" | "products" | "approvals";
 
 function AdminPage() {
   const qc = useQueryClient();
