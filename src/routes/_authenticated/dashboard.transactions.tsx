@@ -158,22 +158,12 @@ function TxPage() {
                         {t.status === 'pending' && <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600">● Pendente</span>}
                       </td>
                       <td className="py-3 px-3 text-right">
-                        {t.status === 'pending' ? (
-                          <button
-                            disabled={verifyingId === t.id}
-                            onClick={() => handleVerify(t.id)}
-                            className="text-[11px] px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-muted/40 disabled:opacity-50 transition"
-                          >
-                            {verifyingId === t.id ? "A verificar…" : "Verificar"}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => { navigator.clipboard.writeText(t.id); toast.success("ID copiado"); }}
-                            className="text-[11px] px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-muted/40 transition"
-                          >
-                            Copiar ID
-                          </button>
-                        )}
+                        <button
+                          onClick={() => { navigator.clipboard.writeText(t.id); toast.success("ID copiado"); }}
+                          className="text-[11px] px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-muted/40 transition"
+                        >
+                          Copiar ID
+                        </button>
                       </td>
                     </tr>
                   );
