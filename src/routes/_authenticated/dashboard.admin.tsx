@@ -143,6 +143,13 @@ function AdminPage() {
           qc.invalidateQueries({ queryKey: ["notifications"] });
           qc.invalidateQueries({ queryKey: ["notifications", "unread"] });
         })
+        .on("postgres_changes", { event: "*", schema: "public", table: "products" }, (payload: any) => {
+          qc.invalidateQueries({ queryKey: ["admin_prods"] });
+          if (payload?.eventType === "INSERT") {
+            const p = payload.new || {};
+            toast.info(`Novo produto para aprovação: ${p.name ?? ""}`);
+          }
+        })
         .subscribe();
     })();
     return () => { cancelled = true; if (channel) supabase.removeChannel(channel); };
