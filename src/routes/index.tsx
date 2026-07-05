@@ -5,6 +5,7 @@ import {
   Lock, Fingerprint, KeyRound, CheckCircle2, Star, ArrowRight, MessageCircle,
   Cpu, TrendingUp, Globe, CreditCard, Sparkles, ChevronDown, Search, Bell,
 } from "lucide-react";
+import SplashCursor from "@/components/ui/splash-cursor";
 
 export const Route = createFileRoute("/")({
   head: () => ({
