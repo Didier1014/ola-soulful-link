@@ -14,10 +14,22 @@ import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) {
       throw redirect({ to: "/auth" });
+    }
+    // Enforce profile completion
+    if (location.pathname !== "/dashboard/complete-profile") {
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("full_name,whatsapp,birth_date,province,neighborhood")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      const missing = !p || !p.full_name || !p.whatsapp || !p.birth_date || !p.province || !p.neighborhood;
+      if (missing) {
+        throw redirect({ to: "/dashboard/complete-profile" });
+      }
     }
     return {};
   },
