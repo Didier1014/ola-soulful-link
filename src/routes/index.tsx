@@ -484,6 +484,10 @@ function Footer() {
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">A forma mais rápida de receber pagamentos online em Moçambique.</p>
             <p className="mt-4 text-xs text-muted-foreground flex items-center gap-2"><Globe className="h-3 w-3" /> contacto@redoxpay.mz</p>
+            <p className="mt-2 text-xs text-muted-foreground flex items-center gap-2">
+              <MessageCircle className="h-3 w-3" />
+              <a href={WHATSAPP} target="_blank" rel="noreferrer" className="hover:text-foreground transition">Suporte: +258 {SUPPORT_PHONE}</a>
+            </p>
           </div>
           {groups.map(g => (
             <div key={g.title}>
