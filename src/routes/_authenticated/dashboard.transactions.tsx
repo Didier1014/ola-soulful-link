@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { listMyTransactions, checkTransactionStatus } from "@/lib/transactions.functions";
+import { useQuery } from "@tanstack/react-query";
+import { listMyTransactions } from "@/lib/transactions.functions";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -15,8 +15,6 @@ const fmtMT2 = (n: number) => new Intl.NumberFormat("pt-MZ", { minimumFractionDi
 
 function TxPage() {
   const fetchTx = useServerFn(listMyTransactions);
-  const checkStatus = useServerFn(checkTransactionStatus);
-  const qc = useQueryClient();
   const { data = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ["tx"],
     queryFn: () => fetchTx(),
@@ -24,23 +22,9 @@ function TxPage() {
     refetchOnWindowFocus: true,
   });
   const [filter, setFilter] = useState<"all"|"paid"|"pending"|"failed">("all");
-  const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const filtered = data.filter(t => filter === "all" || t.status === filter);
 
-  const handleVerify = async (id: string) => {
-    setVerifyingId(id);
-    try {
-      const r = await checkStatus({ data: { transaction_id: id } });
-      if (r.status === "paid") toast.success("Pagamento confirmado!");
-      else if (r.status === "failed") toast.error("Pagamento falhou");
-      else toast.info("Ainda pendente no gateway");
-      qc.invalidateQueries({ queryKey: ["tx"] });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao verificar");
-    } finally {
-      setVerifyingId(null);
-    }
-  };
+
 
 
   return (
@@ -86,15 +70,6 @@ function TxPage() {
               {t.status === 'paid' && <p className="text-xs text-emerald-600">● Sucesso</p>}
               {t.status === 'failed' && <p className="text-xs text-[#e11d48]">● Falhou</p>}
               {t.status === 'pending' && <p className="text-xs text-amber-600">● Pendente</p>}
-              {t.status === 'pending' && (
-                <button
-                  disabled={verifyingId === t.id}
-                  onClick={() => handleVerify(t.id)}
-                  className="mt-1 text-[11px] px-2 py-1 rounded-md border border-border bg-card disabled:opacity-50"
-                >
-                  {verifyingId === t.id ? "A verificar…" : "Verificar"}
-                </button>
-              )}
             </div>
           </div>
         )})}
@@ -167,22 +142,12 @@ function TxPage() {
                         {t.status === 'pending' && <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600">● Pendente</span>}
                       </td>
                       <td className="py-3 px-3 text-right">
-                        {t.status === 'pending' ? (
-                          <button
-                            disabled={verifyingId === t.id}
-                            onClick={() => handleVerify(t.id)}
-                            className="text-[11px] px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-muted/40 disabled:opacity-50 transition"
-                          >
-                            {verifyingId === t.id ? "A verificar…" : "Verificar"}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => { navigator.clipboard.writeText(t.id); toast.success("ID copiado"); }}
-                            className="text-[11px] px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-muted/40 transition"
-                          >
-                            Copiar ID
-                          </button>
-                        )}
+                        <button
+                          onClick={() => { navigator.clipboard.writeText(t.id); toast.success("ID copiado"); }}
+                          className="text-[11px] px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-muted/40 transition"
+                        >
+                          Copiar ID
+                        </button>
                       </td>
                     </tr>
                   );
