@@ -167,7 +167,8 @@ export const duplicateProduct = createServerFn({ method: "POST" })
     const slug = await uniqueSlug(context.supabase, `${src.slug}-copy`);
     const { id, created_at, updated_at, ...rest } = src as any;
     const { data: row, error } = await context.supabase
-      .from("products").insert({ ...rest, slug, name: `${src.name} (cópia)`, active: false }).select().single();
+      .from("products").insert({ ...rest, slug, name: `${src.name} (cópia)`, active: false, approval_status: "pending", rejection_reason: null }).select().single();
+
     if (error) throw new Error(error.message);
     return row;
   });
