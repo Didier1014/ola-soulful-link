@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { listMyTransactions, checkTransactionStatus } from "@/lib/transactions.functions";
+import { useQuery } from "@tanstack/react-query";
+import { listMyTransactions } from "@/lib/transactions.functions";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -15,8 +15,6 @@ const fmtMT2 = (n: number) => new Intl.NumberFormat("pt-MZ", { minimumFractionDi
 
 function TxPage() {
   const fetchTx = useServerFn(listMyTransactions);
-  const checkStatus = useServerFn(checkTransactionStatus);
-  const qc = useQueryClient();
   const { data = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ["tx"],
     queryFn: () => fetchTx(),
@@ -24,23 +22,9 @@ function TxPage() {
     refetchOnWindowFocus: true,
   });
   const [filter, setFilter] = useState<"all"|"paid"|"pending"|"failed">("all");
-  const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const filtered = data.filter(t => filter === "all" || t.status === filter);
 
-  const handleVerify = async (id: string) => {
-    setVerifyingId(id);
-    try {
-      const r = await checkStatus({ data: { transaction_id: id } });
-      if (r.status === "paid") toast.success("Pagamento confirmado!");
-      else if (r.status === "failed") toast.error("Pagamento falhou");
-      else toast.info("Ainda pendente no gateway");
-      qc.invalidateQueries({ queryKey: ["tx"] });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao verificar");
-    } finally {
-      setVerifyingId(null);
-    }
-  };
+
 
 
   return (
