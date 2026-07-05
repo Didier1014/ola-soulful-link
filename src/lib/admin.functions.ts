@@ -352,8 +352,20 @@ export const setProductApproval = createServerFn({ method: "POST" })
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const patch: any = { approval_status: data.status, rejection_reason: data.status === "rejected" ? (data.reason || null) : null };
-    const { error } = await supabaseAdmin.from("products").update(patch).eq("id", data.product_id);
+    const { data: prod, error } = await supabaseAdmin.from("products").update(patch).eq("id", data.product_id).select("id,name,slug,user_id").maybeSingle();
     if (error) throw new Error(error.message);
+    if (prod) {
+      const title = data.status === "approved" ? "Produto aprovado" : data.status === "rejected" ? "Produto rejeitado" : "Produto pendente";
+      const msg = data.status === "approved"
+        ? `"${prod.name}" foi aprovado e já está disponível.`
+        : data.status === "rejected"
+          ? `"${prod.name}" foi rejeitado.${data.reason ? " Motivo: " + data.reason : ""}`
+          : `"${prod.name}" voltou para revisão.`;
+      await supabaseAdmin.from("notifications").insert({
+        user_id: prod.user_id, type: "product_approval_result", title, message: msg,
+        data: { product_id: prod.id, slug: prod.slug, status: data.status },
+      });
+    }
     return { ok: true };
   });
 

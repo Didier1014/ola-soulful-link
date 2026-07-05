@@ -87,8 +87,24 @@ export const createProduct = createServerFn({ method: "POST" })
       })
       .select().single();
     if (error) throw new Error(error.message);
+    // Notify admins for approval
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: admins } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
+      const { data: seller } = await supabaseAdmin.from("profiles").select("full_name,business_name").eq("id", context.userId).maybeSingle();
+      const sellerName = (seller as any)?.business_name || (seller as any)?.full_name || "Vendedor";
+      const rows = (admins ?? []).map((a: any) => ({
+        user_id: a.user_id,
+        type: "product_approval",
+        title: "Novo produto para aprovação",
+        message: `${sellerName} submeteu "${data.name}" para aprovação.`,
+        data: { product_id: row.id, slug: row.slug, seller_id: context.userId },
+      }));
+      if (rows.length) await supabaseAdmin.from("notifications").insert(rows);
+    } catch {}
     return row;
   });
+
 
 export const updateProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -151,7 +167,8 @@ export const duplicateProduct = createServerFn({ method: "POST" })
     const slug = await uniqueSlug(context.supabase, `${src.slug}-copy`);
     const { id, created_at, updated_at, ...rest } = src as any;
     const { data: row, error } = await context.supabase
-      .from("products").insert({ ...rest, slug, name: `${src.name} (cópia)`, active: false }).select().single();
+      .from("products").insert({ ...rest, slug, name: `${src.name} (cópia)`, active: false, approval_status: "pending", rejection_reason: null }).select().single();
+
     if (error) throw new Error(error.message);
     return row;
   });
@@ -188,7 +205,7 @@ export const getProductBySlug = createServerFn({ method: "GET" })
     const { data: row, error } = await supabaseAdmin
       .from("products")
       .select("id,user_id,slug,name,description,price_mzn,cover_url,delivery_url,thank_you_url,product_type,discount_no_balance,active,pixel_id,utimify_id,lawtracker_id,support_phone,config")
-      .eq("slug", data.slug).eq("active", true).maybeSingle();
+      .eq("slug", data.slug).eq("active", true).eq("approval_status", "approved").maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) throw new Error("Produto não encontrado");
     return { ...row, cover_url: await signCover(supabaseAdmin, row.cover_url) };
