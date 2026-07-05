@@ -474,6 +474,7 @@ export type Database = {
           api_key: string
           api_key_active: boolean
           balance_mzn: number
+          birth_date: string | null
           business_name: string | null
           city: string | null
           created_at: string
@@ -482,9 +483,11 @@ export type Database = {
           is_merchant: boolean
           merchant_fee_fixed: number
           merchant_fee_percent: number
+          neighborhood: string | null
           payout_emola_phone: string | null
           payout_mpesa_phone: string | null
           phone: string | null
+          province: string | null
           support_phone: string | null
           support_phone2: string | null
           updated_at: string
@@ -495,6 +498,7 @@ export type Database = {
           api_key?: string
           api_key_active?: boolean
           balance_mzn?: number
+          birth_date?: string | null
           business_name?: string | null
           city?: string | null
           created_at?: string
@@ -503,9 +507,11 @@ export type Database = {
           is_merchant?: boolean
           merchant_fee_fixed?: number
           merchant_fee_percent?: number
+          neighborhood?: string | null
           payout_emola_phone?: string | null
           payout_mpesa_phone?: string | null
           phone?: string | null
+          province?: string | null
           support_phone?: string | null
           support_phone2?: string | null
           updated_at?: string
@@ -516,6 +522,7 @@ export type Database = {
           api_key?: string
           api_key_active?: boolean
           balance_mzn?: number
+          birth_date?: string | null
           business_name?: string | null
           city?: string | null
           created_at?: string
@@ -524,9 +531,11 @@ export type Database = {
           is_merchant?: boolean
           merchant_fee_fixed?: number
           merchant_fee_percent?: number
+          neighborhood?: string | null
           payout_emola_phone?: string | null
           payout_mpesa_phone?: string | null
           phone?: string | null
+          province?: string | null
           support_phone?: string | null
           support_phone2?: string | null
           updated_at?: string

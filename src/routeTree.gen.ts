@@ -39,6 +39,7 @@ import { Route as AuthenticatedDashboardIntegrationsRouteImport } from './routes
 import { Route as AuthenticatedDashboardIntegrationLogsRouteImport } from './routes/_authenticated/dashboard.integration-logs'
 import { Route as AuthenticatedDashboardEmailLogsRouteImport } from './routes/_authenticated/dashboard.email-logs'
 import { Route as AuthenticatedDashboardCustomersRouteImport } from './routes/_authenticated/dashboard.customers'
+import { Route as AuthenticatedDashboardCompleteProfileRouteImport } from './routes/_authenticated/dashboard.complete-profile'
 import { Route as AuthenticatedDashboardApiRouteImport } from './routes/_authenticated/dashboard.api'
 import { Route as AuthenticatedDashboardAdminRouteImport } from './routes/_authenticated/dashboard.admin'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -219,6 +220,12 @@ const AuthenticatedDashboardCustomersRoute =
     path: '/dashboard/customers',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardCompleteProfileRoute =
+  AuthenticatedDashboardCompleteProfileRouteImport.update({
+    id: '/dashboard/complete-profile',
+    path: '/dashboard/complete-profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardApiRoute =
   AuthenticatedDashboardApiRouteImport.update({
     id: '/dashboard/api',
@@ -301,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/l/$slug': typeof LSlugRoute
   '/dashboard/admin': typeof AuthenticatedDashboardAdminRouteWithChildren
   '/dashboard/api': typeof AuthenticatedDashboardApiRoute
+  '/dashboard/complete-profile': typeof AuthenticatedDashboardCompleteProfileRoute
   '/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
   '/dashboard/email-logs': typeof AuthenticatedDashboardEmailLogsRoute
   '/dashboard/integration-logs': typeof AuthenticatedDashboardIntegrationLogsRoute
@@ -344,6 +352,7 @@ export interface FileRoutesByTo {
   '/l/$slug': typeof LSlugRoute
   '/dashboard/admin': typeof AuthenticatedDashboardAdminRouteWithChildren
   '/dashboard/api': typeof AuthenticatedDashboardApiRoute
+  '/dashboard/complete-profile': typeof AuthenticatedDashboardCompleteProfileRoute
   '/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
   '/dashboard/email-logs': typeof AuthenticatedDashboardEmailLogsRoute
   '/dashboard/integration-logs': typeof AuthenticatedDashboardIntegrationLogsRoute
@@ -389,6 +398,7 @@ export interface FileRoutesById {
   '/l/$slug': typeof LSlugRoute
   '/_authenticated/dashboard/admin': typeof AuthenticatedDashboardAdminRouteWithChildren
   '/_authenticated/dashboard/api': typeof AuthenticatedDashboardApiRoute
+  '/_authenticated/dashboard/complete-profile': typeof AuthenticatedDashboardCompleteProfileRoute
   '/_authenticated/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
   '/_authenticated/dashboard/email-logs': typeof AuthenticatedDashboardEmailLogsRoute
   '/_authenticated/dashboard/integration-logs': typeof AuthenticatedDashboardIntegrationLogsRoute
@@ -434,6 +444,7 @@ export interface FileRouteTypes {
     | '/l/$slug'
     | '/dashboard/admin'
     | '/dashboard/api'
+    | '/dashboard/complete-profile'
     | '/dashboard/customers'
     | '/dashboard/email-logs'
     | '/dashboard/integration-logs'
@@ -477,6 +488,7 @@ export interface FileRouteTypes {
     | '/l/$slug'
     | '/dashboard/admin'
     | '/dashboard/api'
+    | '/dashboard/complete-profile'
     | '/dashboard/customers'
     | '/dashboard/email-logs'
     | '/dashboard/integration-logs'
@@ -521,6 +533,7 @@ export interface FileRouteTypes {
     | '/l/$slug'
     | '/_authenticated/dashboard/admin'
     | '/_authenticated/dashboard/api'
+    | '/_authenticated/dashboard/complete-profile'
     | '/_authenticated/dashboard/customers'
     | '/_authenticated/dashboard/email-logs'
     | '/_authenticated/dashboard/integration-logs'
@@ -789,6 +802,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardCustomersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard/complete-profile': {
+      id: '/_authenticated/dashboard/complete-profile'
+      path: '/dashboard/complete-profile'
+      fullPath: '/dashboard/complete-profile'
+      preLoaderRoute: typeof AuthenticatedDashboardCompleteProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard/api': {
       id: '/_authenticated/dashboard/api'
       path: '/dashboard/api'
@@ -912,6 +932,7 @@ const AuthenticatedDashboardNotificationsRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardAdminRoute: typeof AuthenticatedDashboardAdminRouteWithChildren
   AuthenticatedDashboardApiRoute: typeof AuthenticatedDashboardApiRoute
+  AuthenticatedDashboardCompleteProfileRoute: typeof AuthenticatedDashboardCompleteProfileRoute
   AuthenticatedDashboardCustomersRoute: typeof AuthenticatedDashboardCustomersRoute
   AuthenticatedDashboardEmailLogsRoute: typeof AuthenticatedDashboardEmailLogsRoute
   AuthenticatedDashboardIntegrationLogsRoute: typeof AuthenticatedDashboardIntegrationLogsRoute
@@ -934,6 +955,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardAdminRoute:
     AuthenticatedDashboardAdminRouteWithChildren,
   AuthenticatedDashboardApiRoute: AuthenticatedDashboardApiRoute,
+  AuthenticatedDashboardCompleteProfileRoute:
+    AuthenticatedDashboardCompleteProfileRoute,
   AuthenticatedDashboardCustomersRoute: AuthenticatedDashboardCustomersRoute,
   AuthenticatedDashboardEmailLogsRoute: AuthenticatedDashboardEmailLogsRoute,
   AuthenticatedDashboardIntegrationLogsRoute:

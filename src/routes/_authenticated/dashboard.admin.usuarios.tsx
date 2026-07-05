@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useMemo, useState } from "react";
-import { Users, Search, ArrowLeft, ExternalLink, Mail, Phone, MapPin, Wallet, Package, Receipt, ArrowUpDown, Bell, Shield, Key } from "lucide-react";
+import { Users, Search, ArrowLeft, ExternalLink, Mail, Phone, MapPin, Wallet, Package, Receipt, ArrowUpDown, Bell, Shield, Key, Calendar, Home } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/admin/usuarios")({
   component: AdminUsuariosPage,
@@ -128,6 +128,9 @@ function AdminUsuariosPage() {
                   <InfoRow icon={Phone} label="Telefone" value={details.data.profile?.phone || "—"} />
                   <InfoRow icon={Phone} label="WhatsApp" value={details.data.profile?.whatsapp || "—"} />
                   <InfoRow icon={MapPin} label="Cidade" value={details.data.profile?.city || "—"} />
+                  <InfoRow icon={Calendar} label="Data nasc." value={details.data.profile?.birth_date ? new Date(details.data.profile.birth_date).toLocaleDateString("pt-MZ") : "—"} />
+                  <InfoRow icon={MapPin} label="Província" value={details.data.profile?.province || "—"} />
+                  <InfoRow icon={Home} label="Bairro" value={details.data.profile?.neighborhood || "—"} />
                   <InfoRow icon={Wallet} label="M-Pesa payout" value={details.data.profile?.payout_mpesa_phone || "—"} />
                   <InfoRow icon={Wallet} label="e-Mola payout" value={details.data.profile?.payout_emola_phone || "—"} />
                   <InfoRow icon={Key} label="API key" value={details.data.profile?.api_key_active ? "activa" : "inactiva"} />
