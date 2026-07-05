@@ -86,15 +86,6 @@ function TxPage() {
               {t.status === 'paid' && <p className="text-xs text-emerald-600">● Sucesso</p>}
               {t.status === 'failed' && <p className="text-xs text-[#e11d48]">● Falhou</p>}
               {t.status === 'pending' && <p className="text-xs text-amber-600">● Pendente</p>}
-              {t.status === 'pending' && (
-                <button
-                  disabled={verifyingId === t.id}
-                  onClick={() => handleVerify(t.id)}
-                  className="mt-1 text-[11px] px-2 py-1 rounded-md border border-border bg-card disabled:opacity-50"
-                >
-                  {verifyingId === t.id ? "A verificar…" : "Verificar"}
-                </button>
-              )}
             </div>
           </div>
         )})}
