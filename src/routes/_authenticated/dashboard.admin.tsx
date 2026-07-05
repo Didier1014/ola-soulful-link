@@ -572,6 +572,60 @@ function AdminPage() {
           </Card>
         )}
 
+        {tab === "approvals" && (
+          <Card className="rounded-2xl overflow-hidden border border-border">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" style={{ color: RUBY }} />
+                <h2 className="text-sm font-bold">Pedidos de aprovação</h2>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: `${RUBY}20`, color: RUBY }}>{pendingProds}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Em tempo real
+              </div>
+            </div>
+            <div className="divide-y divide-border">
+              {prods.isLoading && <p className="p-8 text-center text-sm text-muted-foreground">A carregar…</p>}
+              {!prods.isLoading && pendingProdsList.length === 0 && (
+                <p className="p-8 text-center text-sm text-muted-foreground">Nenhum pedido pendente. 🎉</p>
+              )}
+              {pendingProdsList.map((p: any) => (
+                <div key={p.id} className="p-4 flex items-center gap-3">
+                  {p.cover_url
+                    ? <img src={p.cover_url} alt="" className="h-14 w-14 rounded-lg object-cover shrink-0" />
+                    : <div className="h-14 w-14 rounded-lg shrink-0 flex items-center justify-center font-bold" style={{ background: `${RUBY}10`, color: RUBY }}>{p.name.charAt(0).toUpperCase()}</div>}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium truncate">{p.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      /{p.slug} · {p.profiles?.business_name || p.profiles?.full_name || "—"} · {new Date(p.created_at).toLocaleString("pt-MZ")}
+                    </p>
+                    {p.description && <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-mono font-bold text-sm" style={{ color: RUBY }}>{fmtMT(Number(p.price_mzn ?? 0))}</p>
+                    <p className="text-[10px] uppercase text-muted-foreground">{p.product_type || "external"}</p>
+                  </div>
+                  <div className="flex flex-col gap-1 shrink-0">
+                    <a href={`/c/${p.slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-secondary hover:bg-secondary/70">
+                      <ExternalLink className="h-3 w-3" /> Ver
+                    </a>
+                    <button onClick={() => approveProdM.mutate({ id: p.id, status: "approved" })}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20">
+                      <CheckCircle2 className="h-3 w-3" /> Aprovar
+                    </button>
+                    <button onClick={() => { const r = prompt("Motivo (opcional):") ?? undefined; approveProdM.mutate({ id: p.id, status: "rejected", reason: r || undefined }); }}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-md bg-red-500/10 text-red-500 hover:bg-red-500/20">
+                      <XCircle className="h-3 w-3" /> Negar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+
+
         <Dialog open={!!historyProduct} onOpenChange={(o) => !o && setHistoryProduct(null)}>
           <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
