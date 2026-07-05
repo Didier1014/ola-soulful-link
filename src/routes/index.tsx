@@ -452,10 +452,13 @@ function FinalCTA() {
             </Link>
             <a href={WHATSAPP} target="_blank" rel="noreferrer">
               <Button size="lg" variant="outline" className="border-white/15 bg-white/5 hover:bg-white/10 h-12 px-8 text-base">
-                <MessageCircle className="mr-2 h-4 w-4" /> Suporte WhatsApp
+                <MessageCircle className="mr-2 h-4 w-4" /> Suporte WhatsApp +258 {SUPPORT_PHONE}
               </Button>
             </a>
           </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Precisa de ajuda? Ligue ou envie mensagem para <a href={`tel:+258${SUPPORT_PHONE}`} className="text-foreground font-semibold hover:underline">+258 {SUPPORT_PHONE}</a>
+          </p>
         </div>
       </div>
     </section>
