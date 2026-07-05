@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useMemo, useState } from "react";
-import { Users, Search, ArrowLeft, ExternalLink, Mail, Phone, MapPin, Wallet, Package, Receipt, ArrowUpDown, Bell, Shield, Key } from "lucide-react";
+import { Users, Search, ArrowLeft, ExternalLink, Mail, Phone, MapPin, Wallet, Package, Receipt, ArrowUpDown, Bell, Shield, Key, Calendar, Home } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/admin/usuarios")({
   component: AdminUsuariosPage,
