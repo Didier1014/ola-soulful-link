@@ -87,8 +87,24 @@ export const createProduct = createServerFn({ method: "POST" })
       })
       .select().single();
     if (error) throw new Error(error.message);
+    // Notify admins for approval
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: admins } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
+      const { data: seller } = await supabaseAdmin.from("profiles").select("full_name,business_name").eq("id", context.userId).maybeSingle();
+      const sellerName = (seller as any)?.business_name || (seller as any)?.full_name || "Vendedor";
+      const rows = (admins ?? []).map((a: any) => ({
+        user_id: a.user_id,
+        type: "product_approval",
+        title: "Novo produto para aprovação",
+        message: `${sellerName} submeteu "${data.name}" para aprovação.`,
+        data: { product_id: row.id, slug: row.slug, seller_id: context.userId },
+      }));
+      if (rows.length) await supabaseAdmin.from("notifications").insert(rows);
+    } catch {}
     return row;
   });
+
 
 export const updateProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
