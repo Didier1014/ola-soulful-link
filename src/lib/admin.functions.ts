@@ -241,9 +241,16 @@ export const listAllProducts = createServerFn({ method: "GET" })
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
-      .from("products").select("*, profiles(full_name, business_name)").order("created_at", { ascending: false }).limit(500);
+      .from("products").select("*").order("created_at", { ascending: false }).limit(500);
     if (error) throw new Error(error.message);
-    const products = data ?? [];
+    let products: any[] = data ?? [];
+    const userIds = Array.from(new Set(products.map((p: any) => p.user_id).filter(Boolean)));
+    if (userIds.length) {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles").select("id, full_name, business_name").in("id", userIds);
+      const map = new Map((profs ?? []).map((pr: any) => [pr.id, pr]));
+      products = products.map((p: any) => ({ ...p, profiles: map.get(p.user_id) ?? null }));
+    }
     const ids = products.map((p: any) => p.id);
     const stats: Record<string, { count: number; total: number }> = {};
     if (ids.length) {
