@@ -19,7 +19,8 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-const WHATSAPP = "https://wa.me/258840000000";
+const SUPPORT_PHONE = "858181922";
+const WHATSAPP = `https://wa.me/258${SUPPORT_PHONE}`;
 
 function Landing() {
   return (
