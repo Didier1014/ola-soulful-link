@@ -1,8 +1,10 @@
 // Modelo de SMS fixo — igual para todos os usuários.
 // Apenas os números de suporte são configuráveis (suporte1/suporte2 pelo usuário no Perfil;
 // suporte3 é o número do admin, configurado via secret ADMIN_SUPPORT_PHONE).
+// ASCII-only e curto: evita UCS-2 (70 chars/segmento) para caber em 1-2 segmentos GSM-7 (160 chars),
+// garantindo que os numeros de suporte do usuario chegam sempre ao cliente.
 export const FIXED_SMS_TEMPLATE =
-  "{nome}, pagamento recebido com sucesso de {valor} para {produto}, se nao conseguiu acessa aqui esta o link {link}\nSUPORTE ou Reclamações: {suporte1} , {suporte2}\n{suporte3}";
+  "{nome}, pagamento de {valor} recebido para {produto}. SUPORTE: {suporte1} / {suporte2} (admin {suporte3}). Link: {link}";
 
 export function buildFixedSmsTemplate(v: {
   nome: string; produto: string; valor: string; link?: string;
