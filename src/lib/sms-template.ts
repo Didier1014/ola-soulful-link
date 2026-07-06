@@ -14,8 +14,8 @@ export function buildFixedSmsTemplate(v: {
     .replaceAll("{nome}", v.nome)
     .replaceAll("{produto}", v.produto)
     .replaceAll("{valor}", v.valor)
-    .replaceAll("{link}", v.link || "—")
-    .replaceAll("{suporte1}", v.suporte1 || "—")
-    .replaceAll("{suporte2}", v.suporte2 || "—")
-    .replaceAll("{suporte3}", v.suporte3 || "—");
+    .replaceAll("{link}", v.link || "-")
+    .replaceAll("{suporte1}", v.suporte1 || "-")
+    .replaceAll("{suporte2}", v.suporte2 || "-")
+    .replaceAll("{suporte3}", v.suporte3 || "-");
 }
