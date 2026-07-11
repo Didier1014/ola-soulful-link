@@ -439,13 +439,15 @@ function DashboardPreview() {
 
 function MockKpi({ label, value, delta }: { label: string; value: string; delta: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-background/40 p-5">
-      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className="mt-1.5 text-2xl font-bold">{value}</p>
-      <p className="mt-1 text-xs text-emerald-400">{delta}</p>
+    <div className="relative rounded-2xl border border-primary/20 bg-background/60 p-5 overflow-hidden">
+      <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-glow to-transparent" />
+      <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-mono">// {label}</p>
+      <p className="mt-1.5 text-2xl font-bold font-mono tabular-nums text-neo-glow">{value}</p>
+      <p className="mt-1 text-xs text-emerald-400 font-mono">▲ {delta}</p>
     </div>
   );
 }
+
 function MockTx({ name, method, color, amount }: { name: string; method: string; color: string; amount: string }) {
   return (
     <div className="flex items-center justify-between border-b border-white/5 last:border-0 py-2">
