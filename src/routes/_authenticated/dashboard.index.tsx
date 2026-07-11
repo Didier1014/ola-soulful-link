@@ -42,13 +42,18 @@ function Overview() {
 
   return (
     <div className="space-y-5 max-w-7xl mx-auto">
+      {/* HUD TICKER */}
+      <HudTicker txCount={txs.length} paidCount={paid.length} />
+
       {/* Greeting */}
       <div className="flex items-end justify-between px-1">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground flex items-center gap-2">
-            <span className="neo-live-dot" /> {greet} · SYS ONLINE
+          <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground flex items-center gap-2 font-mono">
+            <span className="neo-live-dot" /> {greet} · SYS ONLINE · {new Date().toISOString().slice(0,10)}
           </p>
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mt-1.5">{name}</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mt-1.5">
+            <span className="text-muted-foreground font-mono text-sm mr-2">//</span>{name}
+          </h1>
         </div>
         <Link to="/dashboard/new-transaction" className="hidden md:inline-flex items-center gap-2 px-4 h-10 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-sm font-medium shadow-[0_8px_30px_-8px_var(--primary-glow)] hover:brightness-110 transition">
           Nova transação <ArrowUpRight className="h-4 w-4" />
