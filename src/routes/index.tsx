@@ -240,12 +240,17 @@ function MockMini({ label, v, delta, up }: { label: string; v: string; delta: st
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 backdrop-blur">
-      <div className="text-3xl md:text-4xl font-bold text-gradient-red">{value}</div>
-      <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+    <div className="relative rounded-2xl border border-white/10 bg-white/[0.02] p-5 backdrop-blur neo-corner overflow-hidden group hover:border-primary/30 transition">
+      <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-glow/60 to-transparent" />
+      <div className="text-3xl md:text-4xl font-bold text-gradient-red font-mono tracking-tight">{value}</div>
+      <div className="mt-1 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">{label}</div>
+      <div className="mt-3 h-[2px] w-full bg-white/5 overflow-hidden">
+        <div className="h-full bg-gradient-to-r from-primary to-primary-glow w-3/4 group-hover:w-full transition-all duration-700" />
+      </div>
     </div>
   );
 }
+
 
 /* ---------------- PAYMENT FLOW ---------------- */
 function PaymentFlow() {
