@@ -45,10 +45,12 @@ function Overview() {
       {/* Greeting */}
       <div className="flex items-end justify-between px-1">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{greet}</p>
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mt-0.5">{name}</h1>
+          <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground flex items-center gap-2">
+            <span className="neo-live-dot" /> {greet} · SYS ONLINE
+          </p>
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mt-1.5">{name}</h1>
         </div>
-        <Link to="/dashboard/new-transaction" className="hidden md:inline-flex items-center gap-2 px-4 h-10 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-sm font-medium shadow-[0_8px_30px_-12px_color-mix(in_oklab,var(--primary)_60%,transparent)] hover:brightness-110 transition">
+        <Link to="/dashboard/new-transaction" className="hidden md:inline-flex items-center gap-2 px-4 h-10 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-sm font-medium shadow-[0_8px_30px_-8px_var(--primary-glow)] hover:brightness-110 transition">
           Nova transação <ArrowUpRight className="h-4 w-4" />
         </Link>
       </div>
@@ -56,26 +58,33 @@ function Overview() {
       {/* HERO + SIDEBAR */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* HERO SALDO */}
-        <Card className="lg:col-span-8 relative overflow-hidden rounded-3xl border-primary/20 bg-gradient-to-br from-card via-card to-primary/5">
+        <Card className="lg:col-span-8 relative overflow-hidden rounded-3xl neo-card neo-scan neo-corner">
+          <div aria-hidden className="absolute inset-0 neo-grid opacity-[0.35] pointer-events-none" />
           <div className="absolute -top-32 -right-32 h-80 w-80 rounded-full bg-primary/30 blur-3xl pointer-events-none" />
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
+          <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-primary-glow/20 blur-3xl pointer-events-none" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-glow to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
           <div className="relative p-6 md:p-8">
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              <Wallet className="h-3.5 w-3.5" /> Saldo líquido disponível
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                <Wallet className="h-3.5 w-3.5 text-primary-glow" /> Saldo líquido · LIVE
+              </div>
+              <span className="neo-chip"><span className="h-1.5 w-1.5 rounded-full bg-primary-glow shadow-[0_0_8px_var(--primary-glow)]" /> MZN · v2.0</span>
             </div>
-            <div className="mt-3 flex items-baseline gap-3">
-              <p className="text-6xl md:text-7xl font-bold tracking-tight tabular-nums leading-none">
+            <div className="mt-4 flex items-baseline gap-3">
+              <p className="text-6xl md:text-7xl font-bold tracking-tight tabular-nums leading-none text-neo-glow">
                 {fmtMT(liquid)}
               </p>
-              <span className="text-muted-foreground text-lg font-medium">MT</span>
+              <span className="text-muted-foreground text-lg font-mono">MT</span>
             </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-success/15 text-success">
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-success/15 text-success border border-success/30">
                 <TrendingUp className="h-3 w-3" /> +100% vs mês anterior
               </span>
-              <span className="text-xs text-muted-foreground">· Atualizado agora</span>
+              <span className="text-[11px] text-muted-foreground font-mono">// sync: agora</span>
             </div>
+
 
             {/* Channels split bar */}
             <div className="mt-7 space-y-3">
@@ -111,7 +120,7 @@ function Overview() {
 
       {/* CARTEIRAS + FLUXO */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <Card className="lg:col-span-5 rounded-3xl p-6">
+        <Card className="lg:col-span-5 rounded-3xl p-6 neo-card relative overflow-hidden">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               <Smartphone className="h-3.5 w-3.5" /> Carteiras móveis
@@ -124,7 +133,7 @@ function Overview() {
           </div>
         </Card>
 
-        <Card className="lg:col-span-7 rounded-3xl p-6">
+        <Card className="lg:col-span-7 rounded-3xl p-6 neo-card relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
               <h3 className="font-semibold flex items-center gap-2"><Activity className="h-4 w-4 text-primary" /> Fluxo de caixa</h3>
@@ -140,7 +149,7 @@ function Overview() {
 
       {/* DISTRIBUIÇÃO + TRANSAÇÕES */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <Card className="lg:col-span-4 rounded-3xl p-6">
+        <Card className="lg:col-span-4 rounded-3xl p-6 neo-card relative overflow-hidden">
           <h3 className="font-semibold">Distribuição</h3>
           <p className="text-sm text-muted-foreground">Por canal</p>
           <div className="mt-4 flex justify-center">
@@ -156,7 +165,7 @@ function Overview() {
           </div>
         </Card>
 
-        <Card className="lg:col-span-8 rounded-3xl p-6">
+        <Card className="lg:col-span-8 rounded-3xl p-6 neo-card relative overflow-hidden">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold">Transações recentes</h3>
             <Link to="/dashboard/transactions" className="text-sm text-muted-foreground hover:text-primary transition">Ver todas →</Link>
@@ -216,7 +225,7 @@ function Overview() {
 
       {/* PICO DE VENDAS — desktop highlight */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <Card className="lg:col-span-8 rounded-3xl p-6 relative overflow-hidden">
+        <Card className="lg:col-span-8 rounded-3xl p-6 neo-card relative overflow-hidden">
           <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
           <div className="relative flex items-start justify-between mb-4">
             <div>
@@ -236,7 +245,7 @@ function Overview() {
           <HourlyBars data={buildHourly(paid)} />
         </Card>
 
-        <Card className="lg:col-span-4 rounded-3xl p-6">
+        <Card className="lg:col-span-4 rounded-3xl p-6 neo-card relative overflow-hidden">
           <h3 className="font-semibold flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" /> Por dia da semana</h3>
           <p className="text-sm text-muted-foreground">Volume de vendas</p>
           <div className="mt-4">
@@ -246,7 +255,7 @@ function Overview() {
       </div>
 
 
-      <Card className="rounded-3xl p-6">
+      <Card className="rounded-3xl p-6 neo-card relative overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold">Resumo financeiro</h3>
           <span className="text-xs text-muted-foreground">Mês corrente</span>
@@ -270,21 +279,22 @@ function Overview() {
 
 function KpiCard({ icon: Icon, label, value, suffix, trend, trendPositive, hint, accent }: { icon: React.ElementType; label: string; value: number; suffix?: string; trend?: string; trendPositive?: boolean; hint?: string; accent?: boolean }) {
   return (
-    <Card className={`relative overflow-hidden rounded-2xl p-4 ${accent ? "bg-gradient-to-br from-primary/10 to-transparent border-primary/20" : ""}`}>
-      <div className="flex items-start justify-between">
-        <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${accent ? "bg-primary/15 text-primary" : "bg-muted text-foreground/70"}`}>
+    <Card className={`relative overflow-hidden rounded-2xl p-4 neo-card ${accent ? "shadow-[0_20px_40px_-20px_var(--primary-glow)]" : ""}`}>
+      <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-glow/60 to-transparent" />
+      <div className="flex items-start justify-between relative">
+        <div className={`h-9 w-9 rounded-xl flex items-center justify-center border ${accent ? "bg-primary/15 text-primary-glow border-primary/40 shadow-[0_0_16px_-4px_var(--primary-glow)]" : "bg-white/5 text-foreground/80 border-white/10"}`}>
           <Icon className="h-4 w-4" />
         </div>
         {trend && (
-          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${trendPositive ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}`}>{trend}</span>
+          <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${trendPositive ? "bg-success/10 text-success border-success/30" : "bg-muted text-muted-foreground border-white/10"}`}>{trend}</span>
         )}
         {hint && !trend && (
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground tabular-nums">{hint}</span>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground tabular-nums">{hint}</span>
         )}
       </div>
-      <p className="mt-3 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">{label}</p>
+      <p className="mt-3 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-bold tracking-tight tabular-nums">
-        {fmtMT(value)} <span className="text-xs text-muted-foreground font-normal">{suffix}</span>
+        {fmtMT(value)} <span className="text-xs text-muted-foreground font-mono">{suffix}</span>
       </p>
     </Card>
   );
@@ -292,8 +302,9 @@ function KpiCard({ icon: Icon, label, value, suffix, trend, trendPositive, hint,
 
 function WalletRow({ img, name, sub, value, pct, accent }: { img: string; name: string; sub: string; value: number; pct: number; accent?: boolean }) {
   return (
-    <div className={`flex items-center gap-3 p-3 rounded-2xl transition ${accent ? "bg-primary/5 ring-1 ring-primary/15" : "bg-muted/40"}`}>
+    <div className={`flex items-center gap-3 p-3 rounded-2xl transition border ${accent ? "bg-primary/5 border-primary/25 shadow-[inset_0_0_20px_-8px_var(--primary-glow)]" : "bg-white/5 border-white/10"}`}>
       <img src={img} alt={name} className="h-10 w-10 shrink-0 rounded-lg" />
+
       <div className="flex-1 min-w-0">
         <p className="font-medium">{name}</p>
         <p className="text-xs text-muted-foreground">{sub}</p>
@@ -377,7 +388,7 @@ function LoadingSkeleton() {
           {[0,1,2].map(i => <Card key={i} className="rounded-2xl p-4"><Skeleton className="h-9 w-9 rounded-xl mb-3" /><Skeleton className="h-3 w-20 mb-2" /><Skeleton className="h-6 w-24" /></Card>)}
         </div>
       </div>
-      {[0,1].map(i => <Card key={i} className="rounded-3xl p-6"><Skeleton className="h-4 w-32 mb-4" /><Skeleton className="h-40 w-full" /></Card>)}
+      {[0,1].map(i => <Card key={i} className="rounded-3xl p-6 neo-card relative overflow-hidden"><Skeleton className="h-4 w-32 mb-4" /><Skeleton className="h-40 w-full" /></Card>)}
     </div>
   );
 }
