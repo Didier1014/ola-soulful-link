@@ -87,21 +87,34 @@ export const createProduct = createServerFn({ method: "POST" })
       })
       .select().single();
     if (error) throw new Error(error.message);
-    // Notify admins for approval
+    // Notify admins for approval (in-app + web push)
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: admins } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
       const { data: seller } = await supabaseAdmin.from("profiles").select("full_name,business_name").eq("id", context.userId).maybeSingle();
       const sellerName = (seller as any)?.business_name || (seller as any)?.full_name || "Vendedor";
-      const rows = (admins ?? []).map((a: any) => ({
-        user_id: a.user_id,
+      const title = "🆕 Novo produto para aprovação";
+      const message = `${sellerName} submeteu "${data.name}" para aprovação.`;
+      const adminIds: string[] = (admins ?? []).map((a: any) => a.user_id);
+      const rows = adminIds.map((uid) => ({
+        user_id: uid,
         type: "product_approval",
-        title: "Novo produto para aprovação",
-        message: `${sellerName} submeteu "${data.name}" para aprovação.`,
+        title,
+        message,
         data: { product_id: row.id, slug: row.slug, seller_id: context.userId },
       }));
       if (rows.length) await supabaseAdmin.from("notifications").insert(rows);
-    } catch {}
+      if (adminIds.length) {
+        const { sendPushToUser } = await import("@/lib/push.functions");
+        await Promise.all(
+          adminIds.map((uid) =>
+            sendPushToUser(supabaseAdmin, uid, title, message, "/dashboard/admin/produtos").catch((e) =>
+              console.log(`[product_approval][webpush] admin=${uid} error`, e),
+            ),
+          ),
+        );
+      }
+    } catch (e) { console.log("[product_approval] notify error", e); }
     return row;
   });
 
