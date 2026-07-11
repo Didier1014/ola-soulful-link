@@ -45,10 +45,12 @@ function Overview() {
       {/* Greeting */}
       <div className="flex items-end justify-between px-1">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{greet}</p>
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mt-0.5">{name}</h1>
+          <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground flex items-center gap-2">
+            <span className="neo-live-dot" /> {greet} · SYS ONLINE
+          </p>
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mt-1.5">{name}</h1>
         </div>
-        <Link to="/dashboard/new-transaction" className="hidden md:inline-flex items-center gap-2 px-4 h-10 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-sm font-medium shadow-[0_8px_30px_-12px_color-mix(in_oklab,var(--primary)_60%,transparent)] hover:brightness-110 transition">
+        <Link to="/dashboard/new-transaction" className="hidden md:inline-flex items-center gap-2 px-4 h-10 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-sm font-medium shadow-[0_8px_30px_-8px_var(--primary-glow)] hover:brightness-110 transition">
           Nova transação <ArrowUpRight className="h-4 w-4" />
         </Link>
       </div>
@@ -56,26 +58,33 @@ function Overview() {
       {/* HERO + SIDEBAR */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* HERO SALDO */}
-        <Card className="lg:col-span-8 relative overflow-hidden rounded-3xl border-primary/20 bg-gradient-to-br from-card via-card to-primary/5">
+        <Card className="lg:col-span-8 relative overflow-hidden rounded-3xl neo-card neo-scan neo-corner">
+          <div aria-hidden className="absolute inset-0 neo-grid opacity-[0.35] pointer-events-none" />
           <div className="absolute -top-32 -right-32 h-80 w-80 rounded-full bg-primary/30 blur-3xl pointer-events-none" />
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
+          <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-primary-glow/20 blur-3xl pointer-events-none" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-glow to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
           <div className="relative p-6 md:p-8">
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              <Wallet className="h-3.5 w-3.5" /> Saldo líquido disponível
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                <Wallet className="h-3.5 w-3.5 text-primary-glow" /> Saldo líquido · LIVE
+              </div>
+              <span className="neo-chip"><span className="h-1.5 w-1.5 rounded-full bg-primary-glow shadow-[0_0_8px_var(--primary-glow)]" /> MZN · v2.0</span>
             </div>
-            <div className="mt-3 flex items-baseline gap-3">
-              <p className="text-6xl md:text-7xl font-bold tracking-tight tabular-nums leading-none">
+            <div className="mt-4 flex items-baseline gap-3">
+              <p className="text-6xl md:text-7xl font-bold tracking-tight tabular-nums leading-none text-neo-glow">
                 {fmtMT(liquid)}
               </p>
-              <span className="text-muted-foreground text-lg font-medium">MT</span>
+              <span className="text-muted-foreground text-lg font-mono">MT</span>
             </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-success/15 text-success">
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-success/15 text-success border border-success/30">
                 <TrendingUp className="h-3 w-3" /> +100% vs mês anterior
               </span>
-              <span className="text-xs text-muted-foreground">· Atualizado agora</span>
+              <span className="text-[11px] text-muted-foreground font-mono">// sync: agora</span>
             </div>
+
 
             {/* Channels split bar */}
             <div className="mt-7 space-y-3">
