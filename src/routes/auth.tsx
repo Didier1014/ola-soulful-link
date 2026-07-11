@@ -32,6 +32,8 @@ function AuthPage() {
   // signup-only
   const [fullName, setFullName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [supportPhone, setSupportPhone] = useState("");
+  const [supportPhone2, setSupportPhone2] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [accountType, setAccountType] = useState<"person" | "company">("person");
   const [city, setCity] = useState("");
