@@ -7,8 +7,10 @@ import {
 } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 import { FloatingSaleNotification } from "@/components/floating-sale-notification";
+import { ThemeToggle, useTheme } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
 
 import { useState } from "react";
 
