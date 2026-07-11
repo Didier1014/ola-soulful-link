@@ -83,6 +83,8 @@ function AuthPage() {
           data: {
             full_name: fullName,
             whatsapp,
+            support_phone: supportPhone,
+            support_phone2: supportPhone2,
             business_name: businessName,
             account_type: accountType,
             city,
