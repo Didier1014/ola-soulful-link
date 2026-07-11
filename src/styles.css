@@ -191,3 +191,118 @@
   animation: slide-in-right 0.4s ease-out;
 }
 
+/* ================= Futuristic UI utilities ================= */
+
+@keyframes neo-sweep {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+@keyframes neo-grid-drift {
+  0%   { background-position: 0 0, 0 0; }
+  100% { background-position: 40px 40px, 40px 40px; }
+}
+@keyframes neo-ring {
+  0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary-glow) 55%, transparent); }
+  100% { box-shadow: 0 0 0 14px color-mix(in oklab, var(--primary-glow) 0%, transparent); }
+}
+
+@utility neo-grid {
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--primary) 12%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--primary) 12%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px, 40px 40px;
+  background-position: 0 0, 0 0;
+  animation: neo-grid-drift 18s linear infinite;
+}
+
+@utility neo-scan {
+  position: relative;
+  overflow: hidden;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      color-mix(in oklab, var(--primary-glow) 20%, transparent) 45%,
+      color-mix(in oklab, white 25%, transparent) 50%,
+      color-mix(in oklab, var(--primary-glow) 20%, transparent) 55%,
+      transparent 100%
+    );
+    mix-blend-mode: overlay;
+    transform: translateX(-120%);
+    animation: neo-sweep 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+}
+
+@utility neo-card {
+  background:
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--card) 92%, transparent),
+      color-mix(in oklab, var(--card) 78%, transparent)
+    );
+  backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid color-mix(in oklab, var(--primary) 22%, transparent);
+  box-shadow:
+    0 1px 0 0 color-mix(in oklab, white 8%, transparent) inset,
+    0 0 0 1px color-mix(in oklab, var(--primary-glow) 8%, transparent),
+    0 30px 60px -30px color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+@utility neo-corner {
+  position: relative;
+  &::before, &::after {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 1px solid color-mix(in oklab, var(--primary-glow) 70%, transparent);
+    pointer-events: none;
+  }
+  &::before { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
+  &::after  { bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
+}
+
+@utility text-neo-glow {
+  text-shadow:
+    0 0 18px color-mix(in oklab, var(--primary-glow) 55%, transparent),
+    0 0 2px color-mix(in oklab, var(--primary-glow) 40%, transparent);
+}
+
+@utility neo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--primary-glow) 90%, white 10%);
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--primary-glow) 35%, transparent);
+  box-shadow: inset 0 0 12px color-mix(in oklab, var(--primary-glow) 18%, transparent);
+}
+
+@utility neo-live-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--primary-glow);
+  box-shadow: 0 0 12px var(--primary-glow);
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in oklab, var(--primary-glow) 60%, transparent);
+    animation: neo-ring 1.8s ease-out infinite;
+  }
+}
+
+
