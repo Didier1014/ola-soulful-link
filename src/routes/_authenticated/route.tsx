@@ -146,11 +146,15 @@ function DrawerContent({ close, onSignOut }: { close: () => void; onSignOut: () 
         ))}
       </nav>
 
-      <div className="mt-auto border-t border-white/5 p-3 space-y-1">
-
-        <button onClick={toggleTheme} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-foreground/60 hover:bg-white/5">
-          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />} {isDark ? "Modo claro" : "Modo escuro"}
+      <div className="mt-auto border-t border-white/5 p-3 space-y-2">
+        <div className="px-1 flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Tema</span>
+          <ThemeToggle />
+        </div>
+        <button onClick={toggle} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-foreground/60 hover:bg-white/5">
+          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />} {isDark ? "Alternar para claro" : "Alternar para escuro"}
         </button>
+
         <button onClick={() => { onSignOut(); close(); }} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-foreground/60 hover:bg-white/5">
           <LogOut className="h-4 w-4" /> Sair
         </button>
