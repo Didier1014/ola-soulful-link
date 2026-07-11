@@ -120,7 +120,7 @@ function Overview() {
 
       {/* CARTEIRAS + FLUXO */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <Card className="lg:col-span-5 rounded-3xl p-6">
+        <Card className="lg:col-span-5 rounded-3xl p-6 neo-card relative overflow-hidden">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               <Smartphone className="h-3.5 w-3.5" /> Carteiras móveis
@@ -133,7 +133,7 @@ function Overview() {
           </div>
         </Card>
 
-        <Card className="lg:col-span-7 rounded-3xl p-6">
+        <Card className="lg:col-span-7 rounded-3xl p-6 neo-card relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
               <h3 className="font-semibold flex items-center gap-2"><Activity className="h-4 w-4 text-primary" /> Fluxo de caixa</h3>
@@ -149,7 +149,7 @@ function Overview() {
 
       {/* DISTRIBUIÇÃO + TRANSAÇÕES */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <Card className="lg:col-span-4 rounded-3xl p-6">
+        <Card className="lg:col-span-4 rounded-3xl p-6 neo-card relative overflow-hidden">
           <h3 className="font-semibold">Distribuição</h3>
           <p className="text-sm text-muted-foreground">Por canal</p>
           <div className="mt-4 flex justify-center">
@@ -165,7 +165,7 @@ function Overview() {
           </div>
         </Card>
 
-        <Card className="lg:col-span-8 rounded-3xl p-6">
+        <Card className="lg:col-span-8 rounded-3xl p-6 neo-card relative overflow-hidden">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold">Transações recentes</h3>
             <Link to="/dashboard/transactions" className="text-sm text-muted-foreground hover:text-primary transition">Ver todas →</Link>
@@ -225,7 +225,7 @@ function Overview() {
 
       {/* PICO DE VENDAS — desktop highlight */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <Card className="lg:col-span-8 rounded-3xl p-6 relative overflow-hidden">
+        <Card className="lg:col-span-8 rounded-3xl p-6 neo-card relative overflow-hidden">
           <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
           <div className="relative flex items-start justify-between mb-4">
             <div>
@@ -245,7 +245,7 @@ function Overview() {
           <HourlyBars data={buildHourly(paid)} />
         </Card>
 
-        <Card className="lg:col-span-4 rounded-3xl p-6">
+        <Card className="lg:col-span-4 rounded-3xl p-6 neo-card relative overflow-hidden">
           <h3 className="font-semibold flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" /> Por dia da semana</h3>
           <p className="text-sm text-muted-foreground">Volume de vendas</p>
           <div className="mt-4">
@@ -255,7 +255,7 @@ function Overview() {
       </div>
 
 
-      <Card className="rounded-3xl p-6">
+      <Card className="rounded-3xl p-6 neo-card relative overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold">Resumo financeiro</h3>
           <span className="text-xs text-muted-foreground">Mês corrente</span>
@@ -388,7 +388,7 @@ function LoadingSkeleton() {
           {[0,1,2].map(i => <Card key={i} className="rounded-2xl p-4"><Skeleton className="h-9 w-9 rounded-xl mb-3" /><Skeleton className="h-3 w-20 mb-2" /><Skeleton className="h-6 w-24" /></Card>)}
         </div>
       </div>
-      {[0,1].map(i => <Card key={i} className="rounded-3xl p-6"><Skeleton className="h-4 w-32 mb-4" /><Skeleton className="h-40 w-full" /></Card>)}
+      {[0,1].map(i => <Card key={i} className="rounded-3xl p-6 neo-card relative overflow-hidden"><Skeleton className="h-4 w-32 mb-4" /><Skeleton className="h-40 w-full" /></Card>)}
     </div>
   );
 }
