@@ -210,6 +210,10 @@ function AuthPage() {
                 <Field label="WhatsApp"><Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} required maxLength={20} placeholder="+258 84..." /></Field>
               </div>
               <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={160} /></Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Suporte 1"><Input value={supportPhone} onChange={(e) => setSupportPhone(e.target.value)} required maxLength={20} placeholder="+258 84..." /></Field>
+                <Field label="Suporte 2"><Input value={supportPhone2} onChange={(e) => setSupportPhone2(e.target.value)} required maxLength={20} placeholder="+258 87..." /></Field>
+              </div>
               <Field label="Nome do negócio"><Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} maxLength={120} placeholder="Opcional" /></Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Tipo">
