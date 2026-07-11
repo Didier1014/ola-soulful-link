@@ -113,11 +113,9 @@ function AuthedShell() {
 }
 
 function DrawerContent({ close, onSignOut }: { close: () => void; onSignOut: () => void }) {
-  const [isDark, setIsDark] = useState(true);
-  function toggleTheme() {
-    document.documentElement.classList.toggle('dark');
-    setIsDark(!isDark);
-  }
+  const { theme, toggle } = useTheme();
+  const isDark = theme === "dark";
+
   return (
     <div className="flex flex-col h-full bg-sidebar relative">
       <div aria-hidden className="absolute top-0 left-0 h-40 w-full bg-gradient-to-b from-primary/15 to-transparent pointer-events-none" />
