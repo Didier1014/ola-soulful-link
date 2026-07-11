@@ -37,6 +37,7 @@ function Landing() {
 
       <div className="relative z-10 bg-background min-h-screen">
         <Nav />
+        <HudTicker />
         <Hero />
         <PaymentFlow />
         <Features />
@@ -49,6 +50,33 @@ function Landing() {
     </div>
   );
 }
+
+/* ---------------- HUD TICKER ---------------- */
+function HudTicker() {
+  const items = [
+    ["NODE_MZ_01", "ONLINE", "success"],
+    ["LATENCY", "142ms", "muted"],
+    ["UPTIME", "99.98%", "muted"],
+    ["M-PESA", "OK", "success"],
+    ["E-MOLA", "OK", "success"],
+    ["ENCRYPT", "AES-256", "muted"],
+    ["PCI-DSS", "L1", "muted"],
+    ["v4.0.2", "STABLE", "muted"],
+  ] as const;
+  return (
+    <div className="border-b border-white/5 bg-black/40 backdrop-blur-sm overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 h-7 flex items-center gap-6 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground overflow-x-auto scrollbar-none">
+        {items.map(([k, v, tone]) => (
+          <span key={k} className="flex items-center gap-1.5 whitespace-nowrap">
+            <span className="text-foreground/50">[{k}]</span>
+            <span className={tone === "success" ? "text-emerald-400" : "text-primary-glow"}>{v}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 
 /* ---------------- NAV ---------------- */
 function Nav() {
