@@ -7,8 +7,10 @@ import {
 } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 import { FloatingSaleNotification } from "@/components/floating-sale-notification";
+import { ThemeToggle, useTheme } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
 
 import { useState } from "react";
 
@@ -93,9 +95,11 @@ function AuthedShell() {
               <span className="h-2 w-2 rounded-full bg-primary-glow shadow-[0_0_12px_var(--primary-glow)]" />
               REDOX <span className="text-gradient-red">PAY</span>
             </Link>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <ThemeToggle />
               <NotificationBell />
             </div>
+
           </div>
         </header>
 
@@ -109,11 +113,9 @@ function AuthedShell() {
 }
 
 function DrawerContent({ close, onSignOut }: { close: () => void; onSignOut: () => void }) {
-  const [isDark, setIsDark] = useState(true);
-  function toggleTheme() {
-    document.documentElement.classList.toggle('dark');
-    setIsDark(!isDark);
-  }
+  const { theme, toggle } = useTheme();
+  const isDark = theme === "dark";
+
   return (
     <div className="flex flex-col h-full bg-sidebar relative">
       <div aria-hidden className="absolute top-0 left-0 h-40 w-full bg-gradient-to-b from-primary/15 to-transparent pointer-events-none" />
@@ -144,11 +146,15 @@ function DrawerContent({ close, onSignOut }: { close: () => void; onSignOut: () 
         ))}
       </nav>
 
-      <div className="mt-auto border-t border-white/5 p-3 space-y-1">
-
-        <button onClick={toggleTheme} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-foreground/60 hover:bg-white/5">
-          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />} {isDark ? "Modo claro" : "Modo escuro"}
+      <div className="mt-auto border-t border-white/5 p-3 space-y-2">
+        <div className="px-1 flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Tema</span>
+          <ThemeToggle />
+        </div>
+        <button onClick={toggle} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-foreground/60 hover:bg-white/5">
+          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />} {isDark ? "Alternar para claro" : "Alternar para escuro"}
         </button>
+
         <button onClick={() => { onSignOut(); close(); }} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-foreground/60 hover:bg-white/5">
           <LogOut className="h-4 w-4" /> Sair
         </button>
