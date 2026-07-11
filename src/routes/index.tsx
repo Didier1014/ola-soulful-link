@@ -37,6 +37,7 @@ function Landing() {
 
       <div className="relative z-10 bg-background min-h-screen">
         <Nav />
+        <HudTicker />
         <Hero />
         <PaymentFlow />
         <Features />
@@ -49,6 +50,33 @@ function Landing() {
     </div>
   );
 }
+
+/* ---------------- HUD TICKER ---------------- */
+function HudTicker() {
+  const items = [
+    ["NODE_MZ_01", "ONLINE", "success"],
+    ["LATENCY", "142ms", "muted"],
+    ["UPTIME", "99.98%", "muted"],
+    ["M-PESA", "OK", "success"],
+    ["E-MOLA", "OK", "success"],
+    ["ENCRYPT", "AES-256", "muted"],
+    ["PCI-DSS", "L1", "muted"],
+    ["v4.0.2", "STABLE", "muted"],
+  ] as const;
+  return (
+    <div className="border-b border-white/5 bg-black/40 backdrop-blur-sm overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 h-7 flex items-center gap-6 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground overflow-x-auto scrollbar-none">
+        {items.map(([k, v, tone]) => (
+          <span key={k} className="flex items-center gap-1.5 whitespace-nowrap">
+            <span className="text-foreground/50">[{k}]</span>
+            <span className={tone === "success" ? "text-emerald-400" : "text-primary-glow"}>{v}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 
 /* ---------------- NAV ---------------- */
 function Nav() {
@@ -93,11 +121,18 @@ function Hero() {
       <div className="relative grid lg:grid-cols-2 gap-12 items-center">
         {/* LEFT */}
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-muted-foreground mb-8">
-            <span className="h-2 w-2 rounded-full bg-primary"></span>
-            <span className="text-foreground font-medium">Operando em Moçambique:</span> M-Pesa e e-Mola.
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-xs text-muted-foreground mb-8 shadow-[inset_0_0_20px_-10px_var(--primary-glow)]">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-glow shadow-[0_0_8px_var(--primary-glow)]" />
+            </span>
+            <span className="text-primary-glow font-mono uppercase tracking-[0.18em] text-[10px]">Operando em Moçambique</span>
+            <span className="text-muted-foreground">·</span>
+            <span className="text-foreground">M-Pesa · e-Mola</span>
           </div>
+          <p className="text-[10px] font-mono uppercase tracking-[0.32em] text-muted-foreground mb-3">/ 001 · Manifesto</p>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02]">
+
             Sua escala é a <span className="text-gradient-red">nossa prioridade.</span>
           </h1>
           <p className="mt-6 text-lg text-muted-foreground max-w-md">
@@ -127,7 +162,7 @@ function Hero() {
         <div className="relative h-[560px] hidden lg:block">
           <div className="absolute -inset-10 bg-gradient-to-tr from-primary/30 via-primary-glow/20 to-transparent rounded-[3rem] blur-3xl" />
           {/* desktop card */}
-          <div className="absolute top-8 right-0 w-[440px] rounded-2xl border border-white/10 bg-card/90 backdrop-blur-xl shadow-2xl shadow-primary/20 overflow-hidden">
+          <div className="absolute top-8 right-0 w-[440px] rounded-2xl border border-primary/25 bg-card/90 backdrop-blur-xl shadow-2xl shadow-primary/30 overflow-hidden neo-scan neo-corner">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 text-xs text-muted-foreground">
               <Search className="h-3.5 w-3.5" /> <span className="flex-1">Pesquisar</span>
               <span className="rounded border border-white/10 px-1.5 py-0.5 text-[10px]">⌘F</span>
@@ -212,12 +247,17 @@ function MockMini({ label, v, delta, up }: { label: string; v: string; delta: st
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 backdrop-blur">
-      <div className="text-3xl md:text-4xl font-bold text-gradient-red">{value}</div>
-      <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+    <div className="relative rounded-2xl border border-white/10 bg-white/[0.02] p-5 backdrop-blur neo-corner overflow-hidden group hover:border-primary/30 transition">
+      <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-glow/60 to-transparent" />
+      <div className="text-3xl md:text-4xl font-bold text-gradient-red font-mono tracking-tight">{value}</div>
+      <div className="mt-1 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">{label}</div>
+      <div className="mt-3 h-[2px] w-full bg-white/5 overflow-hidden">
+        <div className="h-full bg-gradient-to-r from-primary to-primary-glow w-3/4 group-hover:w-full transition-all duration-700" />
+      </div>
     </div>
   );
 }
+
 
 /* ---------------- PAYMENT FLOW ---------------- */
 function PaymentFlow() {
@@ -245,25 +285,38 @@ function PaymentFlow() {
 
 function StepCard({ n, title, desc, icon: Icon, highlight }: { n: number; title: string; desc: string; icon: React.ElementType; highlight?: boolean }) {
   return (
-    <div className={`relative overflow-hidden rounded-3xl p-7 border ${highlight ? "border-primary/40 bg-gradient-to-br from-primary/15 to-transparent" : "border-white/5 bg-white/[0.02]"}`}>
+    <div className={`group relative overflow-hidden rounded-3xl p-7 border transition ${highlight ? "border-primary/40 bg-gradient-to-br from-primary/15 to-transparent neo-scan" : "border-white/10 bg-white/[0.02] hover:border-primary/30"}`}>
+      {/* HUD corner brackets */}
+      <span aria-hidden className="absolute top-3 left-3 h-3.5 w-3.5 border-t border-l border-primary-glow/70" />
+      <span aria-hidden className="absolute bottom-3 right-3 h-3.5 w-3.5 border-b border-r border-primary-glow/70" />
       <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/15 blur-2xl" />
-      <div className="flex items-center justify-between mb-5">
-        <span className="text-xs uppercase tracking-widest text-muted-foreground">Passo {n}</span>
-        <div className="h-10 w-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
+      {/* Giant mono step number watermark */}
+      <span aria-hidden className="absolute -top-2 right-4 text-[80px] leading-none font-mono font-black text-white/[0.04] group-hover:text-primary/10 transition-colors select-none">
+        {String(n).padStart(2, "0")}
+      </span>
+      <div className="relative flex items-center justify-between mb-5">
+        <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-mono">// Passo {String(n).padStart(2, "0")}</span>
+        <div className="h-10 w-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center shadow-[0_0_18px_-6px_var(--primary-glow)]">
           <Icon className="h-5 w-5 text-primary-glow" />
         </div>
       </div>
-      <h3 className="text-xl font-semibold">{title}</h3>
-      <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
+      <h3 className="relative text-xl font-semibold">{title}</h3>
+      <p className="relative mt-2 text-sm text-muted-foreground">{desc}</p>
+      <div className="relative mt-5 h-px w-full bg-gradient-to-r from-primary/50 via-primary/10 to-transparent" />
     </div>
   );
 }
 
 function MethodPill({ name, color, letter }: { name: string; color: string; letter: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-5 py-2.5">
-      <div className="h-8 w-8 rounded-full flex items-center justify-center text-white font-bold" style={{ background: color }}>{letter}</div>
+    <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 backdrop-blur hover:border-primary/30 transition">
+      <div className="h-8 w-8 rounded-full flex items-center justify-center text-white font-bold shadow-[0_0_16px_-4px_currentColor]" style={{ background: color, color }}>
+        <span className="text-white">{letter}</span>
+      </div>
       <span className="font-medium">{name}</span>
+      <span className="text-[9px] font-mono uppercase tracking-widest text-emerald-400 flex items-center gap-1">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_currentColor]" /> LIVE
+      </span>
     </div>
   );
 }
@@ -283,23 +336,34 @@ function Features() {
   return (
     <section id="features" className="max-w-7xl mx-auto px-6 py-24">
       <div className="text-center max-w-2xl mx-auto mb-16">
-        <p className="text-sm uppercase tracking-widest text-primary-glow mb-3">Funcionalidades</p>
+        <div className="inline-flex items-center gap-3 mb-4">
+          <span className="h-px w-8 bg-gradient-to-r from-transparent to-primary-glow" />
+          <p className="text-[10px] uppercase tracking-[0.32em] text-primary-glow font-mono">// Módulos</p>
+          <span className="h-px w-8 bg-gradient-to-l from-transparent to-primary-glow" />
+        </div>
         <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Tudo o que precisa para receber</h2>
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {items.map((it) => (
-          <div key={it.title} className="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:border-primary/30 hover:bg-white/[0.04] transition">
-            <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
-              <it.icon className="h-5 w-5 text-primary-glow" />
+        {items.map((it, i) => (
+          <div key={it.title} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-primary/30 hover:bg-white/[0.04] transition">
+            <span aria-hidden className="absolute top-2 left-2 h-3 w-3 border-t border-l border-white/10 group-hover:border-primary-glow/60 transition-colors" />
+            <span aria-hidden className="absolute bottom-2 right-2 h-3 w-3 border-b border-r border-white/10 group-hover:border-primary-glow/60 transition-colors" />
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center shadow-[0_0_16px_-6px_var(--primary-glow)]">
+                <it.icon className="h-5 w-5 text-primary-glow" />
+              </div>
+              <span className="text-[10px] font-mono text-muted-foreground tracking-widest">M.{String(i + 1).padStart(2, "0")}</span>
             </div>
             <h3 className="font-semibold">{it.title}</h3>
             <p className="mt-1.5 text-sm text-muted-foreground">{it.desc}</p>
+            <div aria-hidden className="mt-4 h-px w-0 bg-gradient-to-r from-primary to-primary-glow group-hover:w-full transition-all duration-500" />
           </div>
         ))}
       </div>
     </section>
   );
 }
+
 
 /* ---------------- SECURITY ---------------- */
 function Security() {
@@ -375,13 +439,15 @@ function DashboardPreview() {
 
 function MockKpi({ label, value, delta }: { label: string; value: string; delta: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-background/40 p-5">
-      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className="mt-1.5 text-2xl font-bold">{value}</p>
-      <p className="mt-1 text-xs text-emerald-400">{delta}</p>
+    <div className="relative rounded-2xl border border-primary/20 bg-background/60 p-5 overflow-hidden">
+      <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-glow to-transparent" />
+      <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-mono">// {label}</p>
+      <p className="mt-1.5 text-2xl font-bold font-mono tabular-nums text-neo-glow">{value}</p>
+      <p className="mt-1 text-xs text-emerald-400 font-mono">▲ {delta}</p>
     </div>
   );
 }
+
 function MockTx({ name, method, color, amount }: { name: string; method: string; color: string; amount: string }) {
   return (
     <div className="flex items-center justify-between border-b border-white/5 last:border-0 py-2">
