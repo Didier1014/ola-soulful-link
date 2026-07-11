@@ -162,7 +162,7 @@ function Hero() {
         <div className="relative h-[560px] hidden lg:block">
           <div className="absolute -inset-10 bg-gradient-to-tr from-primary/30 via-primary-glow/20 to-transparent rounded-[3rem] blur-3xl" />
           {/* desktop card */}
-          <div className="absolute top-8 right-0 w-[440px] rounded-2xl border border-white/10 bg-card/90 backdrop-blur-xl shadow-2xl shadow-primary/20 overflow-hidden">
+          <div className="absolute top-8 right-0 w-[440px] rounded-2xl border border-primary/25 bg-card/90 backdrop-blur-xl shadow-2xl shadow-primary/30 overflow-hidden neo-scan neo-corner">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 text-xs text-muted-foreground">
               <Search className="h-3.5 w-3.5" /> <span className="flex-1">Pesquisar</span>
               <span className="rounded border border-white/10 px-1.5 py-0.5 text-[10px]">⌘F</span>
