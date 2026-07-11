@@ -57,12 +57,13 @@ export function NotificationBell() {
       const uid = data?.user?.id;
       if (!uid) return;
       channel = supabase
-        .channel(`user:${uid}:notif-bell`, { config: { private: true } })
+        .channel(`user-${uid}-notif-bell-${Math.random().toString(36).slice(2, 8)}`)
         .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${uid}` }, () => {
           queryClient.invalidateQueries({ queryKey: ["notifications"] });
           queryClient.invalidateQueries({ queryKey: ["notifications", "unread"] });
         })
         .subscribe();
+
     })();
     return () => { if (channel) supabase.removeChannel(channel); };
   }, [queryClient]);
