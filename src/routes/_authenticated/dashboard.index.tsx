@@ -279,21 +279,22 @@ function Overview() {
 
 function KpiCard({ icon: Icon, label, value, suffix, trend, trendPositive, hint, accent }: { icon: React.ElementType; label: string; value: number; suffix?: string; trend?: string; trendPositive?: boolean; hint?: string; accent?: boolean }) {
   return (
-    <Card className={`relative overflow-hidden rounded-2xl p-4 ${accent ? "bg-gradient-to-br from-primary/10 to-transparent border-primary/20" : ""}`}>
-      <div className="flex items-start justify-between">
-        <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${accent ? "bg-primary/15 text-primary" : "bg-muted text-foreground/70"}`}>
+    <Card className={`relative overflow-hidden rounded-2xl p-4 neo-card ${accent ? "shadow-[0_20px_40px_-20px_var(--primary-glow)]" : ""}`}>
+      <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-glow/60 to-transparent" />
+      <div className="flex items-start justify-between relative">
+        <div className={`h-9 w-9 rounded-xl flex items-center justify-center border ${accent ? "bg-primary/15 text-primary-glow border-primary/40 shadow-[0_0_16px_-4px_var(--primary-glow)]" : "bg-white/5 text-foreground/80 border-white/10"}`}>
           <Icon className="h-4 w-4" />
         </div>
         {trend && (
-          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${trendPositive ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}`}>{trend}</span>
+          <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${trendPositive ? "bg-success/10 text-success border-success/30" : "bg-muted text-muted-foreground border-white/10"}`}>{trend}</span>
         )}
         {hint && !trend && (
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground tabular-nums">{hint}</span>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground tabular-nums">{hint}</span>
         )}
       </div>
-      <p className="mt-3 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">{label}</p>
+      <p className="mt-3 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-bold tracking-tight tabular-nums">
-        {fmtMT(value)} <span className="text-xs text-muted-foreground font-normal">{suffix}</span>
+        {fmtMT(value)} <span className="text-xs text-muted-foreground font-mono">{suffix}</span>
       </p>
     </Card>
   );
@@ -301,8 +302,9 @@ function KpiCard({ icon: Icon, label, value, suffix, trend, trendPositive, hint,
 
 function WalletRow({ img, name, sub, value, pct, accent }: { img: string; name: string; sub: string; value: number; pct: number; accent?: boolean }) {
   return (
-    <div className={`flex items-center gap-3 p-3 rounded-2xl transition ${accent ? "bg-primary/5 ring-1 ring-primary/15" : "bg-muted/40"}`}>
+    <div className={`flex items-center gap-3 p-3 rounded-2xl transition border ${accent ? "bg-primary/5 border-primary/25 shadow-[inset_0_0_20px_-8px_var(--primary-glow)]" : "bg-white/5 border-white/10"}`}>
       <img src={img} alt={name} className="h-10 w-10 shrink-0 rounded-lg" />
+
       <div className="flex-1 min-w-0">
         <p className="font-medium">{name}</p>
         <p className="text-xs text-muted-foreground">{sub}</p>
