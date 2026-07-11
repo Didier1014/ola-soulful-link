@@ -42,8 +42,6 @@ function Overview() {
 
   return (
     <div className="space-y-5 max-w-7xl mx-auto">
-      {/* HUD TICKER */}
-      <HudTicker txCount={txs.length} paidCount={paid.length} />
 
       {/* Greeting */}
       <div className="flex items-end justify-between px-1">

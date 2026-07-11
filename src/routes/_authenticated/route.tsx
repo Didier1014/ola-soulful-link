@@ -138,10 +138,15 @@ function DrawerContent({ close, onSignOut }: { close: () => void; onSignOut: () 
             to={it.to}
             onClick={close}
             activeOptions={{ exact: !!it.exact }}
-            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground/70 hover:bg-white/5 hover:text-foreground transition-colors"
-            activeProps={{ className: "flex items-center gap-3 rounded-xl px-3 py-3 text-sm bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30 text-foreground font-semibold shadow-[0_0_20px_-8px_var(--primary-glow)]" }}
+            className="group flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-sm font-medium text-foreground/70 hover:bg-white/5 hover:text-foreground transition-colors"
+            activeProps={{ className: "group flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-sm bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30 text-foreground font-semibold shadow-[0_0_20px_-8px_var(--primary-glow)]" }}
           >
-            <it.icon className="h-4 w-4" /> {it.label}
+            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02] text-primary-glow shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] group-hover:border-primary/40 group-hover:text-primary-glow group-hover:shadow-[0_0_16px_-4px_var(--primary-glow)] transition-all">
+              <span aria-hidden className="absolute top-0 left-0 h-1.5 w-1.5 border-t border-l border-primary-glow/60 rounded-tl-lg" />
+              <span aria-hidden className="absolute bottom-0 right-0 h-1.5 w-1.5 border-b border-r border-primary-glow/60 rounded-br-lg" />
+              <it.icon className="h-4 w-4" strokeWidth={1.75} />
+            </span>
+            <span className="truncate">{it.label}</span>
           </Link>
         ))}
       </nav>
