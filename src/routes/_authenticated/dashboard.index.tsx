@@ -282,6 +282,41 @@ function Overview() {
 
 /* ---------- subcomponents ---------- */
 
+function HudTicker({ txCount, paidCount }: { txCount: number; paidCount: number }) {
+  const uptime = pct(paidCount, txCount);
+  const items = [
+    { k: "NODE", v: "MZ_01", tone: "glow" as const },
+    { k: "LINK", v: "SECURE", tone: "success" as const },
+    { k: "LATENCY", v: "42ms", tone: "muted" as const },
+    { k: "M-PESA", v: "ONLINE", tone: "success" as const },
+    { k: "E-MOLA", v: "ONLINE", tone: "success" as const },
+    { k: "UPTIME", v: `${uptime}%`, tone: "glow" as const },
+    { k: "ENCRYPT", v: "AES-256", tone: "muted" as const },
+    { k: "BUILD", v: "v2.0", tone: "muted" as const },
+  ];
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-card/40 backdrop-blur-xl">
+      <div aria-hidden className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-primary-glow via-primary to-transparent" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 neo-grid opacity-[0.15]" />
+      <div className="relative flex items-center gap-4 px-4 py-2 overflow-x-auto no-scrollbar">
+        <span className="neo-chip shrink-0"><span className="neo-live-dot" /> HUD</span>
+        <div className="flex items-center gap-5 text-[10px] font-mono uppercase tracking-[0.18em] whitespace-nowrap">
+          {items.map((it) => (
+            <span key={it.k} className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">{it.k}</span>
+              <span className={
+                it.tone === "success" ? "text-success" :
+                it.tone === "glow" ? "text-primary-glow text-neo-glow" :
+                "text-foreground/70"
+              }>{it.v}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function KpiCard({ icon: Icon, label, value, suffix, trend, trendPositive, hint, accent }: { icon: React.ElementType; label: string; value: number; suffix?: string; trend?: string; trendPositive?: boolean; hint?: string; accent?: boolean }) {
   return (
     <Card className={`relative overflow-hidden rounded-2xl p-4 neo-card ${accent ? "shadow-[0_20px_40px_-20px_var(--primary-glow)]" : ""}`}>
