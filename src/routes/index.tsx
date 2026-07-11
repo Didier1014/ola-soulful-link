@@ -121,11 +121,18 @@ function Hero() {
       <div className="relative grid lg:grid-cols-2 gap-12 items-center">
         {/* LEFT */}
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-muted-foreground mb-8">
-            <span className="h-2 w-2 rounded-full bg-primary"></span>
-            <span className="text-foreground font-medium">Operando em Moçambique:</span> M-Pesa e e-Mola.
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-xs text-muted-foreground mb-8 shadow-[inset_0_0_20px_-10px_var(--primary-glow)]">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-glow shadow-[0_0_8px_var(--primary-glow)]" />
+            </span>
+            <span className="text-primary-glow font-mono uppercase tracking-[0.18em] text-[10px]">Operando em Moçambique</span>
+            <span className="text-muted-foreground">·</span>
+            <span className="text-foreground">M-Pesa · e-Mola</span>
           </div>
+          <p className="text-[10px] font-mono uppercase tracking-[0.32em] text-muted-foreground mb-3">/ 001 · Manifesto</p>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02]">
+
             Sua escala é a <span className="text-gradient-red">nossa prioridade.</span>
           </h1>
           <p className="mt-6 text-lg text-muted-foreground max-w-md">
