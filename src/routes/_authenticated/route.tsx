@@ -95,9 +95,11 @@ function AuthedShell() {
               <span className="h-2 w-2 rounded-full bg-primary-glow shadow-[0_0_12px_var(--primary-glow)]" />
               REDOX <span className="text-gradient-red">PAY</span>
             </Link>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <ThemeToggle />
               <NotificationBell />
             </div>
+
           </div>
         </header>
 
