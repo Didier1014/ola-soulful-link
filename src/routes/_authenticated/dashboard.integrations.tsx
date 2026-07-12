@@ -157,48 +157,49 @@ function IntegrationsPage() {
       <SectionTitle icon={<Bell className="h-4 w-4" />} title="Notificações" desc="Alertas em tempo real para si" />
 
       {/* 1) Push Web App */}
-      <Card className="rounded-2xl p-5 space-y-3 transition-colors hover:border-primary/40">
+      <Card className="neo-card neo-corner rounded-2xl p-5 space-y-3">
         <div className="flex items-start gap-3">
-          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-md shadow-primary/20">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-[0_0_20px_-4px_var(--primary-glow)]">
             <Bell className="h-5 w-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold">Notificações Push (Web App)</h3>
-              <Badge variant={pushOn ? "default" : "outline"} className="rounded-full text-[10px] h-5">
-                {pushOn ? "ativo" : "inativo"}
-              </Badge>
+              <h3 className="font-semibold tracking-tight">Notificações Push (Web App)</h3>
+              <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${pushOn ? "text-emerald-500 bg-emerald-500/10" : "text-muted-foreground bg-muted/60"}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${pushOn ? "bg-emerald-500 shadow-[0_0_8px_currentColor]" : "bg-muted-foreground/50"}`} />
+                {pushOn ? "ONLINE" : "OFFLINE"}
+              </span>
             </div>
-            <p className="text-sm text-muted-foreground">Receba alertas de vendas no navegador ou no telemóvel (PWA)</p>
+            <p className="text-sm text-muted-foreground">Alertas de vendas no navegador ou no telemóvel (PWA)</p>
           </div>
         </div>
         <PushReactivateBanner />
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={activatePush} disabled={pushLoading}><Bell className="h-4 w-4 mr-1" /> {pushOn ? "Actualizar inscrição" : "Ativar notificações"}</Button>
-          <Button variant="outline" onClick={testNotification}><Send className="h-4 w-4 mr-1" /> Push real de teste</Button>
+          <Button variant="outline" className="rounded-xl" onClick={activatePush} disabled={pushLoading}><Bell className="h-4 w-4 mr-1" /> {pushOn ? "Actualizar inscrição" : "Ativar notificações"}</Button>
+          <Button variant="outline" className="rounded-xl" onClick={testNotification}><Send className="h-4 w-4 mr-1" /> Push real de teste</Button>
         </div>
       </Card>
 
       {/* 2) Personalizar push */}
-      <Card className="rounded-2xl p-5 space-y-4">
+      <Card className="neo-card neo-corner rounded-2xl p-5 space-y-4">
         <div className="flex items-start gap-3">
-          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-[0_0_20px_-4px_var(--primary-glow)]">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold">Personalizar Notificação Push</h3>
+            <h3 className="font-semibold tracking-tight">Personalizar Notificação Push</h3>
             <p className="text-sm text-muted-foreground">Edite o título e o conteúdo das notificações de venda aprovada</p>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label>Título da notificação</Label>
+          <Label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Título da notificação</Label>
           <Input value={b.push_custom.title || ""}
             onChange={(e) => setB({ ...b, push_custom: { ...b.push_custom, title: e.target.value } })}
           />
         </div>
         <div className="space-y-2">
-          <Label>Moeda do valor</Label>
+          <Label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Moeda do valor</Label>
           <Select value={b.push_custom.currency || "MZN"} onValueChange={(v: any) => setB({ ...b, push_custom: { ...b.push_custom, currency: v } })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -211,6 +212,7 @@ function IntegrationsPage() {
           <p className="text-xs text-muted-foreground">A variável {"{valor}"} será mostrada na moeda selecionada.</p>
         </div>
       </Card>
+
 
       {/* Grupo: Rastreamento */}
       <SectionTitle icon={<TrendingUp className="h-4 w-4" />} title="Rastreamento & Conversões" desc="Envie os dados de vendas às suas plataformas de atribuição" />
