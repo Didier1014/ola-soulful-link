@@ -400,25 +400,43 @@ SUPORTE ou Reclamações: {suporte1} , {suporte2}
   );
 }
 
+function SectionTitle({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="flex items-center gap-2 px-1 pt-2">
+      <div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center text-muted-foreground">{icon}</div>
+      <div>
+        <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
+        <p className="text-xs text-muted-foreground">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
 function IntegrationCard({
   icon, iconBg, title, desc, enabled, onToggle, children,
 }: {
   icon: React.ReactNode; iconBg: string; title: string; desc: string;
   enabled: boolean; onToggle: (v: boolean) => void; children: React.ReactNode;
 }) {
+  const bgClass = iconBg.startsWith("bg-") ? iconBg : `bg-gradient-to-br ${iconBg}`;
   return (
-    <Card className="rounded-2xl p-5 space-y-3">
+    <Card className={`rounded-2xl p-5 space-y-3 transition-all ${enabled ? "border-primary/40 shadow-sm shadow-primary/5" : "hover:border-border"}`}>
       <div className="flex items-start gap-3">
-        <div className={`h-11 w-11 rounded-xl bg-gradient-to-br ${iconBg} flex items-center justify-center shrink-0`}>
+        <div className={`h-11 w-11 rounded-xl ${bgClass} flex items-center justify-center shrink-0 shadow-md`}>
           {icon}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold">{title}</h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-semibold">{title}</h3>
+            <Badge variant={enabled ? "default" : "outline"} className="rounded-full text-[10px] h-5">
+              {enabled ? "ativo" : "inativo"}
+            </Badge>
+          </div>
           <p className="text-sm text-muted-foreground">{desc}</p>
         </div>
         <Switch checked={enabled} onCheckedChange={onToggle} />
       </div>
-      {enabled && <div className="space-y-2 pt-2 border-t border-border/40">{children}</div>}
+      {enabled && <div className="space-y-2 pt-3 border-t border-border/40">{children}</div>}
     </Card>
   );
 }
