@@ -1,26 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export default function ParallaxGlow() {
-  const [pos, setPos] = useState({ x: 50, y: 30 });
+  const glow1 = useRef<HTMLDivElement>(null);
+  const glow2 = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      setPos({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (glow1.current) glow1.current.style.transform = `translate3d(0, ${y * 0.25}px, 0)`;
+        if (glow2.current) glow2.current.style.transform = `translate3d(0, ${y * -0.15}px, 0)`;
       });
     };
-    window.addEventListener("mousemove", onMove, { passive: true });
-    return () => window.removeEventListener("mousemove", onMove);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   return (
-    <div
-      aria-hidden
-      className="pointer-events-none fixed inset-0 z-0 transition-[background] duration-500 ease-out"
-      style={{
-        background: `radial-gradient(600px circle at ${pos.x}% ${pos.y}%, color-mix(in oklab, var(--primary-glow) 10%, transparent), transparent 60%)`,
-      }}
-    />
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <div ref={glow1} className="absolute -top-40 left-1/4 h-[520px] w-[520px] rounded-full bg-primary/25 blur-[160px]" />
+      <div ref={glow2} className="absolute top-1/2 -right-32 h-[420px] w-[420px] rounded-full bg-primary-glow/20 blur-[140px]" />
+      <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:48px_48px]" />
+    </div>
   );
 }
