@@ -203,6 +203,9 @@ function IntegrationsPage() {
         </div>
       </Card>
 
+      {/* Grupo: Rastreamento */}
+      <SectionTitle icon={<TrendingUp className="h-4 w-4" />} title="Rastreamento & Conversões" desc="Envie os dados de vendas às suas plataformas de atribuição" />
+
       {/* 3) PUSHcut */}
       <IntegrationCard
         icon={<Webhook className="h-5 w-5 text-white" />}
