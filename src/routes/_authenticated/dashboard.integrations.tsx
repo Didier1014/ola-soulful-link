@@ -118,78 +118,88 @@ function IntegrationsPage() {
   const activeCount = [b.pushcut.enabled, b.utmify.enabled, lowtrack.enabled, b.mozesms.enabled].filter(Boolean).length;
   const pushOn = permission === "granted";
 
+  const total = 5;
+  const totalActive = activeCount + (pushOn ? 1 : 0);
+
   return (
-    <div className="space-y-5 pb-24">
-      {/* Hero header */}
-      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/10 via-background to-background p-5 sm:p-6">
-        <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+    <div className="space-y-5 pb-24 max-w-5xl mx-auto">
+      {/* HERO HUD */}
+      <div className="relative overflow-hidden rounded-3xl neo-card neo-scan neo-corner p-6 md:p-8">
+        <div aria-hidden className="absolute inset-0 neo-grid opacity-[0.3] pointer-events-none" />
+        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-primary/25 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-primary-glow/20 blur-3xl pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-glow to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
         <div className="relative flex items-start gap-4">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg shadow-primary/30 shrink-0">
-            <Plug className="h-6 w-6 text-white" />
+          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-[0_8px_30px_-8px_var(--primary-glow)] shrink-0">
+            <Plug className="h-7 w-7 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight">Integrações</h1>
-            <p className="text-sm text-muted-foreground">Conecte ferramentas de notificação, rastreamento e SMS às suas vendas</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Badge variant="secondary" className="rounded-full">
-                <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-500" />
-                {activeCount} {activeCount === 1 ? "ativa" : "ativas"}
-              </Badge>
-              <Badge variant="outline" className="rounded-full">
-                {pushOn ? <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-500" /> : <Circle className="h-3 w-3 mr-1" />}
-                Push {pushOn ? "on" : "off"}
-              </Badge>
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-mono">
+              <span className="neo-live-dot" /> LINK LAYER · v2.0
+            </div>
+            <h1 className="mt-1.5 text-2xl md:text-3xl font-semibold tracking-tight text-neo-glow">Integrações</h1>
+            <p className="text-sm text-muted-foreground">Conecte notificações, rastreamento e SMS às suas vendas</p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="neo-chip"><CheckCircle2 className="h-3 w-3 text-emerald-500" /> {totalActive}/{total} ativas</span>
+              <span className="neo-chip">
+                {pushOn ? <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_currentColor]" /> : <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />}
+                PUSH {pushOn ? "ONLINE" : "OFFLINE"}
+              </span>
+              <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">// sync: agora</span>
             </div>
           </div>
         </div>
       </div>
 
+
       {/* Grupo: Notificações */}
       <SectionTitle icon={<Bell className="h-4 w-4" />} title="Notificações" desc="Alertas em tempo real para si" />
 
       {/* 1) Push Web App */}
-      <Card className="rounded-2xl p-5 space-y-3 transition-colors hover:border-primary/40">
+      <Card className="neo-card neo-corner rounded-2xl p-5 space-y-3">
         <div className="flex items-start gap-3">
-          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-md shadow-primary/20">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-[0_0_20px_-4px_var(--primary-glow)]">
             <Bell className="h-5 w-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold">Notificações Push (Web App)</h3>
-              <Badge variant={pushOn ? "default" : "outline"} className="rounded-full text-[10px] h-5">
-                {pushOn ? "ativo" : "inativo"}
-              </Badge>
+              <h3 className="font-semibold tracking-tight">Notificações Push (Web App)</h3>
+              <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${pushOn ? "text-emerald-500 bg-emerald-500/10" : "text-muted-foreground bg-muted/60"}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${pushOn ? "bg-emerald-500 shadow-[0_0_8px_currentColor]" : "bg-muted-foreground/50"}`} />
+                {pushOn ? "ONLINE" : "OFFLINE"}
+              </span>
             </div>
-            <p className="text-sm text-muted-foreground">Receba alertas de vendas no navegador ou no telemóvel (PWA)</p>
+            <p className="text-sm text-muted-foreground">Alertas de vendas no navegador ou no telemóvel (PWA)</p>
           </div>
         </div>
         <PushReactivateBanner />
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={activatePush} disabled={pushLoading}><Bell className="h-4 w-4 mr-1" /> {pushOn ? "Actualizar inscrição" : "Ativar notificações"}</Button>
-          <Button variant="outline" onClick={testNotification}><Send className="h-4 w-4 mr-1" /> Push real de teste</Button>
+          <Button variant="outline" className="rounded-xl" onClick={activatePush} disabled={pushLoading}><Bell className="h-4 w-4 mr-1" /> {pushOn ? "Actualizar inscrição" : "Ativar notificações"}</Button>
+          <Button variant="outline" className="rounded-xl" onClick={testNotification}><Send className="h-4 w-4 mr-1" /> Push real de teste</Button>
         </div>
       </Card>
 
       {/* 2) Personalizar push */}
-      <Card className="rounded-2xl p-5 space-y-4">
+      <Card className="neo-card neo-corner rounded-2xl p-5 space-y-4">
         <div className="flex items-start gap-3">
-          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-[0_0_20px_-4px_var(--primary-glow)]">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold">Personalizar Notificação Push</h3>
+            <h3 className="font-semibold tracking-tight">Personalizar Notificação Push</h3>
             <p className="text-sm text-muted-foreground">Edite o título e o conteúdo das notificações de venda aprovada</p>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label>Título da notificação</Label>
+          <Label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Título da notificação</Label>
           <Input value={b.push_custom.title || ""}
             onChange={(e) => setB({ ...b, push_custom: { ...b.push_custom, title: e.target.value } })}
           />
         </div>
         <div className="space-y-2">
-          <Label>Moeda do valor</Label>
+          <Label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Moeda do valor</Label>
           <Select value={b.push_custom.currency || "MZN"} onValueChange={(v: any) => setB({ ...b, push_custom: { ...b.push_custom, currency: v } })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -202,6 +212,7 @@ function IntegrationsPage() {
           <p className="text-xs text-muted-foreground">A variável {"{valor}"} será mostrada na moeda selecionada.</p>
         </div>
       </Card>
+
 
       {/* Grupo: Rastreamento */}
       <SectionTitle icon={<TrendingUp className="h-4 w-4" />} title="Rastreamento & Conversões" desc="Envie os dados de vendas às suas plataformas de atribuição" />
@@ -387,9 +398,9 @@ SUPORTE ou Reclamações: {suporte1} , {suporte2}
       </IntegrationCard>
 
       {/* Sticky save bar */}
-      <div className="sticky bottom-0 left-0 right-0 pt-2 pb-1 bg-gradient-to-t from-background via-background to-transparent">
+      <div className="sticky bottom-0 left-0 right-0 pt-3 pb-1 bg-gradient-to-t from-background via-background/95 to-transparent">
         <Button
-          className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-white"
+          className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-white font-semibold shadow-[0_8px_30px_-8px_var(--primary-glow)] hover:brightness-110"
           disabled={saveM.isPending}
           onClick={() => saveM.mutate()}
         >
@@ -402,12 +413,16 @@ SUPORTE ou Reclamações: {suporte1} , {suporte2}
 
 function SectionTitle({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <div className="flex items-center gap-2 px-1 pt-2">
-      <div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center text-muted-foreground">{icon}</div>
-      <div>
-        <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
+    <div className="flex items-center gap-3 px-1 pt-3">
+      <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline gap-2">
+          <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-mono">//</span>
+          <h2 className="text-sm font-semibold tracking-tight uppercase tracking-[0.14em]">{title}</h2>
+        </div>
         <p className="text-xs text-muted-foreground">{desc}</p>
       </div>
+      <div className="hidden sm:block h-px flex-1 bg-gradient-to-r from-border/60 to-transparent" />
     </div>
   );
 }
@@ -420,17 +435,18 @@ function IntegrationCard({
 }) {
   const bgClass = iconBg.startsWith("bg-") ? iconBg : `bg-gradient-to-br ${iconBg}`;
   return (
-    <Card className={`rounded-2xl p-5 space-y-3 transition-all ${enabled ? "border-primary/40 shadow-sm shadow-primary/5" : "hover:border-border"}`}>
+    <Card className={`neo-card neo-corner rounded-2xl p-5 space-y-3 transition-all ${enabled ? "ring-1 ring-primary/30 shadow-[0_0_30px_-12px_var(--primary-glow)]" : ""}`}>
       <div className="flex items-start gap-3">
         <div className={`h-11 w-11 rounded-xl ${bgClass} flex items-center justify-center shrink-0 shadow-md`}>
           {icon}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-semibold">{title}</h3>
-            <Badge variant={enabled ? "default" : "outline"} className="rounded-full text-[10px] h-5">
-              {enabled ? "ativo" : "inativo"}
-            </Badge>
+            <h3 className="font-semibold tracking-tight">{title}</h3>
+            <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${enabled ? "text-emerald-500 bg-emerald-500/10" : "text-muted-foreground bg-muted/60"}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${enabled ? "bg-emerald-500 shadow-[0_0_8px_currentColor]" : "bg-muted-foreground/50"}`} />
+              {enabled ? "ONLINE" : "OFFLINE"}
+            </span>
           </div>
           <p className="text-sm text-muted-foreground">{desc}</p>
         </div>
@@ -440,3 +456,5 @@ function IntegrationCard({
     </Card>
   );
 }
+
+
