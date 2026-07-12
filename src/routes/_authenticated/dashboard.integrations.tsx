@@ -302,6 +302,9 @@ function IntegrationsPage() {
         </Button>
       </IntegrationCard>
 
+      {/* Grupo: SMS */}
+      <SectionTitle icon={<MessageSquare className="h-4 w-4" />} title="SMS transacional" desc="Confirmação por SMS ao cliente após aprovação" />
+
       {/* 5) MozeSMS */}
       <IntegrationCard
         icon={<MessageSquare className="h-5 w-5 text-white" />}
