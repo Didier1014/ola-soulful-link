@@ -38,7 +38,7 @@ function Landing() {
       <ScrollProgress />
       <ParallaxGlow />
 
-      <div className="relative z-10 bg-background min-h-screen">
+      <div className="relative z-10 min-h-screen">
         <Nav />
         <HudTicker />
         <Hero />
