@@ -36,7 +36,6 @@ function Landing() {
   return (
     <div className="min-h-screen text-foreground overflow-x-hidden noise">
       <ScrollProgress />
-      <ParallaxGlow />
 
       <div className="relative z-10 min-h-screen">
         <Nav />
@@ -153,7 +152,9 @@ function Hero() {
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       }`}
     >
-      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.06]">
+      <ParallaxGlow />
+
+      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.06] z-10">
         <div className="absolute top-0 left-0 h-40 w-40 [background-image:repeating-linear-gradient(45deg,white_0,white_1px,transparent_1px,transparent_10px)]" />
         <div className="absolute top-0 right-0 h-40 w-40 [background-image:repeating-linear-gradient(-45deg,white_0,white_1px,transparent_1px,transparent_10px)]" />
       </div>
