@@ -59,8 +59,8 @@ function Page() {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto space-y-4">
-        <div className="neo-card neo-corner rounded-3xl h-40 animate-pulse" />
-        <div className="neo-card neo-corner rounded-3xl h-96 animate-pulse" />
+        <div className="neo-card neo-corner rounded-3xl h-40" />
+        <div className="neo-card neo-corner rounded-3xl h-96" />
       </div>
     );
   }
@@ -71,7 +71,7 @@ function Page() {
   return (
     <div className="space-y-5 pb-24 max-w-3xl mx-auto">
       {/* HERO */}
-      <div className="relative overflow-hidden rounded-3xl neo-card neo-scan neo-corner p-6 md:p-8">
+      <div className="relative overflow-hidden rounded-3xl neo-card neo-corner p-6 md:p-8">
         <div aria-hidden className="absolute inset-0 neo-grid opacity-[0.3] pointer-events-none" />
         <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-primary/25 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-primary-glow/20 blur-3xl pointer-events-none" />
@@ -83,7 +83,7 @@ function Page() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-mono">
-              <span className="neo-live-dot" /> USER ACCOUNT · {form.account_type === "company" ? "COMPANY" : "PERSON"}
+              <span className="h-1.5 w-1.5 rounded-full bg-primary-glow" /> USER ACCOUNT · {form.account_type === "company" ? "COMPANY" : "PERSON"}
             </div>
             <h1 className="mt-1.5 text-2xl md:text-3xl font-semibold tracking-tight text-neo-glow truncate">{displayName}</h1>
             <p className="text-sm text-muted-foreground truncate">{email}</p>
