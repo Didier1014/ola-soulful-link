@@ -425,3 +425,31 @@ export const getUserDetails = createServerFn({ method: "POST" })
       },
     };
   });
+
+import { z } from "zod";
+
+export const broadcastMaintenance = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    title: z.string().min(1).max(120),
+    message: z.string().min(1).max(500),
+    url: z.string().url().optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { sendPushToUser } = await import("@/lib/push.functions");
+    const { data: subs } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("user_id")
+      .eq("status", "active");
+    const uniq = Array.from(new Set((subs ?? []).map((s: any) => s.user_id)));
+    let sent = 0, failed = 0;
+    await Promise.all(uniq.map(async (uid: string) => {
+      try {
+        const r = await sendPushToUser(supabaseAdmin, uid, data.title, data.message, data.url);
+        if (r?.ok) sent++; else failed++;
+      } catch { failed++; }
+    }));
+    return { ok: true, users: uniq.length, sent, failed };
+  });
