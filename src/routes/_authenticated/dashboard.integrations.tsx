@@ -118,31 +118,40 @@ function IntegrationsPage() {
   const activeCount = [b.pushcut.enabled, b.utmify.enabled, lowtrack.enabled, b.mozesms.enabled].filter(Boolean).length;
   const pushOn = permission === "granted";
 
+  const total = 5;
+  const totalActive = activeCount + (pushOn ? 1 : 0);
+
   return (
-    <div className="space-y-5 pb-24">
-      {/* Hero header */}
-      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/10 via-background to-background p-5 sm:p-6">
-        <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+    <div className="space-y-5 pb-24 max-w-5xl mx-auto">
+      {/* HERO HUD */}
+      <div className="relative overflow-hidden rounded-3xl neo-card neo-scan neo-corner p-6 md:p-8">
+        <div aria-hidden className="absolute inset-0 neo-grid opacity-[0.3] pointer-events-none" />
+        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-primary/25 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-primary-glow/20 blur-3xl pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-glow to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
         <div className="relative flex items-start gap-4">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg shadow-primary/30 shrink-0">
-            <Plug className="h-6 w-6 text-white" />
+          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-[0_8px_30px_-8px_var(--primary-glow)] shrink-0">
+            <Plug className="h-7 w-7 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight">Integrações</h1>
-            <p className="text-sm text-muted-foreground">Conecte ferramentas de notificação, rastreamento e SMS às suas vendas</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Badge variant="secondary" className="rounded-full">
-                <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-500" />
-                {activeCount} {activeCount === 1 ? "ativa" : "ativas"}
-              </Badge>
-              <Badge variant="outline" className="rounded-full">
-                {pushOn ? <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-500" /> : <Circle className="h-3 w-3 mr-1" />}
-                Push {pushOn ? "on" : "off"}
-              </Badge>
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-mono">
+              <span className="neo-live-dot" /> LINK LAYER · v2.0
+            </div>
+            <h1 className="mt-1.5 text-2xl md:text-3xl font-semibold tracking-tight text-neo-glow">Integrações</h1>
+            <p className="text-sm text-muted-foreground">Conecte notificações, rastreamento e SMS às suas vendas</p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="neo-chip"><CheckCircle2 className="h-3 w-3 text-emerald-500" /> {totalActive}/{total} ativas</span>
+              <span className="neo-chip">
+                {pushOn ? <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_currentColor]" /> : <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />}
+                PUSH {pushOn ? "ONLINE" : "OFFLINE"}
+              </span>
+              <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">// sync: agora</span>
             </div>
           </div>
         </div>
       </div>
+
 
       {/* Grupo: Notificações */}
       <SectionTitle icon={<Bell className="h-4 w-4" />} title="Notificações" desc="Alertas em tempo real para si" />
