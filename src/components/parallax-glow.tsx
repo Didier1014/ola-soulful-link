@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
 export default function ParallaxGlow() {
-  const groupRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let raf = 0;
@@ -9,9 +9,7 @@ export default function ParallaxGlow() {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const y = window.scrollY;
-        if (groupRef.current) {
-          groupRef.current.style.transform = `translate3d(-50%, ${y * 0.35}px, 0)`;
-        }
+        if (ref.current) ref.current.style.transform = `translate3d(-50%, ${y * 0.4}px, 0)`;
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -22,30 +20,39 @@ export default function ParallaxGlow() {
   }, []);
 
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
       <div
-        ref={groupRef}
-        className="absolute left-1/2 -top-[200px]"
+        ref={ref}
+        className="pointer-events-none absolute left-1/2 -top-[160px]"
         style={{ transform: "translate3d(-50%, 0, 0)" }}
       >
         <div
-          className="hurricane-spin h-[900px] w-[900px] rounded-full"
+          className="hurricane-spin mix-blend-screen h-[780px] w-[780px] rounded-full"
           style={{
             background:
-              "conic-gradient(from 0deg, transparent 0deg, color-mix(in oklab, var(--primary-glow) 55%, transparent) 60deg, transparent 140deg, color-mix(in oklab, var(--primary) 60%, transparent) 220deg, transparent 300deg, color-mix(in oklab, var(--primary-glow) 40%, transparent) 360deg)",
-            filter: "blur(90px)",
+              "conic-gradient(from 0deg, transparent 0deg, oklch(0.55 0.24 25) 55deg, transparent 130deg, oklch(0.5 0.22 20) 210deg, transparent 290deg, oklch(0.6 0.25 25) 350deg, transparent 360deg)",
+            filter: "blur(35px)",
+            opacity: 0.85,
           }}
         />
         <div
-          className="hurricane-spin-reverse absolute left-1/2 top-1/2 h-[480px] w-[480px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          className="hurricane-spin-reverse mix-blend-screen absolute inset-[130px] rounded-full"
           style={{
             background:
-              "conic-gradient(from 90deg, transparent 0deg, color-mix(in oklab, var(--primary) 70%, transparent) 50deg, transparent 120deg, color-mix(in oklab, var(--primary-glow) 60%, transparent) 200deg, transparent 280deg)",
-            filter: "blur(60px)",
+              "conic-gradient(from 90deg, transparent 0deg, oklch(0.62 0.25 22) 60deg, transparent 140deg, oklch(0.55 0.23 18) 240deg, transparent 320deg)",
+            filter: "blur(20px)",
+            opacity: 0.9,
+          }}
+        />
+        <div
+          className="hurricane-pulse mix-blend-screen absolute inset-[320px] rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle, oklch(0.75 0.22 25) 0%, oklch(0.55 0.24 22) 45%, transparent 75%)",
+            filter: "blur(4px)",
           }}
         />
       </div>
-      <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:48px_48px]" />
     </div>
   );
 }

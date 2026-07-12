@@ -368,3 +368,11 @@ html {
 .hurricane-spin-reverse {
   animation: hurricane-spin 13s linear infinite reverse;
 }
+
+@keyframes hurricane-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.08); }
+}
+.hurricane-pulse {
+  animation: hurricane-pulse 3.2s ease-in-out infinite;
+}
