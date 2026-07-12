@@ -457,5 +457,4 @@ function IntegrationCard({
   );
 }
 
-  );
-}
+
