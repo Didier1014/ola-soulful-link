@@ -1,29 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 
-export function useReveal<T extends HTMLElement = HTMLElement>(threshold = 0.15) {
-  const ref = useRef<T | null>(null);
+export function useReveal<T extends HTMLElement>(threshold = 0.15) {
+  const ref = useRef<T>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (typeof IntersectionObserver === "undefined") {
-      setVisible(true);
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            setVisible(true);
-            io.disconnect();
-          }
-        });
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          obs.unobserve(el);
+        }
       },
       { threshold }
     );
-    io.observe(el);
-    return () => io.disconnect();
+    obs.observe(el);
+    return () => obs.disconnect();
   }, [threshold]);
 
   return { ref, visible };
