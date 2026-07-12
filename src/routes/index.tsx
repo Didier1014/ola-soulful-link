@@ -159,7 +159,7 @@ function Hero() {
         <div className="absolute top-0 right-0 h-40 w-40 [background-image:repeating-linear-gradient(-45deg,white_0,white_1px,transparent_1px,transparent_10px)]" />
       </div>
 
-      <div className="relative grid lg:grid-cols-2 gap-12 items-center">
+      <div className="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-xs text-muted-foreground mb-8 shadow-[inset_0_0_20px_-10px_var(--primary-glow)]">
             <span className="relative flex h-2 w-2">
