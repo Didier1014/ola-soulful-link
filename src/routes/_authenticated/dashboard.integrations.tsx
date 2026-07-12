@@ -398,9 +398,9 @@ SUPORTE ou Reclamações: {suporte1} , {suporte2}
       </IntegrationCard>
 
       {/* Sticky save bar */}
-      <div className="sticky bottom-0 left-0 right-0 pt-2 pb-1 bg-gradient-to-t from-background via-background to-transparent">
+      <div className="sticky bottom-0 left-0 right-0 pt-3 pb-1 bg-gradient-to-t from-background via-background/95 to-transparent">
         <Button
-          className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-white"
+          className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-white font-semibold shadow-[0_8px_30px_-8px_var(--primary-glow)] hover:brightness-110"
           disabled={saveM.isPending}
           onClick={() => saveM.mutate()}
         >
@@ -413,12 +413,16 @@ SUPORTE ou Reclamações: {suporte1} , {suporte2}
 
 function SectionTitle({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <div className="flex items-center gap-2 px-1 pt-2">
-      <div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center text-muted-foreground">{icon}</div>
-      <div>
-        <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
+    <div className="flex items-center gap-3 px-1 pt-3">
+      <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline gap-2">
+          <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-mono">//</span>
+          <h2 className="text-sm font-semibold tracking-tight uppercase tracking-[0.14em]">{title}</h2>
+        </div>
         <p className="text-xs text-muted-foreground">{desc}</p>
       </div>
+      <div className="hidden sm:block h-px flex-1 bg-gradient-to-r from-border/60 to-transparent" />
     </div>
   );
 }
@@ -431,17 +435,18 @@ function IntegrationCard({
 }) {
   const bgClass = iconBg.startsWith("bg-") ? iconBg : `bg-gradient-to-br ${iconBg}`;
   return (
-    <Card className={`rounded-2xl p-5 space-y-3 transition-all ${enabled ? "border-primary/40 shadow-sm shadow-primary/5" : "hover:border-border"}`}>
+    <Card className={`neo-card neo-corner rounded-2xl p-5 space-y-3 transition-all ${enabled ? "ring-1 ring-primary/30 shadow-[0_0_30px_-12px_var(--primary-glow)]" : ""}`}>
       <div className="flex items-start gap-3">
         <div className={`h-11 w-11 rounded-xl ${bgClass} flex items-center justify-center shrink-0 shadow-md`}>
           {icon}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-semibold">{title}</h3>
-            <Badge variant={enabled ? "default" : "outline"} className="rounded-full text-[10px] h-5">
-              {enabled ? "ativo" : "inativo"}
-            </Badge>
+            <h3 className="font-semibold tracking-tight">{title}</h3>
+            <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${enabled ? "text-emerald-500 bg-emerald-500/10" : "text-muted-foreground bg-muted/60"}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${enabled ? "bg-emerald-500 shadow-[0_0_8px_currentColor]" : "bg-muted-foreground/50"}`} />
+              {enabled ? "ONLINE" : "OFFLINE"}
+            </span>
           </div>
           <p className="text-sm text-muted-foreground">{desc}</p>
         </div>
@@ -449,5 +454,8 @@ function IntegrationCard({
       </div>
       {enabled && <div className="space-y-2 pt-3 border-t border-border/40">{children}</div>}
     </Card>
+  );
+}
+
   );
 }
