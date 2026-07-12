@@ -14,7 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bell, Sparkles, Webhook, TrendingUp, MessageSquare, Send, Save, Radar } from "lucide-react";
+import { Bell, Sparkles, Webhook, TrendingUp, MessageSquare, Send, Save, Radar, Plug, CheckCircle2, Circle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { usePushNotifications } from "@/components/push-setup";
@@ -114,27 +115,57 @@ function IntegrationsPage() {
 
   }
 
+  const activeCount = [b.pushcut.enabled, b.utmify.enabled, lowtrack.enabled, b.mozesms.enabled].filter(Boolean).length;
+  const pushOn = permission === "granted";
+
   return (
-    <div className="space-y-4 pb-24">
-      <div className="px-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Integrações</h1>
-        <p className="text-sm text-muted-foreground">Configure webhooks para notificações e rastreamento</p>
+    <div className="space-y-5 pb-24">
+      {/* Hero header */}
+      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/10 via-background to-background p-5 sm:p-6">
+        <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+        <div className="relative flex items-start gap-4">
+          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-lg shadow-primary/30 shrink-0">
+            <Plug className="h-6 w-6 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight">Integrações</h1>
+            <p className="text-sm text-muted-foreground">Conecte ferramentas de notificação, rastreamento e SMS às suas vendas</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Badge variant="secondary" className="rounded-full">
+                <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-500" />
+                {activeCount} {activeCount === 1 ? "ativa" : "ativas"}
+              </Badge>
+              <Badge variant="outline" className="rounded-full">
+                {pushOn ? <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-500" /> : <Circle className="h-3 w-3 mr-1" />}
+                Push {pushOn ? "on" : "off"}
+              </Badge>
+            </div>
+          </div>
+        </div>
       </div>
 
+      {/* Grupo: Notificações */}
+      <SectionTitle icon={<Bell className="h-4 w-4" />} title="Notificações" desc="Alertas em tempo real para si" />
+
       {/* 1) Push Web App */}
-      <Card className="rounded-2xl p-5 space-y-3">
+      <Card className="rounded-2xl p-5 space-y-3 transition-colors hover:border-primary/40">
         <div className="flex items-start gap-3">
-          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-md shadow-primary/20">
             <Bell className="h-5 w-5 text-white" />
           </div>
-          <div className="flex-1">
-            <h3 className="font-semibold">Notificações Push (Web App)</h3>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-semibold">Notificações Push (Web App)</h3>
+              <Badge variant={pushOn ? "default" : "outline"} className="rounded-full text-[10px] h-5">
+                {pushOn ? "ativo" : "inativo"}
+              </Badge>
+            </div>
             <p className="text-sm text-muted-foreground">Receba alertas de vendas no navegador ou no telemóvel (PWA)</p>
           </div>
         </div>
         <PushReactivateBanner />
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={activatePush} disabled={pushLoading}><Bell className="h-4 w-4 mr-1" /> {permission === "granted" ? "Actualizar inscrição" : "Ativar notificações"}</Button>
+          <Button variant="outline" onClick={activatePush} disabled={pushLoading}><Bell className="h-4 w-4 mr-1" /> {pushOn ? "Actualizar inscrição" : "Ativar notificações"}</Button>
           <Button variant="outline" onClick={testNotification}><Send className="h-4 w-4 mr-1" /> Push real de teste</Button>
         </div>
       </Card>
@@ -171,6 +202,9 @@ function IntegrationsPage() {
           <p className="text-xs text-muted-foreground">A variável {"{valor}"} será mostrada na moeda selecionada.</p>
         </div>
       </Card>
+
+      {/* Grupo: Rastreamento */}
+      <SectionTitle icon={<TrendingUp className="h-4 w-4" />} title="Rastreamento & Conversões" desc="Envie os dados de vendas às suas plataformas de atribuição" />
 
       {/* 3) PUSHcut */}
       <IntegrationCard
@@ -268,6 +302,9 @@ function IntegrationsPage() {
         </Button>
       </IntegrationCard>
 
+      {/* Grupo: SMS */}
+      <SectionTitle icon={<MessageSquare className="h-4 w-4" />} title="SMS transacional" desc="Confirmação por SMS ao cliente após aprovação" />
+
       {/* 5) MozeSMS */}
       <IntegrationCard
         icon={<MessageSquare className="h-5 w-5 text-white" />}
@@ -363,25 +400,43 @@ SUPORTE ou Reclamações: {suporte1} , {suporte2}
   );
 }
 
+function SectionTitle({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="flex items-center gap-2 px-1 pt-2">
+      <div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center text-muted-foreground">{icon}</div>
+      <div>
+        <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
+        <p className="text-xs text-muted-foreground">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
 function IntegrationCard({
   icon, iconBg, title, desc, enabled, onToggle, children,
 }: {
   icon: React.ReactNode; iconBg: string; title: string; desc: string;
   enabled: boolean; onToggle: (v: boolean) => void; children: React.ReactNode;
 }) {
+  const bgClass = iconBg.startsWith("bg-") ? iconBg : `bg-gradient-to-br ${iconBg}`;
   return (
-    <Card className="rounded-2xl p-5 space-y-3">
+    <Card className={`rounded-2xl p-5 space-y-3 transition-all ${enabled ? "border-primary/40 shadow-sm shadow-primary/5" : "hover:border-border"}`}>
       <div className="flex items-start gap-3">
-        <div className={`h-11 w-11 rounded-xl bg-gradient-to-br ${iconBg} flex items-center justify-center shrink-0`}>
+        <div className={`h-11 w-11 rounded-xl ${bgClass} flex items-center justify-center shrink-0 shadow-md`}>
           {icon}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold">{title}</h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-semibold">{title}</h3>
+            <Badge variant={enabled ? "default" : "outline"} className="rounded-full text-[10px] h-5">
+              {enabled ? "ativo" : "inativo"}
+            </Badge>
+          </div>
           <p className="text-sm text-muted-foreground">{desc}</p>
         </div>
         <Switch checked={enabled} onCheckedChange={onToggle} />
       </div>
-      {enabled && <div className="space-y-2 pt-2 border-t border-border/40">{children}</div>}
+      {enabled && <div className="space-y-2 pt-3 border-t border-border/40">{children}</div>}
     </Card>
   );
 }
