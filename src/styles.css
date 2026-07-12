@@ -357,3 +357,14 @@ html {
 .card-glow:hover::before {
   opacity: 1;
 }
+
+@keyframes hurricane-spin {
+  from { rotate: 0deg; }
+  to   { rotate: 360deg; }
+}
+.hurricane-spin {
+  animation: hurricane-spin 20s linear infinite;
+}
+.hurricane-spin-reverse {
+  animation: hurricane-spin 13s linear infinite reverse;
+}
