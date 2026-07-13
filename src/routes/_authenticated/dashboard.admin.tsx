@@ -106,6 +106,10 @@ function AdminPage() {
   const fnMonitor = useServerFn(listMerchantMonitoring);
   const monitor = useQuery({ queryKey: ["admin_monitor"], queryFn: () => fnMonitor(), enabled: tab === "monitor" });
   const [monitorSearch, setMonitorSearch] = useState("");
+  const fnMerchants = useServerFn(listMerchantsApiUsage);
+  const merchantsQ = useQuery({ queryKey: ["admin_merchants_api"], queryFn: () => fnMerchants(), enabled: tab === "merchants", refetchInterval: tab === "merchants" ? 15000 : false });
+  const [merchantsSearch, setMerchantsSearch] = useState("");
+  const [openMerchant, setOpenMerchant] = useState<string | null>(null);
 
   const invalidateAll = () => {
     qc.invalidateQueries({ queryKey: ["admin_wd"] });
