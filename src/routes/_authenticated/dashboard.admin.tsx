@@ -385,10 +385,18 @@ function AdminPage() {
                   : t.method === 'emola' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
                   : 'bg-secondary text-muted-foreground border-border';
                 return (
-                  <div key={t.id} className="grid grid-cols-12 px-4 py-3 items-center text-sm hover:bg-secondary/30 transition-colors">
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setTxDetail(t)}
+                    className="w-full text-left grid grid-cols-12 px-4 py-3 items-center text-sm hover:bg-secondary/30 transition-colors"
+                  >
                     <div className="col-span-4 min-w-0">
                       <p className="font-medium truncate">{t.customer_name || "—"}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">{t.customer_phone} · {new Date(t.created_at).toLocaleDateString("pt-MZ")}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {t.product?.name ? `${t.product.name} · ` : ""}
+                        {t.owner?.business_name || t.owner?.full_name || t.customer_phone}
+                      </p>
                     </div>
                     <div className="col-span-2">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${methodBg}`}>
@@ -404,7 +412,8 @@ function AdminPage() {
                       {t.status === 'failed' && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${RUBY}15`, color: RUBY }}>FALHOU</span>}
                       {t.status === 'pending' && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500">PENDENTE</span>}
                     </div>
-                  </div>
+                  </button>
+
                 );
               })}
               {!txs.data?.length && <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma transação.</p>}
