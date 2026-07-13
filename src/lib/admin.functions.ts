@@ -453,3 +453,102 @@ export const broadcastMaintenance = createServerFn({ method: "POST" })
     }));
     return { ok: true, users: uniq.length, sent, failed };
   });
+
+export const listMerchantMonitoring = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const [{ data: profs }, { data: products }, { data: links }, { data: clicks }, { data: txs }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, full_name, business_name, phone"),
+      supabaseAdmin.from("products").select("id, user_id, name, slug, price_mzn, active, approval_status, created_at"),
+      supabaseAdmin.from("payment_links").select("id, user_id, title, slug, amount_mzn, active, clicks, payments_count, created_at"),
+      supabaseAdmin.from("product_clicks").select("product_id, referrer, created_at").order("created_at", { ascending: false }).limit(5000),
+      supabaseAdmin.from("transactions").select("user_id, product_id, status, amount_mzn, metadata, created_at").order("created_at", { ascending: false }).limit(5000),
+    ]);
+
+    const host = (r?: string | null) => {
+      if (!r) return null;
+      try { return new URL(r).hostname.replace(/^www\./, ""); } catch { return null; }
+    };
+
+    const clickByProduct: Record<string, { count: number; refs: Record<string, number> }> = {};
+    for (const c of clicks ?? []) {
+      const k = c.product_id as string;
+      if (!clickByProduct[k]) clickByProduct[k] = { count: 0, refs: {} };
+      clickByProduct[k].count++;
+      const h = host(c.referrer);
+      if (h) clickByProduct[k].refs[h] = (clickByProduct[k].refs[h] || 0) + 1;
+    }
+
+    const salesByProduct: Record<string, { count: number; volume: number }> = {};
+    const refByUser: Record<string, Record<string, number>> = {};
+    for (const t of txs ?? []) {
+      if (t.product_id && t.status === "paid") {
+        const k = t.product_id as string;
+        if (!salesByProduct[k]) salesByProduct[k] = { count: 0, volume: 0 };
+        salesByProduct[k].count++;
+        salesByProduct[k].volume += Number(t.amount_mzn ?? 0);
+      }
+      const tr: any = (t.metadata as any)?.tracking;
+      const h = tr?.referrer_domain || host(tr?.referrer);
+      if (h && t.user_id) {
+        if (!refByUser[t.user_id]) refByUser[t.user_id] = {};
+        refByUser[t.user_id][h] = (refByUser[t.user_id][h] || 0) + 1;
+      }
+    }
+
+    const merchants: Record<string, any> = {};
+    for (const p of profs ?? []) {
+      merchants[p.id] = {
+        user_id: p.id,
+        name: p.business_name || p.full_name || "Sem nome",
+        phone: p.phone,
+        products: [] as any[],
+        links: [] as any[],
+        total_clicks: 0,
+        total_sales: 0,
+        total_volume_mzn: 0,
+        top_referrers: [] as { host: string; count: number }[],
+      };
+    }
+
+    for (const pr of products ?? []) {
+      const m = merchants[pr.user_id];
+      if (!m) continue;
+      const s = salesByProduct[pr.id] ?? { count: 0, volume: 0 };
+      const c = clickByProduct[pr.id] ?? { count: 0, refs: {} };
+      m.products.push({
+        id: pr.id, name: pr.name, slug: pr.slug, price_mzn: pr.price_mzn,
+        active: pr.active, approval_status: pr.approval_status,
+        clicks: c.count, sales_count: s.count, volume_mzn: s.volume,
+        top_referrers: Object.entries(c.refs).sort((a, b) => (b[1] as number) - (a[1] as number)).slice(0, 3).map(([h, n]) => ({ host: h, count: n })),
+      });
+      m.total_clicks += c.count;
+      m.total_sales += s.count;
+      m.total_volume_mzn += s.volume;
+      for (const [h, n] of Object.entries(c.refs)) {
+        if (!refByUser[pr.user_id]) refByUser[pr.user_id] = {};
+        refByUser[pr.user_id][h] = (refByUser[pr.user_id][h] || 0) + (n as number);
+      }
+    }
+
+    for (const l of links ?? []) {
+      const m = merchants[l.user_id];
+      if (!m) continue;
+      m.links.push(l);
+      m.total_clicks += l.clicks ?? 0;
+    }
+
+    for (const uid of Object.keys(merchants)) {
+      const refs = refByUser[uid] ?? {};
+      merchants[uid].top_referrers = Object.entries(refs)
+        .sort((a, b) => (b[1] as number) - (a[1] as number)).slice(0, 5)
+        .map(([h, n]) => ({ host: h, count: n }));
+    }
+
+    return Object.values(merchants)
+      .filter((m: any) => m.products.length > 0 || m.links.length > 0)
+      .sort((a: any, b: any) => b.total_clicks - a.total_clicks);
+  });
