@@ -39,9 +39,9 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           const amount = Number(body?.amount);
           const webhook_url = body?.webhook_url ? String(body.webhook_url) : null;
 
-          if (!nome_cliente) return Response.json({ error: "nome_cliente obrigatório" }, { status: 400 });
-          if (!phone || phone.length < 9) return Response.json({ error: "phone inválido" }, { status: 400 });
-          if (!Number.isFinite(amount) || amount < 50) return Response.json({ error: "amount mínimo 50" }, { status: 400 });
+          if (!nome_cliente) { await log(400); return Response.json({ error: "nome_cliente obrigatório" }, { status: 400 }); }
+          if (!phone || phone.length < 9) { await log(400); return Response.json({ error: "phone inválido" }, { status: 400 }); }
+          if (!Number.isFinite(amount) || amount < 50) { await log(400); return Response.json({ error: "amount mínimo 50" }, { status: 400 }); }
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -51,10 +51,13 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             .eq("api_key", apiKey)
             .eq("api_key_active", true)
             .maybeSingle();
-          if (!merchant) return Response.json({ error: "unauthorized" }, { status: 401 });
+          if (!merchant) { await log(401); return Response.json({ error: "unauthorized" }, { status: 401 }); }
+          merchantId = (merchant as any).id;
           if (!(merchant as any).is_merchant) {
+            await log(403);
             return Response.json({ error: "forbidden: conta não habilitada para merchant API" }, { status: 403 });
           }
+
 
           const mpesaPhone = (merchant as any).payout_mpesa_phone
             ? normalizePhone((merchant as any).payout_mpesa_phone) : "";
