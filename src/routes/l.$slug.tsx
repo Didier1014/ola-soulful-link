@@ -42,6 +42,13 @@ function LinkCheckout() {
       const fbp = cookie.match(/_fbp=([^;]+)/)?.[1]; if (fbp) t.fbp = fbp;
       const fbc = cookie.match(/_fbc=([^;]+)/)?.[1] || (sp.get("fbclid") ? `fb.1.${Date.now()}.${sp.get("fbclid")}` : null);
       if (fbc) t.fbc = fbc;
+      try {
+        const ref = document.referrer;
+        if (ref && !ref.includes(window.location.host)) {
+          t.referrer = ref.slice(0, 200);
+          try { t.referrer_domain = new URL(ref).hostname; } catch {}
+        }
+      } catch {}
       trackingRef.current = t;
     } catch {}
   }, []);
