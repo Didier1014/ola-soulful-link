@@ -109,8 +109,8 @@ function Nav() {
 
   return (
     <header
-      className={`sticky top-0 z-50 backdrop-blur-xl border-b border-white/5 transition-all duration-300 ${
-        scrolled ? "bg-background/90" : "bg-background/70"
+      className={`liquid-glass sticky top-0 z-50 backdrop-blur-xl transition-all duration-300 ${
+        scrolled ? "" : ""
       }`}
     >
       <div
@@ -161,7 +161,7 @@ function Hero() {
 
       <div className="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-xs text-muted-foreground mb-8 shadow-[inset_0_0_20px_-10px_var(--primary-glow)]">
+          <div className="liquid-glass inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs text-muted-foreground mb-8">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-glow shadow-[0_0_8px_var(--primary-glow)]" />
@@ -182,7 +182,7 @@ function Hero() {
 
           <div className="mt-10 flex items-center gap-5">
             <Link to="/auth">
-              <MagneticButton size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground red-glow rounded-full h-13 px-7 text-base">
+              <MagneticButton size="lg" className="liquid-glass-strong text-foreground rounded-full h-13 px-7 text-base transition-transform hover:scale-105 active:scale-95">
                 Começar agora <ArrowRight className="ml-2 h-4 w-4" />
               </MagneticButton>
             </Link>
@@ -199,7 +199,7 @@ function Hero() {
 
         <div className="relative h-[560px] hidden lg:block">
           <div className="absolute -inset-10 bg-gradient-to-tr from-primary/30 via-primary-glow/20 to-transparent rounded-[3rem] blur-3xl" />
-          <div className="absolute top-8 right-0 w-[440px] rounded-2xl border border-primary/25 bg-card/90 backdrop-blur-xl shadow-2xl shadow-primary/30 overflow-hidden neo-scan neo-corner animate-float">
+          <div className="liquid-glass-strong absolute top-8 right-0 w-[440px] rounded-2xl shadow-2xl shadow-primary/30 overflow-hidden neo-scan neo-corner animate-float">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 text-xs text-muted-foreground">
               <Search className="h-3.5 w-3.5" /> <span className="flex-1">Pesquisar</span>
               <span className="rounded border border-white/10 px-1.5 py-0.5 text-[10px]">⌘F</span>
@@ -230,7 +230,7 @@ function Hero() {
               </div>
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 w-[230px] rounded-[2rem] border border-white/10 bg-card/95 backdrop-blur-xl shadow-2xl shadow-primary/30 p-4 rotate-[-4deg] animate-float-delayed">
+          <div className="liquid-glass absolute bottom-0 left-0 w-[230px] rounded-[2rem] shadow-2xl shadow-primary/30 p-4 rotate-[-4deg] animate-float-delayed">
             <div className="flex justify-between text-[10px] text-muted-foreground mb-2"><span>9:41</span><span>●●●</span></div>
             <p className="text-[10px] text-muted-foreground">Total em vendas</p>
             <p className="text-xl font-bold">MZN 8.283</p>
@@ -257,7 +257,7 @@ function Hero() {
 
 function MiniFeature({ icon: Icon, title, desc }: { icon: React.ElementType; title: string; desc: string }) {
   return (
-    <div className="flex gap-3">
+    <div className="liquid-glass flex gap-3 rounded-2xl p-4">
       <div className="h-10 w-10 shrink-0 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
         <Icon className="h-5 w-5 text-primary-glow" />
       </div>
@@ -271,7 +271,7 @@ function MiniFeature({ icon: Icon, title, desc }: { icon: React.ElementType; tit
 
 function MockMini({ label, v, delta, up }: { label: string; v: string; delta: string; up?: boolean }) {
   return (
-    <div className="rounded-lg border border-white/5 bg-white/[0.02] p-2">
+    <div className="liquid-glass rounded-lg p-2">
       <p className="text-[9px] uppercase text-muted-foreground">{label}</p>
       <p className="text-sm font-bold mt-0.5">{v}</p>
       <p className={`text-[9px] ${up ? "text-emerald-400" : "text-rose-400"}`}>{delta}</p>
@@ -507,7 +507,7 @@ function DashboardPreview() {
 
 function MockKpi({ label, value, delta }: { label: string; value: string; delta: string }) {
   return (
-    <div className="relative rounded-2xl border border-primary/20 bg-background/60 p-5 overflow-hidden">
+    <div className="liquid-glass-strong relative rounded-2xl p-5 overflow-hidden">
       <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-glow to-transparent" />
       <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-mono">// {label}</p>
       <p className="mt-1.5 text-2xl font-bold font-mono tabular-nums text-neo-glow">{value}</p>
@@ -623,7 +623,7 @@ function Footer() {
     { title: "Suporte", links: ["Centro de ajuda", "Contacto WhatsApp", "Comunidade", "Termos", "Privacidade"] },
   ];
   return (
-    <footer className="border-t border-white/5 bg-background/60 backdrop-blur mt-12">
+    <footer className="liquid-glass mt-12">
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid md:grid-cols-5 gap-10">
           <div className="md:col-span-1">
