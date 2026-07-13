@@ -159,6 +159,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           const { res: rlxRes, text: rlxText, json: rlxJson, splits, method: usedMethod, phone: usedPayoutPhone } = attempt;
           if (!rlxRes.ok || (rlxJson && String(rlxJson.status).toLowerCase() === "error")) {
             console.log("[create-merchant-payment] rlx error", rlxRes.status, rlxText);
+            await log(502);
             return Response.json({ error: "gateway_error" }, { status: 502 });
           }
 
@@ -167,6 +168,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           );
           if (!partner_transaction_id) {
             console.log("[create-merchant-payment] no txid in rlx response", rlxText);
+            await log(502);
             return Response.json({ error: "gateway_error" }, { status: 502 });
           }
 
@@ -193,15 +195,18 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           });
           if (insErr) console.log("[create-merchant-payment] insert error", insErr.message);
 
+          await log(200);
           return Response.json({
             status: "pending",
             partner_transaction_id,
           });
         } catch (e) {
           console.log("[create-merchant-payment] error", e);
+          await log(500);
           return Response.json({ error: "internal" }, { status: 500 });
         }
       },
     },
   },
 });
+
