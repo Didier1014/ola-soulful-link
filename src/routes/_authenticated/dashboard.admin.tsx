@@ -39,6 +39,8 @@ function AdminPage() {
   const [tab, setTab] = useState<Tab>("overview");
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [txDetail, setTxDetail] = useState<any | null>(null);
+
   const [smsTest, setSmsTest] = useState({ sender_id: "RedoxPay", number: "", message: "Teste admin RedoxPay" });
   const fnTestSms = useServerFn(sendTestSms);
   const testSmsM = useMutation({
@@ -385,10 +387,18 @@ function AdminPage() {
                   : t.method === 'emola' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
                   : 'bg-secondary text-muted-foreground border-border';
                 return (
-                  <div key={t.id} className="grid grid-cols-12 px-4 py-3 items-center text-sm hover:bg-secondary/30 transition-colors">
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setTxDetail(t)}
+                    className="w-full text-left grid grid-cols-12 px-4 py-3 items-center text-sm hover:bg-secondary/30 transition-colors"
+                  >
                     <div className="col-span-4 min-w-0">
                       <p className="font-medium truncate">{t.customer_name || "—"}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">{t.customer_phone} · {new Date(t.created_at).toLocaleDateString("pt-MZ")}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {t.product?.name ? `${t.product.name} · ` : ""}
+                        {t.owner?.business_name || t.owner?.full_name || t.customer_phone}
+                      </p>
                     </div>
                     <div className="col-span-2">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${methodBg}`}>
@@ -404,7 +414,8 @@ function AdminPage() {
                       {t.status === 'failed' && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${RUBY}15`, color: RUBY }}>FALHOU</span>}
                       {t.status === 'pending' && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500">PENDENTE</span>}
                     </div>
-                  </div>
+                  </button>
+
                 );
               })}
               {!txs.data?.length && <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma transação.</p>}
@@ -902,6 +913,63 @@ function AdminPage() {
             </div>
           </SheetContent>
         </Sheet>
+
+        <Dialog open={!!txDetail} onOpenChange={(o) => !o && setTxDetail(null)}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Receipt className="h-4 w-4" /> Detalhes da transação
+              </DialogTitle>
+            </DialogHeader>
+            {txDetail && (
+              <div className="space-y-4 text-sm">
+                <div className="rounded-lg border border-border p-3 space-y-1">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Produto</p>
+                  <p className="font-semibold">{txDetail.product?.name || "— (sem produto vinculado)"}</p>
+                  {txDetail.product?.slug && (
+                    <a href={`/c/${txDetail.product.slug}`} target="_blank" rel="noreferrer"
+                       className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
+                      /c/{txDetail.product.slug} <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  {txDetail.product?.price_mzn != null && (
+                    <p className="text-xs text-muted-foreground">Preço: {fmtMT(Number(txDetail.product.price_mzn))} · {txDetail.product.product_type || "—"}</p>
+                  )}
+                </div>
+                <div className="rounded-lg border border-border p-3 space-y-1">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Dono do produto (merchant)</p>
+                  <p className="font-semibold">{txDetail.owner?.business_name || txDetail.owner?.full_name || "—"}</p>
+                  {(txDetail.owner?.phone || txDetail.owner?.whatsapp) && (
+                    <p className="text-xs text-muted-foreground">{txDetail.owner?.phone || txDetail.owner?.whatsapp}</p>
+                  )}
+                </div>
+                <div className="rounded-lg border border-border p-3 space-y-1">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Cliente</p>
+                  <p className="font-semibold">{txDetail.customer_name || "—"}</p>
+                  <p className="text-xs text-muted-foreground">{txDetail.customer_phone}{txDetail.customer_email ? ` · ${txDetail.customer_email}` : ""}</p>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div className="rounded-lg border border-border p-2">
+                    <p className="text-[10px] uppercase text-muted-foreground">Valor</p>
+                    <p className="font-mono font-bold">{fmtMT(Number(txDetail.amount_mzn))}</p>
+                  </div>
+                  <div className="rounded-lg border border-border p-2">
+                    <p className="text-[10px] uppercase text-muted-foreground">Método</p>
+                    <p className="font-bold uppercase">{txDetail.method || "—"}</p>
+                  </div>
+                  <div className="rounded-lg border border-border p-2">
+                    <p className="text-[10px] uppercase text-muted-foreground">Status</p>
+                    <p className="font-bold uppercase">{txDetail.status}</p>
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Ref: {txDetail.id.slice(0, 8)} · {new Date(txDetail.created_at).toLocaleString("pt-MZ")}
+                </p>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
       </main>
     </div>
   );
