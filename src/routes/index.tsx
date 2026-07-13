@@ -10,6 +10,7 @@ import { useReveal } from "@/hooks/use-reveal";
 import ParallaxGlow from "@/components/parallax-glow";
 import { MagneticButton } from "@/components/magnetic-button";
 import { CountUp } from "@/components/count-up";
+import { SeoKeywordsButton } from "@/components/seo-keywords-button";
 
 export const Route = createFileRoute("/")({
   head: () => ({
