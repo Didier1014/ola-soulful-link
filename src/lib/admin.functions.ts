@@ -572,3 +572,74 @@ export const listMerchantMonitoring = createServerFn({ method: "GET" })
       .filter((m: any) => m.products.length > 0 || m.links.length > 0)
       .sort((a: any, b: any) => b.total_clicks - a.total_clicks);
   });
+
+// Painel Merchants API — visão geral dos utilizadores que usam a nossa API
+// nos seus próprios sites. Para cada merchant: chamadas totais, últimas 24h,
+// erros, sites (domínios de origin/referer) e últimas chamadas.
+export const listMerchantsApiUsage = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: merchants } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name, business_name, whatsapp, phone, api_key, api_key_active, is_merchant, balance_mzn")
+      .eq("is_merchant", true);
+
+    const ids = (merchants ?? []).map((m: any) => m.id);
+    if (!ids.length) return [];
+
+    const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+    const { data: calls } = await supabaseAdmin
+      .from("merchant_api_calls")
+      .select("user_id, endpoint, method, origin, referer, origin_host, ip, status_code, created_at")
+      .in("user_id", ids)
+      .gte("created_at", since)
+      .order("created_at", { ascending: false })
+      .limit(5000);
+
+    const { data: txs } = await supabaseAdmin
+      .from("transactions")
+      .select("user_id, amount_mzn, status, created_at, metadata")
+      .in("user_id", ids)
+      .order("created_at", { ascending: false })
+      .limit(2000);
+
+    const dayAgo = Date.now() - 24 * 3600 * 1000;
+    return (merchants ?? []).map((m: any) => {
+      const mine = (calls ?? []).filter((c: any) => c.user_id === m.id);
+      const hosts: Record<string, { count: number; last: string }> = {};
+      for (const c of mine) {
+        const host = c.origin_host || (c.referer ? "(sem host)" : "(directo)");
+        if (!hosts[host]) hosts[host] = { count: 0, last: c.created_at };
+        hosts[host].count++;
+      }
+      const topSites = Object.entries(hosts)
+        .map(([host, v]) => ({ host, count: v.count, last: v.last }))
+        .sort((a, b) => b.count - a.count);
+      const mineTx = (txs ?? []).filter((t: any) => t.user_id === m.id && t?.metadata?.source === "merchant_api");
+      const paid = mineTx.filter((t: any) => t.status === "paid");
+      return {
+        id: m.id,
+        name: m.business_name || m.full_name || "—",
+        phone: m.phone || m.whatsapp || null,
+        api_key_prefix: m.api_key ? String(m.api_key).slice(0, 16) : null,
+        api_key_active: !!m.api_key_active,
+        balance_mzn: Number(m.balance_mzn ?? 0),
+        calls_total: mine.length,
+        calls_24h: mine.filter((c: any) => new Date(c.created_at).getTime() >= dayAgo).length,
+        calls_errors: mine.filter((c: any) => (c.status_code ?? 0) >= 400).length,
+        last_call_at: mine[0]?.created_at ?? null,
+        sites: topSites,
+        tx_total: mineTx.length,
+        tx_paid: paid.length,
+        volume_paid: paid.reduce((s: number, t: any) => s + Number(t.amount_mzn || 0), 0),
+        recent_calls: mine.slice(0, 20).map((c: any) => ({
+          at: c.created_at, endpoint: c.endpoint, method: c.method,
+          status: c.status_code, host: c.origin_host, origin: c.origin,
+          referer: c.referer, ip: c.ip,
+        })),
+      };
+    }).sort((a, b) => (b.calls_total - a.calls_total) || (b.volume_paid - a.volume_paid));
+  });
