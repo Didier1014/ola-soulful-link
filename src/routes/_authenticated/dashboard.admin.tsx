@@ -39,6 +39,8 @@ function AdminPage() {
   const [tab, setTab] = useState<Tab>("overview");
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [txDetail, setTxDetail] = useState<any | null>(null);
+
   const [smsTest, setSmsTest] = useState({ sender_id: "RedoxPay", number: "", message: "Teste admin RedoxPay" });
   const fnTestSms = useServerFn(sendTestSms);
   const testSmsM = useMutation({
