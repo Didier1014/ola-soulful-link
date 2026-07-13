@@ -21,20 +21,27 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const startedAt = Date.now();
+        const { logMerchantApiCall } = await import("@/lib/merchant-api-log.server");
+        let merchantId: string | null = null;
+        const apiKey = request.headers.get("x-merchant-api-key")?.trim() || null;
+        const log = (statusCode: number) =>
+          logMerchantApiCall({ request, endpoint: "create-merchant-payment", userId: merchantId, apiKey, statusCode, startedAt });
         try {
-          const apiKey = request.headers.get("x-merchant-api-key")?.trim();
           if (!apiKey || !apiKey.startsWith("rdx_")) {
+            await log(401);
             return Response.json({ error: "unauthorized" }, { status: 401 });
           }
+
           const body = await request.json().catch(() => ({} as any));
           const phone = normalizePhone(body?.phone);
           const nome_cliente = String(body?.nome_cliente || "").trim();
           const amount = Number(body?.amount);
           const webhook_url = body?.webhook_url ? String(body.webhook_url) : null;
 
-          if (!nome_cliente) return Response.json({ error: "nome_cliente obrigatório" }, { status: 400 });
-          if (!phone || phone.length < 9) return Response.json({ error: "phone inválido" }, { status: 400 });
-          if (!Number.isFinite(amount) || amount < 50) return Response.json({ error: "amount mínimo 50" }, { status: 400 });
+          if (!nome_cliente) { await log(400); return Response.json({ error: "nome_cliente obrigatório" }, { status: 400 }); }
+          if (!phone || phone.length < 9) { await log(400); return Response.json({ error: "phone inválido" }, { status: 400 }); }
+          if (!Number.isFinite(amount) || amount < 50) { await log(400); return Response.json({ error: "amount mínimo 50" }, { status: 400 }); }
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -44,16 +51,20 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             .eq("api_key", apiKey)
             .eq("api_key_active", true)
             .maybeSingle();
-          if (!merchant) return Response.json({ error: "unauthorized" }, { status: 401 });
+          if (!merchant) { await log(401); return Response.json({ error: "unauthorized" }, { status: 401 }); }
+          merchantId = (merchant as any).id;
           if (!(merchant as any).is_merchant) {
+            await log(403);
             return Response.json({ error: "forbidden: conta não habilitada para merchant API" }, { status: 403 });
           }
+
 
           const mpesaPhone = (merchant as any).payout_mpesa_phone
             ? normalizePhone((merchant as any).payout_mpesa_phone) : "";
           const emolaPhone = (merchant as any).payout_emola_phone
             ? normalizePhone((merchant as any).payout_emola_phone) : "";
           if (!mpesaPhone && !emolaPhone) {
+            await log(422);
             return Response.json({ error: "merchant sem métodos de payout configurados" }, { status: 422 });
           }
 
@@ -71,16 +82,20 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             p2 === "84" || p2 === "85" ? "mpesa" :
             p2 === "86" || p2 === "87" ? "emola" : null;
           if (!channel) {
+            await log(400);
             return Response.json({ error: "phone inválido (prefixo desconhecido)" }, { status: 400 });
           }
           const payoutPhone = channel === "mpesa" ? mpesaPhone : emolaPhone;
           if (!payoutPhone) {
+            await log(422);
             return Response.json({ error: `merchant sem payout ${channel} configurado para este canal` }, { status: 422 });
           }
           const rlxToken = process.env.RLX_API_TOKEN;
           if (!rlxToken) {
+            await log(503);
             return Response.json({ error: "gateway_unavailable" }, { status: 503 });
           }
+
 
           // Resíduo do admin (Chris/Bernadin): amount − taxa_rlx − payout_comerciante
           const admin_residual = r2(amount - taxa_rlx - payout_comerciante);
@@ -144,6 +159,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           const { res: rlxRes, text: rlxText, json: rlxJson, splits, method: usedMethod, phone: usedPayoutPhone } = attempt;
           if (!rlxRes.ok || (rlxJson && String(rlxJson.status).toLowerCase() === "error")) {
             console.log("[create-merchant-payment] rlx error", rlxRes.status, rlxText);
+            await log(502);
             return Response.json({ error: "gateway_error" }, { status: 502 });
           }
 
@@ -152,6 +168,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           );
           if (!partner_transaction_id) {
             console.log("[create-merchant-payment] no txid in rlx response", rlxText);
+            await log(502);
             return Response.json({ error: "gateway_error" }, { status: 502 });
           }
 
@@ -178,15 +195,18 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           });
           if (insErr) console.log("[create-merchant-payment] insert error", insErr.message);
 
+          await log(200);
           return Response.json({
             status: "pending",
             partner_transaction_id,
           });
         } catch (e) {
           console.log("[create-merchant-payment] error", e);
+          await log(500);
           return Response.json({ error: "internal" }, { status: 500 });
         }
       },
     },
   },
 });
+

@@ -218,6 +218,54 @@ export type Database = {
         }
         Relationships: []
       }
+      merchant_api_calls: {
+        Row: {
+          api_key_prefix: string | null
+          created_at: string
+          duration_ms: number | null
+          endpoint: string
+          id: string
+          ip: string | null
+          method: string
+          origin: string | null
+          origin_host: string | null
+          referer: string | null
+          status_code: number | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          api_key_prefix?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          endpoint: string
+          id?: string
+          ip?: string | null
+          method: string
+          origin?: string | null
+          origin_host?: string | null
+          referer?: string | null
+          status_code?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          api_key_prefix?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          endpoint?: string
+          id?: string
+          ip?: string | null
+          method?: string
+          origin?: string | null
+          origin_host?: string | null
+          referer?: string | null
+          status_code?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
