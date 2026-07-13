@@ -64,6 +64,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           const emolaPhone = (merchant as any).payout_emola_phone
             ? normalizePhone((merchant as any).payout_emola_phone) : "";
           if (!mpesaPhone && !emolaPhone) {
+            await log(422);
             return Response.json({ error: "merchant sem métodos de payout configurados" }, { status: 422 });
           }
 
@@ -81,16 +82,20 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             p2 === "84" || p2 === "85" ? "mpesa" :
             p2 === "86" || p2 === "87" ? "emola" : null;
           if (!channel) {
+            await log(400);
             return Response.json({ error: "phone inválido (prefixo desconhecido)" }, { status: 400 });
           }
           const payoutPhone = channel === "mpesa" ? mpesaPhone : emolaPhone;
           if (!payoutPhone) {
+            await log(422);
             return Response.json({ error: `merchant sem payout ${channel} configurado para este canal` }, { status: 422 });
           }
           const rlxToken = process.env.RLX_API_TOKEN;
           if (!rlxToken) {
+            await log(503);
             return Response.json({ error: "gateway_unavailable" }, { status: 503 });
           }
+
 
           // Resíduo do admin (Chris/Bernadin): amount − taxa_rlx − payout_comerciante
           const admin_residual = r2(amount - taxa_rlx - payout_comerciante);
