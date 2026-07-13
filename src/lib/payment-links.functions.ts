@@ -40,6 +40,8 @@ export const payLink = createServerFn({ method: "POST" })
       utm_term: z.string().max(200).optional(),
       fbp: z.string().max(200).optional(),
       fbc: z.string().max(200).optional(),
+      referrer: z.string().max(300).optional(),
+      referrer_domain: z.string().max(200).optional(),
     }).partial().optional(),
   }).parse(d))
   .handler(async ({ data }) => {
