@@ -168,6 +168,7 @@ function AdminPage() {
   const tabs: { id: Tab; label: string; icon: any; badge?: number }[] = [
     { id: "overview", label: "Visão Geral", icon: TrendingUp },
     { id: "users", label: "Utilizadores", icon: Users },
+    { id: "monitor", label: "Monitoramento", icon: Radar },
     { id: "transactions", label: "Transações", icon: Receipt },
     { id: "withdrawals", label: "Saques", icon: ArrowUpDown, badge: pendingCount },
     { id: "products", label: "Produtos", icon: Package },
