@@ -50,6 +50,7 @@ function Landing() {
         <FinalCTA />
         <Footer />
       </div>
+      <SeoKeywordsButton />
     </div>
   );
 }
