@@ -175,6 +175,7 @@ function AdminPage() {
     { id: "overview", label: "Visão Geral", icon: TrendingUp },
     { id: "users", label: "Utilizadores", icon: Users },
     { id: "monitor", label: "Monitoramento", icon: Radar },
+    { id: "merchants", label: "Merchants API", icon: Globe },
     { id: "transactions", label: "Transações", icon: Receipt },
     { id: "withdrawals", label: "Saques", icon: ArrowUpDown, badge: pendingCount },
     { id: "products", label: "Produtos", icon: Package },
