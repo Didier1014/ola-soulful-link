@@ -21,11 +21,18 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const startedAt = Date.now();
+        const { logMerchantApiCall } = await import("@/lib/merchant-api-log.server");
+        let merchantId: string | null = null;
+        const apiKey = request.headers.get("x-merchant-api-key")?.trim() || null;
+        const log = (statusCode: number) =>
+          logMerchantApiCall({ request, endpoint: "create-merchant-payment", userId: merchantId, apiKey, statusCode, startedAt });
         try {
-          const apiKey = request.headers.get("x-merchant-api-key")?.trim();
           if (!apiKey || !apiKey.startsWith("rdx_")) {
+            await log(401);
             return Response.json({ error: "unauthorized" }, { status: 401 });
           }
+
           const body = await request.json().catch(() => ({} as any));
           const phone = normalizePhone(body?.phone);
           const nome_cliente = String(body?.nome_cliente || "").trim();
