@@ -1,0 +1,1 @@
+GRANT ALL ON public.merchant_api_calls TO service_role; GRANT SELECT ON public.merchant_api_calls TO authenticated;
