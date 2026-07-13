@@ -704,6 +704,127 @@ function AdminPage() {
         )}
 
 
+        {tab === "merchants" && (
+          <div className="space-y-4">
+            <Card className="rounded-2xl p-4 flex items-center gap-2">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Filtrar por merchant ou domínio (ex: minhaloja.co.mz)"
+                value={merchantsSearch}
+                onChange={(e) => setMerchantsSearch(e.target.value)}
+                className="border-0 focus-visible:ring-0"
+              />
+              <span className="text-xs text-muted-foreground shrink-0">
+                {merchantsQ.data?.length ?? 0} merchants · actualiza a cada 15s
+              </span>
+            </Card>
+
+            {merchantsQ.isLoading && <p className="text-sm text-muted-foreground p-4">A carregar…</p>}
+            {merchantsQ.data && merchantsQ.data.length === 0 && (
+              <p className="text-sm text-muted-foreground p-4">Nenhum utilizador merchant activo ainda.</p>
+            )}
+
+            {(merchantsQ.data ?? [])
+              .filter((m: any) => {
+                const q = merchantsSearch.trim().toLowerCase();
+                if (!q) return true;
+                if (m.name?.toLowerCase().includes(q)) return true;
+                if (m.phone?.toLowerCase().includes(q)) return true;
+                return (m.sites ?? []).some((s: any) => s.host?.toLowerCase().includes(q));
+              })
+              .map((m: any) => {
+                const open = openMerchant === m.id;
+                return (
+                  <Card key={m.id} className="rounded-2xl overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setOpenMerchant(open ? null : m.id)}
+                      className="w-full text-left p-4 flex items-start gap-3 hover:bg-secondary/30"
+                    >
+                      <div className="h-10 w-10 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0">
+                        <Globe className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold truncate">{m.name}</p>
+                          {!m.api_key_active && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 font-bold uppercase">API inactiva</span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground truncate">
+                          {m.phone ?? "—"} · chave {m.api_key_prefix ?? "—"}…
+                        </p>
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {(m.sites ?? []).slice(0, 4).map((s: any) => (
+                            <span key={s.host} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground">
+                              <Link2 className="inline h-3 w-3 mr-1" />{s.host} · {s.count}
+                            </span>
+                          ))}
+                          {!m.sites?.length && <span className="text-[10px] text-muted-foreground">Sem chamadas nos últimos 7 dias</span>}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3 text-right text-xs shrink-0">
+                        <div>
+                          <p className="text-[10px] uppercase text-muted-foreground">24h</p>
+                          <p className="font-mono font-bold">{m.calls_24h}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase text-muted-foreground">7d</p>
+                          <p className="font-mono font-bold">{m.calls_total}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase text-muted-foreground">Pagas</p>
+                          <p className="font-mono font-bold text-emerald-500">{fmtMT(m.volume_paid)}</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    {open && (
+                      <div className="border-t border-border p-4 space-y-4 bg-secondary/20">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-2">
+                            Sites de origem (últimos 7 dias)
+                          </p>
+                          <div className="grid gap-1">
+                            {(m.sites ?? []).map((s: any) => (
+                              <div key={s.host} className="flex items-center justify-between text-xs bg-background rounded-lg px-3 py-2 border border-border">
+                                <span className="truncate">{s.host}</span>
+                                <span className="text-muted-foreground shrink-0">
+                                  {s.count} chamadas · última {new Date(s.last).toLocaleString("pt-MZ")}
+                                </span>
+                              </div>
+                            ))}
+                            {!m.sites?.length && <p className="text-xs text-muted-foreground">Sem chamadas.</p>}
+                          </div>
+                        </div>
+
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-2">
+                            Últimas chamadas ({m.calls_errors} erros · última {m.last_call_at ? new Date(m.last_call_at).toLocaleString("pt-MZ") : "—"})
+                          </p>
+                          <div className="grid gap-1">
+                            {m.recent_calls.map((c: any, i: number) => (
+                              <div key={i} className="grid grid-cols-12 gap-2 items-center text-[11px] bg-background rounded-lg px-3 py-2 border border-border">
+                                <span className="col-span-3 font-mono text-muted-foreground">
+                                  {new Date(c.at).toLocaleString("pt-MZ")}
+                                </span>
+                                <span className="col-span-2 font-bold uppercase">{c.method}</span>
+                                <span className="col-span-4 truncate">{c.endpoint}</span>
+                                <span className={`col-span-1 font-mono ${c.status >= 400 ? "text-red-500" : "text-emerald-500"}`}>{c.status}</span>
+                                <span className="col-span-2 truncate text-muted-foreground text-right">{c.host || "—"}</span>
+                              </div>
+                            ))}
+                            {!m.recent_calls?.length && <p className="text-xs text-muted-foreground">Sem histórico.</p>}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+          </div>
+        )}
+
 
         {tab === "approvals" && (
           <Card className="rounded-2xl overflow-hidden border border-border">
