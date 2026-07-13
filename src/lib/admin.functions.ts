@@ -202,8 +202,28 @@ export const listAllTransactions = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("transactions").select("*").order("created_at", { ascending: false }).limit(200);
     if (error) throw new Error(error.message);
-    return data ?? [];
+    const txs = data ?? [];
+    const productIds = Array.from(new Set(txs.map((t: any) => t.product_id).filter(Boolean)));
+    const userIds = Array.from(new Set(txs.map((t: any) => t.user_id).filter(Boolean)));
+    const productsMap: Record<string, any> = {};
+    const profilesMap: Record<string, any> = {};
+    if (productIds.length) {
+      const { data: prods } = await supabaseAdmin
+        .from("products").select("id, name, slug, price_mzn, product_type").in("id", productIds);
+      (prods ?? []).forEach((p: any) => { productsMap[p.id] = p; });
+    }
+    if (userIds.length) {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles").select("id, full_name, business_name, phone, whatsapp").in("id", userIds);
+      (profs ?? []).forEach((p: any) => { profilesMap[p.id] = p; });
+    }
+    return txs.map((t: any) => ({
+      ...t,
+      product: t.product_id ? productsMap[t.product_id] ?? null : null,
+      owner: t.user_id ? profilesMap[t.user_id] ?? null : null,
+    }));
   });
+
 
 export const listAllWithdrawals = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
