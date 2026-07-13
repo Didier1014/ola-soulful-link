@@ -577,6 +577,118 @@ function AdminPage() {
           </Card>
         )}
 
+        {tab === "monitor" && (
+          <>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input value={monitorSearch} onChange={e => setMonitorSearch(e.target.value)} placeholder="Pesquisar merchant, produto ou origem…"
+                className="w-full h-11 pl-10 pr-4 rounded-xl bg-card border border-border text-sm" />
+            </div>
+            {monitor.isLoading && <p className="p-8 text-center text-sm text-muted-foreground">A carregar…</p>}
+            {!monitor.isLoading && !monitor.data?.length && (
+              <Card className="p-8 rounded-2xl text-center text-sm text-muted-foreground">Nenhum merchant com actividade.</Card>
+            )}
+            <div className="space-y-3">
+              {(monitor.data ?? [])
+                .filter((m: any) => {
+                  if (!monitorSearch) return true;
+                  const q = monitorSearch.toLowerCase();
+                  if (m.name?.toLowerCase().includes(q)) return true;
+                  if (m.products.some((p: any) => p.name?.toLowerCase().includes(q) || p.slug?.toLowerCase().includes(q))) return true;
+                  if (m.links.some((l: any) => l.title?.toLowerCase().includes(q) || l.slug?.toLowerCase().includes(q))) return true;
+                  if (m.top_referrers.some((r: any) => r.host.toLowerCase().includes(q))) return true;
+                  return false;
+                })
+                .map((m: any) => (
+                <Card key={m.user_id} className="rounded-2xl overflow-hidden border border-border">
+                  <div className="px-4 py-3 border-b border-border flex flex-wrap items-center gap-3 bg-secondary/40">
+                    <div className="h-9 w-9 rounded-lg flex items-center justify-center font-bold shrink-0" style={{ background: `${RUBY}15`, color: RUBY }}>
+                      {m.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold truncate">{m.name}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{m.phone || "—"}</p>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs">
+                      <div className="text-right">
+                        <p className="text-[10px] uppercase text-muted-foreground">Cliques</p>
+                        <p className="font-mono font-bold" style={{ color: RUBY }}>{fmt(m.total_clicks)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] uppercase text-muted-foreground">Vendas</p>
+                        <p className="font-mono font-bold">{fmt(m.total_sales)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] uppercase text-muted-foreground">Volume</p>
+                        <p className="font-mono font-bold">{fmtMT(m.total_volume_mzn)}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {m.top_referrers.length > 0 && (
+                    <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
+                      <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Top origens</span>
+                      {m.top_referrers.map((r: any) => (
+                        <span key={r.host} className="text-[11px] px-2 py-0.5 rounded-md bg-secondary font-mono">{r.host} · {r.count}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {m.products.length > 0 && (
+                    <div className="divide-y divide-border">
+                      {m.products.map((p: any) => (
+                        <div key={p.id} className="p-3 flex items-center gap-3">
+                          <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">{p.name} {!p.active && <span className="text-[10px] text-muted-foreground">(inactivo)</span>}</p>
+                            <a href={`/c/${p.slug}`} target="_blank" rel="noreferrer" className="text-[11px] text-muted-foreground truncate hover:text-foreground inline-flex items-center gap-1">
+                              /c/{p.slug} <ExternalLink className="h-3 w-3" />
+                            </a>
+                            {p.top_referrers.length > 0 && (
+                              <div className="flex gap-1 flex-wrap mt-1">
+                                {p.top_referrers.map((r: any) => (
+                                  <span key={r.host} className="text-[10px] px-1.5 py-0.5 rounded bg-secondary/60 font-mono">{r.host} · {r.count}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-right text-[11px] shrink-0">
+                            <p className="font-mono">{fmt(p.clicks)} clk</p>
+                            <p className="font-mono text-muted-foreground">{fmt(p.sales_count)} · {fmtMT(p.volume_mzn)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {m.links.length > 0 && (
+                    <div className="divide-y divide-border border-t border-border">
+                      {m.links.map((l: any) => (
+                        <div key={l.id} className="p-3 flex items-center gap-3">
+                          <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">{l.title} {!l.active && <span className="text-[10px] text-muted-foreground">(inactivo)</span>}</p>
+                            <a href={`/l/${l.slug}`} target="_blank" rel="noreferrer" className="text-[11px] text-muted-foreground truncate hover:text-foreground inline-flex items-center gap-1">
+                              /l/{l.slug} · {fmtMT(Number(l.amount_mzn))} <ExternalLink className="h-3 w-3" />
+                            </a>
+                          </div>
+                          <div className="text-right text-[11px] shrink-0">
+                            <p className="font-mono">{fmt(l.clicks ?? 0)} clk</p>
+                            <p className="font-mono text-muted-foreground">{fmt(l.payments_count ?? 0)} pag.</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              ))}
+            </div>
+          </>
+        )}
+
+
+
         {tab === "approvals" && (
           <Card className="rounded-2xl overflow-hidden border border-border">
             <div className="px-4 py-3 border-b border-border flex items-center justify-between">
