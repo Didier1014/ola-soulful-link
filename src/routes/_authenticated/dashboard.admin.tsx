@@ -21,6 +21,7 @@ import {
   Shield, Users, Receipt, Package, TrendingUp, AlertTriangle,
   ArrowUpDown, Wallet, DollarSign, CheckCircle2, XCircle, Search,
   Activity, Zap, Clock, ExternalLink, FileDown, ChevronRight, Send, MessageSquare, History, MousePointerClick,
+  Radar, Globe, Link2,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
