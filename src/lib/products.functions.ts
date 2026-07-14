@@ -221,7 +221,32 @@ export const getProductBySlug = createServerFn({ method: "GET" })
       .eq("slug", data.slug).eq("active", true).eq("approval_status", "approved").maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) throw new Error("Produto não encontrado");
-    return { ...row, cover_url: await signCover(supabaseAdmin, row.cover_url) };
+
+    // Resolve order bumps: fetch selected products (must be active/approved & same owner)
+    const bumpCfg = (row as any).config?.orderBumps;
+    let bumps: Array<{ id: string; name: string; price_mzn: number; cover_url: string | null }> = [];
+    if (bumpCfg?.enabled) {
+      const ids: string[] = Array.isArray(bumpCfg.product_ids)
+        ? bumpCfg.product_ids
+        : typeof bumpCfg.product_ids === "string"
+          ? bumpCfg.product_ids.split(",").map((s: string) => s.trim()).filter(Boolean)
+          : [];
+      if (ids.length) {
+        const { data: bp } = await supabaseAdmin
+          .from("products")
+          .select("id,name,price_mzn,cover_url")
+          .in("id", ids)
+          .eq("user_id", (row as any).user_id)
+          .eq("active", true)
+          .eq("approval_status", "approved");
+        bumps = await Promise.all((bp ?? []).map(async (b: any) => ({
+          id: b.id, name: b.name, price_mzn: Number(b.price_mzn),
+          cover_url: await signCover(supabaseAdmin, b.cover_url),
+        })));
+      }
+    }
+
+    return { ...row, cover_url: await signCover(supabaseAdmin, row.cover_url), order_bumps: bumps };
   });
 
 // Public — register a checkout page view (click)
