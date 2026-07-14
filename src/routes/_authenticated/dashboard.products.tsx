@@ -753,8 +753,33 @@ function PillDialog({ open, pillKey, config, onClose, onSave }: {
           )}
           {pillKey === "orderBumps" && (
             <>
-              <Label>IDs de produtos extra (separados por vírgula)</Label>
-              <Input value={c.product_ids || ""} onChange={(e) => setC({ ...c, product_ids: e.target.value })} placeholder="id1, id2, id3" />
+              <p className="text-xs text-muted-foreground">
+                Escolhe abaixo os produtos que aparecerão no checkout como <strong>“Oferta especial — adicionar”</strong>. O cliente pode adicionar com um clique e o valor será somado ao total.
+              </p>
+              <div className="rounded-xl border border-border max-h-72 overflow-y-auto divide-y divide-border">
+                {allProducts.length === 0 && (
+                  <p className="text-xs text-muted-foreground p-3">Não tens outros produtos criados ainda.</p>
+                )}
+                {allProducts.map((p: any) => {
+                  const checked = selectedBumps.includes(p.id);
+                  return (
+                    <label key={p.id} className={`flex items-center gap-3 p-2.5 cursor-pointer hover:bg-secondary/50 ${checked ? "bg-primary/5" : ""}`}>
+                      <input type="checkbox" checked={checked} onChange={() => toggleBump(p.id)} className="h-4 w-4" />
+                      {p.cover_url
+                        ? <img src={p.cover_url} alt="" className="h-10 w-10 rounded-lg object-cover shrink-0" />
+                        : <div className="h-10 w-10 rounded-lg bg-secondary shrink-0" />}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{p.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">/{p.slug}</p>
+                      </div>
+                      <span className="text-sm font-semibold text-primary shrink-0">{fmtMT(Number(p.price_mzn))}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {selectedBumps.length > 0 && (
+                <p className="text-xs text-muted-foreground">{selectedBumps.length} produto(s) selecionado(s) como order bump.</p>
+              )}
             </>
           )}
           {pillKey === "upsells" && (
