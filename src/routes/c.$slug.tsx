@@ -280,6 +280,9 @@ function CheckoutPage() {
   );
 
   const price = Number(product.price_mzn);
+  const bumps: Array<{ id: string; name: string; price_mzn: number; cover_url: string | null }> = (product as any).order_bumps ?? [];
+  const bumpsTotal = bumps.reduce((s, b) => selectedBumps[b.id] ? s + Number(b.price_mzn) : s, 0);
+  const total = price + bumpsTotal;
   const methodColor = method === "mpesa" ? "#ef4444" : "#FF6600";
   const methodGradient = method === "mpesa" ? "linear-gradient(135deg, #ef4444, #dc2626)" : "linear-gradient(135deg, #FF6600, #e65500)";
   const mpesaSelected = method === "mpesa";
