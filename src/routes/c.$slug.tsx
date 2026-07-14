@@ -67,6 +67,7 @@ function CheckoutPage() {
 
   const [form, setForm] = useState({ customer_name: "", customer_phone: "" });
   const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
+  const [selectedBumps, setSelectedBumps] = useState<Record<string, boolean>>({});
   const [modal, setModal] = useState<{ status: "processing" | "paid" | "failed" | "pending"; id?: string; delivery_url?: string | null } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollCountRef = useRef(0);
