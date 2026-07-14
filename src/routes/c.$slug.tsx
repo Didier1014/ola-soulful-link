@@ -491,7 +491,7 @@ function CheckoutPage() {
                     {modal?.status === "pending" ? "A aguardar confirmação..." : "A processar..."}
                   </div>
                 ) : (
-                  `Pagar ${fmt(price)}`
+                  `Pagar ${fmt(total)}`
                 )}
               </button>
             )}
