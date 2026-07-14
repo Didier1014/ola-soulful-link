@@ -67,6 +67,7 @@ function CheckoutPage() {
 
   const [form, setForm] = useState({ customer_name: "", customer_phone: "" });
   const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
+  const [selectedBumps, setSelectedBumps] = useState<Record<string, boolean>>({});
   const [modal, setModal] = useState<{ status: "processing" | "paid" | "failed" | "pending"; id?: string; delivery_url?: string | null } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollCountRef = useRef(0);
@@ -139,10 +140,15 @@ function CheckoutPage() {
         });
         pixelFiredRef.current.init = true;
       }
+      const bumps = (product as any)?.order_bumps ?? [];
+      const bumpTotal = bumps.reduce((s: number, b: any) => selectedBumps[b.id] ? s + Number(b.price_mzn) : s, 0);
+      const bumpIds = bumps.filter((b: any) => selectedBumps[b.id]).map((b: any) => b.id);
+      const total = Number(product!.price_mzn) + bumpTotal;
       return checkout({
         data: {
           product_id: product!.id, method, ...form, customer_email: "",
-          tracking: trackingRef.current,
+          amount_mzn: total,
+          tracking: { ...trackingRef.current, ...(bumpIds.length ? { order_bumps: bumpIds.join(",") } : {}) },
         },
       });
     },
@@ -274,6 +280,9 @@ function CheckoutPage() {
   );
 
   const price = Number(product.price_mzn);
+  const bumps: Array<{ id: string; name: string; price_mzn: number; cover_url: string | null }> = (product as any).order_bumps ?? [];
+  const bumpsTotal = bumps.reduce((s, b) => selectedBumps[b.id] ? s + Number(b.price_mzn) : s, 0);
+  const total = price + bumpsTotal;
   const methodColor = method === "mpesa" ? "#ef4444" : "#FF6600";
   const methodGradient = method === "mpesa" ? "linear-gradient(135deg, #ef4444, #dc2626)" : "linear-gradient(135deg, #FF6600, #e65500)";
   const mpesaSelected = method === "mpesa";
@@ -347,9 +356,37 @@ function CheckoutPage() {
               </div>
             )}
 
+            {bumps.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 flex items-center gap-1">🎁 Ofertas especiais — adicionar</p>
+                {bumps.map((b) => {
+                  const on = !!selectedBumps[b.id];
+                  return (
+                    <label key={b.id}
+                      className="flex items-center gap-3 p-2.5 rounded-xl border-[1.5px] cursor-pointer transition-all"
+                      style={on
+                        ? { borderColor: "#f59e0b", background: "linear-gradient(135deg, #fffbeb, #fef3c7)", boxShadow: "0 0 0 3px rgba(245,158,11,0.12)" }
+                        : { borderColor: "rgba(245,158,11,0.35)", background: "#fffdf5", borderStyle: "dashed" }}>
+                      <input type="checkbox" checked={on}
+                        onChange={(e) => setSelectedBumps({ ...selectedBumps, [b.id]: e.target.checked })}
+                        className="h-5 w-5 accent-amber-500 shrink-0" />
+                      {b.cover_url
+                        ? <img src={b.cover_url} alt="" className="h-11 w-11 rounded-lg object-cover shrink-0" />
+                        : <div className="h-11 w-11 rounded-lg bg-amber-100 shrink-0" />}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-gray-900 truncate">{b.name}</p>
+                        <p className="text-[11px] text-amber-700 font-semibold">✓ Adicionar à compra</p>
+                      </div>
+                      <span className="text-sm font-black text-gray-900 shrink-0">+ {fmt(Number(b.price_mzn))}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+
             <div className="rounded-lg px-3.5 py-2.5 flex items-center justify-between" style={{ background: "linear-gradient(135deg, rgba(34,197,94,0.04), rgba(34,197,94,0.08))" }}>
               <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Total a pagar</span>
-              <span className="text-xl font-black tracking-tight text-gray-900">{fmt(price)}</span>
+              <span className="text-xl font-black tracking-tight text-gray-900">{fmt(total)}</span>
             </div>
 
             <div className="space-y-1.5">
@@ -454,7 +491,7 @@ function CheckoutPage() {
                     {modal?.status === "pending" ? "A aguardar confirmação..." : "A processar..."}
                   </div>
                 ) : (
-                  `Pagar ${fmt(price)}`
+                  `Pagar ${fmt(total)}`
                 )}
               </button>
             )}
