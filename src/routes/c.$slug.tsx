@@ -140,10 +140,15 @@ function CheckoutPage() {
         });
         pixelFiredRef.current.init = true;
       }
+      const bumps = (product as any)?.order_bumps ?? [];
+      const bumpTotal = bumps.reduce((s: number, b: any) => selectedBumps[b.id] ? s + Number(b.price_mzn) : s, 0);
+      const bumpIds = bumps.filter((b: any) => selectedBumps[b.id]).map((b: any) => b.id);
+      const total = Number(product!.price_mzn) + bumpTotal;
       return checkout({
         data: {
           product_id: product!.id, method, ...form, customer_email: "",
-          tracking: trackingRef.current,
+          amount_mzn: total,
+          tracking: { ...trackingRef.current, ...(bumpIds.length ? { order_bumps: bumpIds.join(",") } : {}) },
         },
       });
     },
