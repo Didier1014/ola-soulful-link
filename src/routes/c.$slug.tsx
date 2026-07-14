@@ -356,9 +356,37 @@ function CheckoutPage() {
               </div>
             )}
 
+            {bumps.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 flex items-center gap-1">🎁 Ofertas especiais — adicionar</p>
+                {bumps.map((b) => {
+                  const on = !!selectedBumps[b.id];
+                  return (
+                    <label key={b.id}
+                      className="flex items-center gap-3 p-2.5 rounded-xl border-[1.5px] cursor-pointer transition-all"
+                      style={on
+                        ? { borderColor: "#f59e0b", background: "linear-gradient(135deg, #fffbeb, #fef3c7)", boxShadow: "0 0 0 3px rgba(245,158,11,0.12)" }
+                        : { borderColor: "rgba(245,158,11,0.35)", background: "#fffdf5", borderStyle: "dashed" }}>
+                      <input type="checkbox" checked={on}
+                        onChange={(e) => setSelectedBumps({ ...selectedBumps, [b.id]: e.target.checked })}
+                        className="h-5 w-5 accent-amber-500 shrink-0" />
+                      {b.cover_url
+                        ? <img src={b.cover_url} alt="" className="h-11 w-11 rounded-lg object-cover shrink-0" />
+                        : <div className="h-11 w-11 rounded-lg bg-amber-100 shrink-0" />}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-gray-900 truncate">{b.name}</p>
+                        <p className="text-[11px] text-amber-700 font-semibold">✓ Adicionar à compra</p>
+                      </div>
+                      <span className="text-sm font-black text-gray-900 shrink-0">+ {fmt(Number(b.price_mzn))}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+
             <div className="rounded-lg px-3.5 py-2.5 flex items-center justify-between" style={{ background: "linear-gradient(135deg, rgba(34,197,94,0.04), rgba(34,197,94,0.08))" }}>
               <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Total a pagar</span>
-              <span className="text-xl font-black tracking-tight text-gray-900">{fmt(price)}</span>
+              <span className="text-xl font-black tracking-tight text-gray-900">{fmt(total)}</span>
             </div>
 
             <div className="space-y-1.5">
