@@ -659,11 +659,30 @@ function PillDialog({ open, pillKey, config, onClose, onSave }: {
   const [c, setC] = useState<any>(config);
   useEffect(() => { if (open) setC({ ...config }); }, [open, pillKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const fetchList = useServerFn(listMyProducts);
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => fetchList(),
+    enabled: open && (pillKey === "orderBumps" || pillKey === "upsells"),
+  });
+
   const meta = PILLS.find(p => p.key === pillKey);
   if (!meta) return null;
   const Icon = meta.icon;
 
   function save() { onSave({ ...c, enabled: !!c.enabled }); onClose(); }
+
+  function toggleBump(id: string) {
+    const cur: string[] = Array.isArray(c.product_ids) ? c.product_ids
+      : typeof c.product_ids === "string" ? c.product_ids.split(",").map((s: string) => s.trim()).filter(Boolean)
+      : [];
+    const next = cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id];
+    setC({ ...c, product_ids: next });
+  }
+  const selectedBumps: string[] = Array.isArray(c.product_ids)
+    ? c.product_ids
+    : typeof c.product_ids === "string" ? c.product_ids.split(",").map((s: string) => s.trim()).filter(Boolean)
+    : [];
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
