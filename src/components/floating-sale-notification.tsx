@@ -44,6 +44,7 @@ export function FloatingSaleNotification() {
   const enqueue = useCallback((sale: SaleData) => {
     setQueue((prev) => {
       if (prev.some((s) => s.id === sale.id)) return prev;
+      playSaleSound();
       return [...prev, sale];
     });
     timers.current.set(
@@ -51,6 +52,9 @@ export function FloatingSaleNotification() {
       setTimeout(() => dismiss(sale.id), 6000),
     );
   }, [dismiss]);
+
+  useEffect(() => { primeSaleSound(); }, []);
+
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
