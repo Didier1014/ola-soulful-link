@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, useParams, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getProductBySlug, trackProductClick } from "@/lib/products.functions";
@@ -11,9 +11,19 @@ import { Loader2, Lock, ShieldCheck, AlertTriangle, Smartphone } from "lucide-re
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
+// Slugs com checkout personalizado próprio
+const CUSTOM_CHECKOUTS: Record<string, string> = {
+  "txuna-mpesa": "/txuna-mpesa",
+};
+
 export const Route = createFileRoute("/c/$slug")({
+  beforeLoad: ({ params }) => {
+    const target = CUSTOM_CHECKOUTS[params.slug];
+    if (target) throw redirect({ to: target });
+  },
   component: CheckoutPage,
 });
+
 
 const fmt = (n: number) => new Intl.NumberFormat("pt-MZ", { style: "currency", currency: "MZN" }).format(n);
 
