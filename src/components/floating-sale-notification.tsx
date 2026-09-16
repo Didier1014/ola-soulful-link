@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { playSaleSound, primeSaleSound } from "@/lib/sale-sound";
 import { X, CircleCheck } from "lucide-react";
+
 
 interface SaleData {
   id: string;
