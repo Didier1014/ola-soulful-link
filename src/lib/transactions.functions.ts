@@ -95,19 +95,20 @@ export const createCheckout = createServerFn({ method: "POST" })
     }).select().single();
     if (tErr) throw new Error(tErr.message);
 
-    // Inicia C2B na RLX (M-Pesa / e-Mola)
+    // Inicia cobrança na Pagaja (M-Pesa / e-Mola)
+    let gatewayPaid = false;
     try {
-      const { rlxPay } = await import("@/lib/rlx.server");
-      const r = await rlxPay({
-        phone: data.customer_phone,
+      const { pagajaCharge } = await import("@/lib/pagaja.server");
+      const r = await pagajaCharge({
         amount,
-        nome_cliente: data.customer_name,
-        webhook_url: WEBHOOK_URL,
+        customer_name: data.customer_name,
+        customer_email: data.customer_email || undefined,
+        customer_phone: data.customer_phone,
+        description: product.name ?? "Pagamento",
+        method: data.method === "card" ? "visa_mastercard" : data.method,
       });
-      const txid = r?.txid || r?.partner_transaction_id || r?.data?.txid || r?.data?.partner_transaction_id || r?.id;
-      if (txid) {
-        await supabaseAdmin.from("transactions").update({ external_ref: String(txid) }).eq("id", tx.id);
-      }
+      await supabaseAdmin.from("transactions").update({ external_ref: r.reference }).eq("id", tx.id);
+      gatewayPaid = r.paid;
     } catch (e) {
       const errMsg = e instanceof Error ? e.message : "Falha ao iniciar pagamento";
       const mergedMeta = {
@@ -117,6 +118,9 @@ export const createCheckout = createServerFn({ method: "POST" })
       };
       await supabaseAdmin.from("transactions").update({ status: "failed", metadata: mergedMeta }).eq("id", tx.id);
       throw new Error(errMsg);
+    }
+    if (gatewayPaid) {
+      await creditSellerIfPending(supabaseAdmin, tx.id, product.user_id, seller_net, {});
     }
     const { data: prod } = await supabaseAdmin.from("products").select("delivery_url").eq("id", product.id).maybeSingle();
     return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, delivery_url: prod?.delivery_url ?? undefined, message: "Confirme o pagamento no telemóvel" };
