@@ -109,13 +109,25 @@ export async function pagajaCharge(input: PagajaChargeInput): Promise<PagajaChar
   const reference = String(data?.reference || data?.id || "");
   if (!reference) throw new Error("Gateway não devolveu referência");
   const status = String(data?.status || "pending").toLowerCase();
+  const test_mode = Boolean(data?.test_mode) || reference.startsWith("test_");
+
+  // Em modo de teste o provedor não envia o pedido de pagamento para o telefone
+  // do cliente e devolve "success" imediatamente. Nunca tratar como venda real.
+  if (test_mode) {
+    console.log("[pagaja] charge em TEST MODE — credenciais de teste em uso", reference);
+    throw new Error(
+      "Gateway em modo de teste: o pedido de pagamento não é enviado ao cliente. É necessário configurar credenciais LIVE do provedor.",
+    );
+  }
+
   return {
     reference,
     status,
-    test_mode: Boolean(data?.test_mode),
+    test_mode,
     paid: status === "success" || status === "paid" || status === "completed",
   };
 }
+
 
 // A API não tem GET /charges/{id}; o estado confirma-se via webhook
 // ou procurando a venda em GET /orders (lista de vendas pagas).
