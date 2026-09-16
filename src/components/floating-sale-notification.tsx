@@ -41,10 +41,15 @@ export function FloatingSaleNotification() {
     setQueue((prev) => prev.filter((s) => s.id !== id));
   }, []);
 
+  const playedRef = useRef<Set<string>>(new Set());
+
   const enqueue = useCallback((sale: SaleData) => {
+    if (!playedRef.current.has(sale.id)) {
+      playedRef.current.add(sale.id);
+      playSaleSound();
+    }
     setQueue((prev) => {
       if (prev.some((s) => s.id === sale.id)) return prev;
-      playSaleSound();
       return [...prev, sale];
     });
     timers.current.set(
@@ -52,6 +57,7 @@ export function FloatingSaleNotification() {
       setTimeout(() => dismiss(sale.id), 6000),
     );
   }, [dismiss]);
+
 
   useEffect(() => { primeSaleSound(); }, []);
 
