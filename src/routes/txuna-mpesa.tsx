@@ -97,9 +97,11 @@ function TxunaCheckout() {
     const timer = setInterval(async () => {
       if (stopped || checkingRef.current) return;
       if (++count > 60) { clearInterval(timer); return; }
+      const transactionId = modal.id;
+      if (!transactionId) return;
       checkingRef.current = true;
       try {
-        const r = await checkTransactionStatus({ data: { transaction_id: modal.id! } });
+        const r = await checkTransactionStatus({ data: { transaction_id: transactionId } });
         if (r.status === "paid") { stopped = true; clearInterval(timer); setModal({ status: "paid", id: modal.id }); }
         else if (r.status === "failed") { stopped = true; clearInterval(timer); setModal({ status: "failed", id: modal.id }); }
       } catch {}
