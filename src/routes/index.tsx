@@ -178,7 +178,7 @@ function Hero() {
           </h1>
           <p className="mt-6 text-lg font-light text-muted-foreground max-w-md">
             Pagamentos online sem complicações.<br />
-            Link de pagamentos, Checkout ou API simples para M-Pesa e e-Mola.
+            Link de pagamentos, Checkout ou API simples para M-Pesa.
           </p>
 
           <div className="mt-10 flex items-center gap-5">
