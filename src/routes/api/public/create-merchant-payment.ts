@@ -66,7 +66,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
 
           // Fees (internos, nunca expostos). Taxa do comerciante é configurável por perfil.
           const feePct = Number((merchant as any).merchant_fee_percent ?? 15);
-          const feeFix = Number((merchant as any).merchant_fee_fixed ?? 15);
+          const feeFix = Number((merchant as any).merchant_fee_fixed ?? 0);
           const taxa_gateway = r2(amount * 0.12 + 12);
           const taxa_comerciante = r2(amount * (feePct / 100) + feeFix);
           const payout_comerciante = r2(amount - taxa_comerciante);
