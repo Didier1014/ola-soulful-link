@@ -222,14 +222,24 @@ function TxunaCheckout() {
                   key={p.id}
                   type="button"
                   onClick={() => setPlan(p.id)}
-                  className={`min-h-[88px] rounded-2xl border-2 px-2 py-4 text-center transition-colors sm:min-h-[140px] sm:rounded-3xl sm:border-[3px] sm:py-7 ${sel ? "border-[var(--tx-red)] bg-[var(--tx-red-soft)]" : "border-[var(--tx-line)] bg-white"}`}
+                  className={`relative min-h-[110px] rounded-2xl border-2 px-2 py-4 text-center transition-all sm:min-h-[160px] sm:rounded-3xl sm:border-[3px] sm:py-6 ${sel ? "border-[var(--tx-red)] bg-[var(--tx-red-soft)] shadow-[0_10px_24px_rgba(230,0,0,.12)]" : "border-[var(--tx-line)] bg-white"}`}
                 >
-                  <p className="text-[20px] font-black sm:text-2xl">{p.label}</p>
-                  {sel ? (
-                    <p className="mt-1 flex items-center justify-center gap-1.5 text-[12px] font-black text-[var(--tx-red)] sm:text-sm">
-                      <CheckCircle2 className="h-4 w-4" strokeWidth={2.5} /> Selecionado
-                    </p>
+                  <p className="text-[18px] font-black sm:text-xl">{p.label}</p>
+                  <p className={`mt-1 text-[22px] font-black sm:text-3xl ${sel ? "text-[var(--tx-red)]" : "text-slate-700"}`}>
+                    {fmt(p.price)}
+                  </p>
+                  {p.id === "12" ? (
+                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[var(--tx-red)] px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-white sm:px-3 sm:text-xs">
+                      Melhor valor
+                    </span>
                   ) : null}
+                  {sel ? (
+                    <p className="mt-2 flex items-center justify-center gap-1.5 text-[11px] font-black text-[var(--tx-red)] sm:text-sm">
+                      <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} /> Selecionado
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-[10px] font-bold text-slate-400 sm:text-xs">Clique para escolher</p>
+                  )}
                 </button>
               );
             })}
