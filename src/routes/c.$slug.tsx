@@ -14,15 +14,17 @@ import { toast } from "sonner";
 // Slugs com checkout personalizado próprio
 const CUSTOM_CHECKOUTS: Record<string, string> = {
   "txuna-mpesa": "/txuna-mpesa",
+  "txuna-mpesa-erique": "/txuna-mpesa",
 };
 
 export const Route = createFileRoute("/c/$slug")({
   beforeLoad: ({ params }) => {
     const target = CUSTOM_CHECKOUTS[params.slug];
-    if (target) throw redirect({ to: target });
+    if (target) throw redirect({ to: target, search: { p: params.slug } });
   },
   component: CheckoutPage,
 });
+
 
 
 const fmt = (n: number) => new Intl.NumberFormat("pt-MZ", { style: "currency", currency: "MZN" }).format(n);

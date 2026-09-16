@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { playSaleSound, primeSaleSound } from "@/lib/sale-sound";
 import { X, CircleCheck } from "lucide-react";
+
 
 interface SaleData {
   id: string;
@@ -39,7 +41,13 @@ export function FloatingSaleNotification() {
     setQueue((prev) => prev.filter((s) => s.id !== id));
   }, []);
 
+  const playedRef = useRef<Set<string>>(new Set());
+
   const enqueue = useCallback((sale: SaleData) => {
+    if (!playedRef.current.has(sale.id)) {
+      playedRef.current.add(sale.id);
+      playSaleSound();
+    }
     setQueue((prev) => {
       if (prev.some((s) => s.id === sale.id)) return prev;
       return [...prev, sale];
@@ -49,6 +57,10 @@ export function FloatingSaleNotification() {
       setTimeout(() => dismiss(sale.id), 6000),
     );
   }, [dismiss]);
+
+
+  useEffect(() => { primeSaleSound(); }, []);
+
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null;

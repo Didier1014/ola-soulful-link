@@ -10,6 +10,9 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/txuna-mpesa")({
   component: TxunaCheckout,
+  validateSearch: (search: Record<string, unknown>) => ({
+    p: typeof search.p === "string" && search.p ? search.p : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Txuna M-Pesa — Taxa de ativação de empréstimo" },
@@ -22,7 +25,8 @@ export const Route = createFileRoute("/txuna-mpesa")({
   }),
 });
 
-const SLUG = "txuna-mpesa";
+const DEFAULT_SLUG = "txuna-mpesa";
+const ALLOWED_SLUGS = ["txuna-mpesa", "txuna-mpesa-erique"];
 const PLANS = [
   { id: "6", label: "6 meses", price: 300 },
   { id: "12", label: "12 meses", price: 497 },
@@ -43,6 +47,8 @@ function Countdown() {
 }
 
 function TxunaCheckout() {
+  const search = Route.useSearch();
+  const SLUG = search?.p && ALLOWED_SLUGS.includes(search.p) ? search.p : DEFAULT_SLUG;
   const fetchProduct = useServerFn(getProductBySlug);
   const checkout = useServerFn(createCheckout);
 
@@ -51,6 +57,7 @@ function TxunaCheckout() {
     queryFn: () => fetchProduct({ data: { slug: SLUG } }),
     retry: false,
   });
+
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
