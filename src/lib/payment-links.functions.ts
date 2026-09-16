@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 function calcFee(amount: number) {
-  const seller_fee = Math.round((amount * 0.15 + 15) * 100) / 100;
+  const seller_fee = Math.round(amount * 0.15 * 100) / 100;
   const seller_net = Math.round((amount - seller_fee) * 100) / 100;
   return { seller_fee, seller_net };
 }

@@ -385,7 +385,7 @@ function AdminPage() {
             <div className="divide-y divide-border">
               {(txs.data ?? []).map((t: any) => {
                 const amt = Number(t.amount_mzn);
-                const sFee = Math.round((amt * 0.15 + 15) * 100) / 100;
+                const sFee = Math.round(amt * 0.15 * 100) / 100;
                 const rCost = Math.round((amt * 0.10 + 10) * 100) / 100;
                 const margin = sFee - rCost;
                 const methodBg = t.method === 'mpesa' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'

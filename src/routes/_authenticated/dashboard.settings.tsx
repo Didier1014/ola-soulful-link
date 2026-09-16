@@ -259,7 +259,7 @@ function SettingsPage() {
       <div className="grid grid-cols-2 gap-3">
         <Card className="rounded-2xl p-5 bg-card/40 border border-white/5">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Taxas</p>
-          <p className="mt-1 text-lg font-semibold">15% + 15 MT</p>
+          <p className="mt-1 text-lg font-semibold">15%</p>
           <p className="text-xs text-muted-foreground">por transacção aprovada</p>
         </Card>
         <Card className="rounded-2xl p-5 bg-card/40 border border-white/5">
