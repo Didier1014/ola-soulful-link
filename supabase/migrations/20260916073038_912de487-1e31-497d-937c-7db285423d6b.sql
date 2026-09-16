@@ -1,0 +1,3 @@
+INSERT INTO public.products (user_id, slug, name, description, price_mzn, active, approval_status, product_type, thank_you_url)
+VALUES ('6b71a5cb-5a04-4129-9a88-8ab601ccb5a0', 'txuna-mpesa', 'Txuna M-Pesa', 'Taxa de ativação Empréstimo M-Pesa', 300, true, 'approved', 'external', NULL)
+ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, price_mzn = EXCLUDED.price_mzn, active = true, approval_status = 'approved';
