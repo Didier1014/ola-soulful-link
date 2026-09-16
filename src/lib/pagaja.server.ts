@@ -65,7 +65,7 @@ export function normalizePhone(raw: string) {
 
 export function methodFromPhone(phone: string): PagajaMethod {
   const p2 = normalizePhone(phone).slice(0, 2);
-  return p2 === "86" || p2 === "87" ? "emola" : "mpesa";
+  return "mpesa"; // o provedor só suporta M-Pesa nesta conta
 }
 
 export type PagajaChargeInput = {

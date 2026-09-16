@@ -66,7 +66,7 @@ function CheckoutPage() {
 
 
   const [form, setForm] = useState({ customer_name: "", customer_phone: "" });
-  const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
+  const method = "mpesa" as const;
   const [selectedBumps, setSelectedBumps] = useState<Record<string, boolean>>({});
   const [modal, setModal] = useState<{ status: "processing" | "paid" | "failed" | "pending"; id?: string; delivery_url?: string | null } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -428,7 +428,7 @@ function CheckoutPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-gray-900">A aguardar confirmação...</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Confirme o pagamento no seu telefone ({form.customer_phone}) introduzindo o PIN do {method === "mpesa" ? "M-Pesa" : "e-Mola"}.</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Confirme o pagamento no seu telefone ({form.customer_phone}) introduzindo o PIN do M-Pesa.</p>
                   {modal.id && <p className="text-[10px] text-gray-300 mt-1">Ref: {modal.id}</p>}
                 </div>
               </div>
