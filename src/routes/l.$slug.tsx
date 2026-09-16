@@ -27,7 +27,7 @@ function LinkCheckout() {
   });
 
   const [form, setForm] = useState({ customer_name: "", customer_email: "", customer_phone: "" });
-  const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
+  const method = "mpesa" as const;
   const [done, setDone] = useState<{ id: string; status: string } | null>(null);
   const trackingRef = useRef<Record<string, string>>({});
 
@@ -124,7 +124,7 @@ function LinkCheckout() {
                 <Input type="email" value={form.customer_email} onChange={(e) => setForm({ ...form, customer_email: e.target.value })} maxLength={160} />
               </div>
               <div className="space-y-2">
-                <Label>Telefone (M-Pesa / e-Mola)</Label>
+                <Label>Telefone (M-Pesa)</Label>
                 <Input value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
                   placeholder="+258 84 000 0000" maxLength={20} />
               </div>
@@ -134,9 +134,11 @@ function LinkCheckout() {
           <Card className="bg-white/5 border-white/10 rounded-2xl">
             <CardContent className="p-6 space-y-3">
               <h2 className="text-sm uppercase tracking-wide text-muted-foreground">Método de pagamento</h2>
-              <div className="grid grid-cols-2 gap-2">
-                <MethodBtn active={method === "mpesa"} onClick={() => setMethod("mpesa")} label="M-Pesa" />
-                <MethodBtn active={method === "emola"} onClick={() => setMethod("emola")} label="e-Mola" />
+              <div className="grid grid-cols-1 gap-2">
+                <div className="flex items-center justify-center gap-3 rounded-xl border p-5 text-base font-medium border-primary bg-primary/10 text-primary">
+                  <img src="/brands/mpesa.png" alt="M-Pesa" className="w-8 h-8 shrink-0" />
+                  M-Pesa
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -166,18 +168,5 @@ function LinkCheckout() {
         </div>
       </div>
     </div>
-  );
-}
-
-function MethodBtn({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
-  const isMpesa = label === "M-Pesa";
-  return (
-    <button onClick={onClick} type="button"
-      className={`flex items-center justify-center gap-3 rounded-xl border p-5 text-base font-medium transition-colors ${
-        active ? "border-primary bg-primary/10 text-primary" : "border-white/10 bg-white/5 hover:bg-white/10"
-      }`}>
-      <img src={isMpesa ? "/brands/mpesa.png" : "/brands/emola.png"} alt={label} className="w-8 h-8 shrink-0" />
-      {label}
-    </button>
   );
 }

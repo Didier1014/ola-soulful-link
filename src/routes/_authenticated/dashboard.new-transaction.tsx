@@ -24,7 +24,7 @@ function NewTransactionPage() {
   const charge = useServerFn(createCheckout);
   const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: () => fetchList() });
 
-  const [method, setMethod] = useState<"mpesa"|"emola">("mpesa");
+  const method = "mpesa" as const;
   const [phone, setPhone] = useState("258");
   const [name, setName] = useState("");
   const [productId, setProductId] = useState<string>("");
@@ -57,7 +57,7 @@ function NewTransactionPage() {
     <div className="space-y-5">
       <div className="px-1">
         <h1 className="text-2xl font-semibold tracking-tight">Nova transacção</h1>
-        <p className="text-sm text-muted-foreground">Teste C2B com M-Pesa ou e-Mola. As taxas do sistema são aplicadas automaticamente.</p>
+        <p className="text-sm text-muted-foreground">Teste C2B com M-Pesa. As taxas do sistema são aplicadas automaticamente.</p>
       </div>
 
       {selectedProduct && selectedProduct.cover_url && (
@@ -68,17 +68,11 @@ function NewTransactionPage() {
 
       <div>
         <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Método</p>
-        <div className="grid grid-cols-2 gap-2">
-          {(["mpesa","emola"] as const).map(opt => {
-            const isM = opt === "mpesa";
-            return (
-              <button key={opt} onClick={()=>setMethod(opt)}
-                className={`h-20 rounded-xl text-base font-medium border transition-colors flex items-center justify-center gap-3 ${method===opt ? "bg-foreground text-background border-foreground" : "bg-card border-border text-foreground/80"}`}>
-                <img src={isM ? "/brands/mpesa.png" : "/brands/emola.png"} alt={isM ? "M-Pesa" : "e-Mola"} className="w-8 h-8 shrink-0" />
-                {isM ? "M-Pesa" : "e-Mola"}
-              </button>
-            );
-          })}
+        <div className="grid grid-cols-1 gap-2">
+          <div className="h-20 rounded-xl text-base font-medium border flex items-center justify-center gap-3 bg-foreground text-background border-foreground">
+            <img src="/brands/mpesa.png" alt="M-Pesa" className="w-8 h-8 shrink-0" />
+            M-Pesa
+          </div>
         </div>
       </div>
 

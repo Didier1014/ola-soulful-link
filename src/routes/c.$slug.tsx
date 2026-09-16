@@ -283,10 +283,9 @@ function CheckoutPage() {
   const bumps: Array<{ id: string; name: string; price_mzn: number; cover_url: string | null }> = (product as any).order_bumps ?? [];
   const bumpsTotal = bumps.reduce((s, b) => selectedBumps[b.id] ? s + Number(b.price_mzn) : s, 0);
   const total = price + bumpsTotal;
-  const methodColor = method === "mpesa" ? "#ef4444" : "#FF6600";
-  const methodGradient = method === "mpesa" ? "linear-gradient(135deg, #ef4444, #dc2626)" : "linear-gradient(135deg, #FF6600, #e65500)";
-  const mpesaSelected = method === "mpesa";
-  const emolaSelected = method === "emola";
+  const methodColor = "#ef4444";
+  const methodGradient = "linear-gradient(135deg, #ef4444, #dc2626)";
+  const mpesaSelected = true;
 
   return (
     <div className="min-h-screen app-light" style={{ background: "linear-gradient(135deg, #f9fafc 0%, #f1f5f9 100%)" }}>
@@ -398,38 +397,21 @@ function CheckoutPage() {
 
             <div className="space-y-1.5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Deseja pagar com:</p>
-              <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => setMethod("mpesa")} type="button"
-                  className="relative py-4 px-3 rounded-xl border-[1.5px] font-semibold text-base transition-all flex items-center justify-center gap-2"
-                  style={mpesaSelected
-                    ? { borderColor: "#ef4444", background: "#fef2f2", color: "#dc2626", boxShadow: "0 0 0 3px rgba(220,38,38,0.08)" }
-                    : { borderColor: "rgba(148,163,184,0.3)", background: "#fff", color: "#9ca3af" }}>
-                  {mpesaSelected && (
-                    <span className="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: "#ef4444" }}>
-                      <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                    </span>
-                  )}
+              <div className="grid grid-cols-1 gap-2">
+                <div
+                  className="relative py-4 px-3 rounded-xl border-[1.5px] font-semibold text-base flex items-center justify-center gap-2"
+                  style={{ borderColor: "#ef4444", background: "#fef2f2", color: "#dc2626", boxShadow: "0 0 0 3px rgba(220,38,38,0.08)" }}>
+                  <span className="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: "#ef4444" }}>
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </span>
                   <img src="/brands/mpesa.png" alt="M-Pesa" className="w-8 h-8 shrink-0" />
                   M-Pesa
-                </button>
-                <button onClick={() => setMethod("emola")} type="button"
-                  className="relative py-4 px-3 rounded-xl border-[1.5px] font-semibold text-base transition-all flex items-center justify-center gap-2"
-                  style={emolaSelected
-                    ? { borderColor: "#FF6600", background: "#fff7ed", color: "#e65500", boxShadow: "0 0 0 3px rgba(255,102,0,0.08)" }
-                    : { borderColor: "rgba(148,163,184,0.3)", background: "#fff", color: "#9ca3af" }}>
-                  {emolaSelected && (
-                    <span className="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: "#FF6600" }}>
-                      <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                    </span>
-                  )}
-                  <img src="/brands/emola.png" alt="e-Mola" className="w-8 h-8 shrink-0" />
-                  e-Mola
-                </button>
+                </div>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Número de {method === "mpesa" ? "M-Pesa" : "e-Mola"} *</Label>
+              <Label className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Número de M-Pesa *</Label>
               <div className="flex rounded-xl overflow-hidden border-[1.5px] border-gray-200 focus-within:border-blue-500 focus-within:ring-[3px] focus-within:ring-blue-500/10 transition-all">
                 <div className="flex items-center px-3 text-sm font-medium text-gray-500 bg-gray-50 border-r border-gray-200">+258</div>
                 <input value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
