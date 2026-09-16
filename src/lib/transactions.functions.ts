@@ -139,17 +139,13 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
 
     if (tx.status === "pending" && tx.external_ref) {
       try {
-        const { rlxCheck } = await import("@/lib/rlx.server");
-        const r = await rlxCheck(String(tx.external_ref));
-        const st = (r?.status || r?.data?.status || "").toLowerCase();
-        if (st === "paid" || st === "success" || st === "completed") {
+        const { pagajaCheck } = await import("@/lib/pagaja.server");
+        const st = await pagajaCheck(String(tx.external_ref));
+        if (st === "paid") {
           await creditSellerIfPending(supabaseAdmin, tx.id, tx.user_id, Number(tx.net_mzn), {});
           tx.status = "paid";
-        } else if (st === "failed" || st === "cancelled" || st === "canceled") {
-          await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
-          tx.status = "failed";
         }
-      } catch (e) { console.log("[checkTransactionStatus] rlxCheck error", e); }
+      } catch (e) { console.log("[checkTransactionStatus] pagajaCheck error", e); }
     }
 
     if (tx.status === "paid" && tx.product_id) {
