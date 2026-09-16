@@ -189,7 +189,7 @@ function Overview() {
                 <tbody>
                   {txs.slice(0, 6).map((t) => {
                     const amt = Number(t.amount_mzn);
-                    const tFee = Math.round((amt * 0.15 + 15) * 100) / 100;
+                    const tFee = Math.round(amt * 0.15 * 100) / 100;
                     const tNet = Math.round((amt - tFee) * 100) / 100;
                     return (
                     <tr key={t.id} className="border-b border-border/40 last:border-0 hover:bg-muted/20 transition">

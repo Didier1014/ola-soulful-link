@@ -46,7 +46,7 @@ function TxPage() {
     const volume = paid.reduce((s, t) => s + Number(t.amount_mzn), 0);
     const net = paid.reduce((s, t) => {
       const amt = Number(t.amount_mzn);
-      const fee = Math.round((amt * 0.15 + 15) * 100) / 100;
+      const fee = Math.round(amt * 0.15 * 100) / 100;
       return s + (amt - fee);
     }, 0);
     return { paid: paid.length, pending: pending.length, failed: failed.length, volume, net };
@@ -131,7 +131,7 @@ function TxPage() {
         {!isLoading && !filtered.length && <p className="p-8 text-center text-muted-foreground text-sm">Nenhuma transação.</p>}
         {filtered.map((t) => {
           const amt = Number(t.amount_mzn);
-          const tFee = Math.round((amt * 0.15 + 15) * 100) / 100;
+          const tFee = Math.round(amt * 0.15 * 100) / 100;
           const tNet = Math.round((amt - tFee) * 100) / 100;
           return (
             <div key={t.id} className="p-4 flex items-center gap-3 hover:bg-muted/20 transition">
@@ -183,7 +183,7 @@ function TxPage() {
               <tbody>
                 {filtered.map((t) => {
                   const amt = Number(t.amount_mzn);
-                  const tFee = Math.round((amt * 0.15 + 15) * 100) / 100;
+                  const tFee = Math.round(amt * 0.15 * 100) / 100;
                   const tNet = Math.round((amt - tFee) * 100) / 100;
                   const created = new Date(t.created_at);
                   return (
