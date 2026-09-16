@@ -2,12 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 // POST /api/public/create-merchant-payment
 // Headers: x-merchant-api-key: rdx_live_...
-// Body: { phone, amount, nome_cliente, webhook_url? }
+// Body: { phone, amount, nome_cliente, customer_email?, webhook_url? }
 // Returns (merchant only): { status, partner_transaction_id }
-
-const RLX_URL = "https://checkout.rlxl.ink/api.php";
-
-type SplitMethod = "mpesa" | "emola";
 
 function normalizePhone(raw: string) {
   let n = String(raw || "").replace(/\D/g, "");
@@ -37,6 +33,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           const phone = normalizePhone(body?.phone);
           const nome_cliente = String(body?.nome_cliente || "").trim();
           const amount = Number(body?.amount);
+          const customer_email = body?.customer_email ? String(body.customer_email).trim() : "";
           const webhook_url = body?.webhook_url ? String(body.webhook_url) : null;
 
           if (!nome_cliente) { await log(400); return Response.json({ error: "nome_cliente obrigatório" }, { status: 400 }); }
@@ -58,7 +55,6 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             return Response.json({ error: "forbidden: conta não habilitada para merchant API" }, { status: 403 });
           }
 
-
           const mpesaPhone = (merchant as any).payout_mpesa_phone
             ? normalizePhone((merchant as any).payout_mpesa_phone) : "";
           const emolaPhone = (merchant as any).payout_emola_phone
@@ -71,133 +67,61 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           // Fees (internos, nunca expostos). Taxa do comerciante é configurável por perfil.
           const feePct = Number((merchant as any).merchant_fee_percent ?? 15);
           const feeFix = Number((merchant as any).merchant_fee_fixed ?? 15);
-          const taxa_rlx = r2(amount * 0.12 + 12);
+          const taxa_gateway = r2(amount * 0.12 + 12);
           const taxa_comerciante = r2(amount * (feePct / 100) + feeFix);
           const payout_comerciante = r2(amount - taxa_comerciante);
+          const admin_residual = r2(amount - taxa_gateway - payout_comerciante);
 
-          // O RLX exige que o método dos splits coincida com o canal do cliente
-          // (M-Pesa: prefixos 84/85 · e-Mola: 86/87).
-          const p2 = phone.slice(0, 2);
-          const channel: SplitMethod | null =
-            p2 === "84" || p2 === "85" ? "mpesa" :
-            p2 === "86" || p2 === "87" ? "emola" : null;
-          if (!channel) {
-            await log(400);
-            return Response.json({ error: "phone inválido (prefixo desconhecido)" }, { status: 400 });
-          }
-          const payoutPhone = channel === "mpesa" ? mpesaPhone : emolaPhone;
-          if (!payoutPhone) {
-            await log(422);
-            return Response.json({ error: `merchant sem payout ${channel} configurado para este canal` }, { status: 422 });
-          }
-          const rlxToken = process.env.RLX_API_TOKEN;
-          if (!rlxToken) {
-            await log(503);
-            return Response.json({ error: "gateway_unavailable" }, { status: 503 });
-          }
+          const { pagajaCharge, methodFromPhone } = await import("@/lib/pagaja.server");
+          const method = methodFromPhone(phone);
+          const payoutPhone = method === "mpesa" ? (mpesaPhone || emolaPhone) : (emolaPhone || mpesaPhone);
 
-
-          // Resíduo do admin (Chris/Bernadin): amount − taxa_rlx − payout_comerciante
-          const admin_residual = r2(amount - taxa_rlx - payout_comerciante);
-          const { data: platform } = await supabaseAdmin
-            .from("platform_config")
-            .select("profit_payout_mpesa,profit_payout_emola")
-            .eq("id", "config")
-            .maybeSingle();
-          const adminMpesa = (platform as any)?.profit_payout_mpesa
-            ? normalizePhone((platform as any).profit_payout_mpesa) : "";
-          const adminEmola = (platform as any)?.profit_payout_emola
-            ? normalizePhone((platform as any).profit_payout_emola) : "";
-
-          // Alguns prefixos foram portados entre operadoras — a nossa detecção por
-          // prefixo pode divergir do canal que o RLX realmente atribui ao número.
-          const tryChannel = async (m: SplitMethod, ph: string) => {
-            const splits: Array<{ phone: string; method: SplitMethod; value: string }> = [
-              { phone: ph, method: m, value: payout_comerciante.toFixed(2) },
-            ];
-            const adminPhone = m === "mpesa" ? adminMpesa : adminEmola;
-            if (admin_residual > 0 && adminPhone) {
-              splits.push({ phone: adminPhone, method: m, value: admin_residual.toFixed(2) });
-            }
-            const payload = {
-              action: "pay",
-              phone,
-              amount: amount.toFixed(2),
-              nome_cliente,
-              webhook_url: "https://redoxpay.lovable.app/api/public/rlx-webhook",
-              splits,
-            };
-            console.log("[create-merchant-payment] rlx payload=", JSON.stringify(payload));
-            const res = await fetch(RLX_URL, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${rlxToken}` },
-              body: JSON.stringify(payload),
+          let charge: Awaited<ReturnType<typeof pagajaCharge>>;
+          try {
+            charge = await pagajaCharge({
+              amount,
+              customer_name: nome_cliente,
+              customer_email: customer_email || undefined,
+              customer_phone: phone,
+              description: "Pagamento merchant API",
+              method,
             });
-            const text = await res.text();
-            let json: any = null;
-            try { json = JSON.parse(text); } catch {}
-            return { res, text, json, splits, method: m, phone: ph };
-          };
-
-
-
-
-
-          let attempt = await tryChannel(channel, payoutPhone);
-          const isMismatch =
-            attempt.json && String(attempt.json.status).toLowerCase() === "error"
-            && /coincidir com o canal/i.test(String(attempt.json.msg || ""));
-          if (isMismatch) {
-            const alt: SplitMethod = channel === "mpesa" ? "emola" : "mpesa";
-            const altPhone = alt === "mpesa" ? mpesaPhone : emolaPhone;
-            if (altPhone) {
-              console.log("[create-merchant-payment] retry with alt channel", alt);
-              attempt = await tryChannel(alt, altPhone);
-            }
-          }
-
-          const { res: rlxRes, text: rlxText, json: rlxJson, splits, method: usedMethod, phone: usedPayoutPhone } = attempt;
-          if (!rlxRes.ok || (rlxJson && String(rlxJson.status).toLowerCase() === "error")) {
-            console.log("[create-merchant-payment] rlx error", rlxRes.status, rlxText);
+          } catch (e) {
+            console.log("[create-merchant-payment] gateway error", e);
             await log(502);
             return Response.json({ error: "gateway_error" }, { status: 502 });
           }
 
-          const partner_transaction_id = String(
-            rlxJson?.partner_transaction_id || rlxJson?.txid || rlxJson?.id || ""
-          );
-          if (!partner_transaction_id) {
-            console.log("[create-merchant-payment] no txid in rlx response", rlxText);
-            await log(502);
-            return Response.json({ error: "gateway_error" }, { status: 502 });
-          }
+          const partner_transaction_id = charge.reference;
 
           const { error: insErr } = await supabaseAdmin.from("transactions").insert({
             user_id: merchant.id,
             customer_name: nome_cliente,
             customer_phone: phone,
-            method: usedMethod,
+            method,
             amount_mzn: amount,
             fee_mzn: taxa_comerciante,
             net_mzn: payout_comerciante,
-            status: "pending",
+            status: charge.paid ? "paid" : "pending",
             external_ref: partner_transaction_id,
             metadata: {
               source: "merchant_api",
               webhook_url,
-              taxa_rlx,
+              gateway: "pagaja",
+              test_mode: charge.test_mode,
+              taxa_gateway,
               taxa_comerciante,
               payout_comerciante,
-              payout_phone: usedPayoutPhone,
-              payout_method: usedMethod,
-              splits,
+              admin_residual,
+              payout_phone: payoutPhone,
+              payout_method: method,
             },
           });
           if (insErr) console.log("[create-merchant-payment] insert error", insErr.message);
 
           await log(200);
           return Response.json({
-            status: "pending",
+            status: charge.paid ? "paid" : "pending",
             partner_transaction_id,
           });
         } catch (e) {
@@ -209,4 +133,3 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
     },
   },
 });
-

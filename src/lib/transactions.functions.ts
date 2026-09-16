@@ -4,11 +4,11 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const checkApiStatus = createServerFn({ method: "GET" }).handler(async () => {
-  const { rlxStatus } = await import("@/lib/rlx.server");
-  return rlxStatus();
+  const { pagajaStatus } = await import("@/lib/pagaja.server");
+  return pagajaStatus();
 });
 
-const WEBHOOK_URL = "https://redoxpay.lovable.app/api/public/rlx-webhook";
+const WEBHOOK_URL = "https://redoxpay.lovable.app/api/public/pagaja-webhook";
 
 
 
@@ -95,19 +95,20 @@ export const createCheckout = createServerFn({ method: "POST" })
     }).select().single();
     if (tErr) throw new Error(tErr.message);
 
-    // Inicia C2B na RLX (M-Pesa / e-Mola)
+    // Inicia cobrança na Pagaja (M-Pesa / e-Mola)
+    let gatewayPaid = false;
     try {
-      const { rlxPay } = await import("@/lib/rlx.server");
-      const r = await rlxPay({
-        phone: data.customer_phone,
+      const { pagajaCharge } = await import("@/lib/pagaja.server");
+      const r = await pagajaCharge({
         amount,
-        nome_cliente: data.customer_name,
-        webhook_url: WEBHOOK_URL,
+        customer_name: data.customer_name,
+        customer_email: data.customer_email || undefined,
+        customer_phone: data.customer_phone,
+        description: product.name ?? "Pagamento",
+        method: data.method === "card" ? "visa_mastercard" : data.method,
       });
-      const txid = r?.txid || r?.partner_transaction_id || r?.data?.txid || r?.data?.partner_transaction_id || r?.id;
-      if (txid) {
-        await supabaseAdmin.from("transactions").update({ external_ref: String(txid) }).eq("id", tx.id);
-      }
+      await supabaseAdmin.from("transactions").update({ external_ref: r.reference }).eq("id", tx.id);
+      gatewayPaid = r.paid;
     } catch (e) {
       const errMsg = e instanceof Error ? e.message : "Falha ao iniciar pagamento";
       const mergedMeta = {
@@ -117,6 +118,9 @@ export const createCheckout = createServerFn({ method: "POST" })
       };
       await supabaseAdmin.from("transactions").update({ status: "failed", metadata: mergedMeta }).eq("id", tx.id);
       throw new Error(errMsg);
+    }
+    if (gatewayPaid) {
+      await creditSellerIfPending(supabaseAdmin, tx.id, product.user_id, seller_net, {});
     }
     const { data: prod } = await supabaseAdmin.from("products").select("delivery_url").eq("id", product.id).maybeSingle();
     return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, delivery_url: prod?.delivery_url ?? undefined, message: "Confirme o pagamento no telemóvel" };
@@ -135,17 +139,13 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
 
     if (tx.status === "pending" && tx.external_ref) {
       try {
-        const { rlxCheck } = await import("@/lib/rlx.server");
-        const r = await rlxCheck(String(tx.external_ref));
-        const st = (r?.status || r?.data?.status || "").toLowerCase();
-        if (st === "paid" || st === "success" || st === "completed") {
+        const { pagajaCheck } = await import("@/lib/pagaja.server");
+        const st = await pagajaCheck(String(tx.external_ref));
+        if (st === "paid") {
           await creditSellerIfPending(supabaseAdmin, tx.id, tx.user_id, Number(tx.net_mzn), {});
           tx.status = "paid";
-        } else if (st === "failed" || st === "cancelled" || st === "canceled") {
-          await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id);
-          tx.status = "failed";
         }
-      } catch (e) { console.log("[checkTransactionStatus] rlxCheck error", e); }
+      } catch (e) { console.log("[checkTransactionStatus] pagajaCheck error", e); }
     }
 
     if (tx.status === "paid" && tx.product_id) {
