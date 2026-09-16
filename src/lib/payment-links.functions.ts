@@ -62,19 +62,18 @@ export const payLink = createServerFn({ method: "POST" })
     }).select().single();
     if (error) throw new Error(error.message);
 
-    // Inicia C2B na RLX
+    // Inicia cobrança na Pagaja
     try {
-      const { rlxPay } = await import("@/lib/rlx.server");
-      const r = await rlxPay({
-        phone: data.customer_phone,
+      const { pagajaCharge } = await import("@/lib/pagaja.server");
+      const r = await pagajaCharge({
         amount,
-        nome_cliente: data.customer_name,
-        webhook_url: "https://redoxpay.lovable.app/api/public/rlx-webhook",
+        customer_name: data.customer_name,
+        customer_email: data.customer_email || undefined,
+        customer_phone: data.customer_phone,
+        description: "Link de pagamento",
+        method: data.method === "card" ? "visa_mastercard" : data.method,
       });
-      const txid = r?.txid || r?.partner_transaction_id || r?.data?.txid || r?.data?.partner_transaction_id || r?.id;
-      if (txid) {
-        await supabaseAdmin.from("transactions").update({ external_ref: String(txid) }).eq("id", tx.id);
-      }
+      await supabaseAdmin.from("transactions").update({ external_ref: r.reference }).eq("id", tx.id);
       await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
     } catch (e) {
       const errMsg = e instanceof Error ? e.message : "Falha ao iniciar pagamento";
