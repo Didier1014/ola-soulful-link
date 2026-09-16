@@ -4,11 +4,11 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const checkApiStatus = createServerFn({ method: "GET" }).handler(async () => {
-  const { rlxStatus } = await import("@/lib/rlx.server");
-  return rlxStatus();
+  const { pagajaStatus } = await import("@/lib/pagaja.server");
+  return pagajaStatus();
 });
 
-const WEBHOOK_URL = "https://redoxpay.lovable.app/api/public/rlx-webhook";
+const WEBHOOK_URL = "https://redoxpay.lovable.app/api/public/pagaja-webhook";
 
 
 
