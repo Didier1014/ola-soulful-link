@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as TxunaMpesaRouteImport } from './routes/txuna-mpesa'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ObrigadoRouteImport } from './routes/obrigado'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -56,6 +57,11 @@ import { Route as AuthenticatedDashboardAdminProdutosRouteImport } from './route
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
   path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TxunaMpesaRoute = TxunaMpesaRouteImport.update({
+  id: '/txuna-mpesa',
+  path: '/txuna-mpesa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -301,6 +307,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/txuna-mpesa': typeof TxunaMpesaRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
   '/c/$slug': typeof CSlugRoute
@@ -345,6 +352,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/txuna-mpesa': typeof TxunaMpesaRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
   '/c/$slug': typeof CSlugRoute
@@ -391,6 +399,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/txuna-mpesa': typeof TxunaMpesaRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
   '/c/$slug': typeof CSlugRoute
@@ -437,6 +446,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/obrigado'
     | '/reset-password'
+    | '/txuna-mpesa'
     | '/unsubscribe'
     | '/api/debug-notification'
     | '/c/$slug'
@@ -481,6 +491,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/obrigado'
     | '/reset-password'
+    | '/txuna-mpesa'
     | '/unsubscribe'
     | '/api/debug-notification'
     | '/c/$slug'
@@ -526,6 +537,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/obrigado'
     | '/reset-password'
+    | '/txuna-mpesa'
     | '/unsubscribe'
     | '/api/debug-notification'
     | '/c/$slug'
@@ -572,6 +584,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ObrigadoRoute: typeof ObrigadoRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TxunaMpesaRoute: typeof TxunaMpesaRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   ApiDebugNotificationRoute: typeof ApiDebugNotificationRoute
   CSlugRoute: typeof CSlugRoute
@@ -597,6 +610,13 @@ declare module '@tanstack/react-router' {
       path: '/unsubscribe'
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/txuna-mpesa': {
+      id: '/txuna-mpesa'
+      path: '/txuna-mpesa'
+      fullPath: '/txuna-mpesa'
+      preLoaderRoute: typeof TxunaMpesaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -992,6 +1012,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ObrigadoRoute: ObrigadoRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TxunaMpesaRoute: TxunaMpesaRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   ApiDebugNotificationRoute: ApiDebugNotificationRoute,
   CSlugRoute: CSlugRoute,
