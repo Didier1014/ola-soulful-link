@@ -71,7 +71,7 @@ export const payLink = createServerFn({ method: "POST" })
         customer_email: data.customer_email || undefined,
         customer_phone: data.customer_phone,
         description: "Link de pagamento",
-        method: data.method === "card" ? "visa_mastercard" : data.method,
+        method: data.method,
       });
       await supabaseAdmin.from("transactions").update({ external_ref: r.reference }).eq("id", tx.id);
       await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
