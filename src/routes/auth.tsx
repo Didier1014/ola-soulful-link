@@ -143,7 +143,7 @@ function AuthPage() {
             Receba pagamentos<br />em <span className="text-gradient-red">Moçambique</span>
           </h2>
           <p className="mt-5 text-muted-foreground max-w-md text-lg">
-            M-Pesa, e-Mola e mais. Checkout rápido, liquidação em tempo real, taxas justas.
+            M-Pesa e mais. Checkout rápido, liquidação em tempo real, taxas justas.
           </p>
           <div className="mt-8 grid grid-cols-2 gap-3 max-w-md">
             {[

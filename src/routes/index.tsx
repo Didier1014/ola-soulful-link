@@ -16,9 +16,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Redox Pay — Receba pagamentos online em Moçambique" },
-      { name: "description", content: "Receba pagamentos via M-Pesa e e-Mola em segundos. Checkout, links, QR Code e API para o seu negócio em Moçambique." },
+      { name: "description", content: "Receba pagamentos via M-Pesa em segundos. Checkout, links, QR Code e API para o seu negócio em Moçambique." },
       { property: "og:title", content: "Redox Pay — Pagamentos online em Moçambique" },
-      { property: "og:description", content: "M-Pesa, e-Mola, checkout, links, QR Code e API. Liquidação em tempo real." },
+      { property: "og:description", content: "M-Pesa, checkout, links, QR Code e API. Liquidação em tempo real." },
     ],
   }),
   component: Landing,
@@ -82,7 +82,6 @@ function HudTicker() {
     ["LATENCY", "142ms", "muted"],
     ["UPTIME", "99.98%", "muted"],
     ["M-PESA", "OK", "success"],
-    ["E-MOLA", "OK", "success"],
     ["ENCRYPT", "AES-256", "muted"],
     ["PCI-DSS", "L1", "muted"],
     ["v4.0.2", "STABLE", "muted"],
@@ -170,7 +169,7 @@ function Hero() {
             </span>
             <span className="text-primary-glow font-mono uppercase tracking-[0.18em] text-[10px]">Operando em Moçambique</span>
             <span className="text-muted-foreground">·</span>
-            <span className="text-foreground">M-Pesa · e-Mola</span>
+            <span className="text-foreground">M-Pesa</span>
           </div>
           <p className="text-[10px] font-mono uppercase tracking-[0.32em] text-muted-foreground mb-3">/ 001 · Manifesto</p>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02]">
@@ -313,18 +312,17 @@ function PaymentFlow() {
       <div className="text-center max-w-2xl mx-auto mb-16">
         <p className="text-sm uppercase tracking-widest text-primary-glow mb-3">Checkout em 2 segundos</p>
         <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Pague do seu jeito, em segundos</h2>
-        <p className="mt-4 font-light text-muted-foreground">Experiência de pagamento nativa para M-Pesa e e-Mola.</p>
+        <p className="mt-4 font-light text-muted-foreground">Experiência de pagamento nativa para M-Pesa.</p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
-        <StepCard n={1} title="Escolha o método" desc="Cliente seleciona M-Pesa ou e-Mola no checkout." icon={Smartphone} />
+        <StepCard n={1} title="Escolha o método" desc="Cliente paga com M-Pesa directamente no checkout." icon={Smartphone} />
         <StepCard n={2} title="Insere o número" desc="Confirma no telemóvel com PIN da carteira." icon={KeyRound} />
         <StepCard n={3} title="Confirmado" desc="Pagamento processado em menos de 2 segundos." icon={CheckCircle2} highlight />
       </div>
 
       <div className="mt-12 flex items-center justify-center gap-6">
         <MethodPill name="M-Pesa" color="#e11d48" letter="M" />
-        <MethodPill name="e-Mola" color="#f59e0b" letter="e" />
       </div>
     </section>
   );
@@ -372,7 +370,7 @@ function MethodPill({ name, color, letter }: { name: string; color: string; lett
 function Features() {
   const { ref, visible } = useReveal<HTMLElement>();
   const items = [
-    { icon: Smartphone, title: "M-Pesa & e-Mola", desc: "Receba diretamente nas carteiras móveis em segundos." },
+    { icon: Smartphone, title: "M-Pesa", desc: "Receba diretamente nas carteiras móveis em segundos." },
     { icon: Zap, title: "Checkout rápido", desc: "Páginas otimizadas para máxima conversão." },
     { icon: Code2, title: "API & SDKs", desc: "API REST moderna, webhooks e SDKs prontos." },
     { icon: Repeat, title: "Recorrência", desc: "Cobranças automáticas e planos de assinatura." },
@@ -497,9 +495,9 @@ function DashboardPreview() {
           </div>
           <div className="space-y-2 text-sm">
             <MockTx name="Aisha M." method="M-Pesa" color="#e11d48" amount="MZN 4.500" />
-            <MockTx name="Bruno Sitoe" method="e-Mola" color="#f59e0b" amount="MZN 1.200" />
+            <MockTx name="Bruno Sitoe" method="M-Pesa" color="#e11d48" amount="MZN 1.200" />
             <MockTx name="Carla Macuácua" method="M-Pesa" color="#e11d48" amount="MZN 8.750" />
-            <MockTx name="Délcio Nhaca" method="e-Mola" color="#f59e0b" amount="MZN 2.450" />
+            <MockTx name="Délcio Nhaca" method="M-Pesa" color="#e11d48" amount="MZN 2.450" />
           </div>
         </div>
       </div>
