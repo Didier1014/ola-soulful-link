@@ -115,83 +115,103 @@ function TxunaCheckout() {
   }, [modal?.status, modal?.id]);
 
   return (
-    <div className="min-h-screen app-light" style={{ background: "#f1f5f9", color: "#0f172a" }}>
+    <div className="tx-page min-h-screen app-light">
       <style>{`
         @keyframes txSpin{to{transform:rotate(360deg)}}
         @keyframes txPulse{0%,100%{opacity:1}50%{opacity:.35}}
         @keyframes txUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-        .tx-card{animation:txUp .35s ease both}
+        .tx-page{
+          --tx-red:#e60000;
+          --tx-red-soft:#fff6f6;
+          --tx-green:#13a873;
+          --tx-mint:#76d0ae;
+          --tx-ink:#101114;
+          --tx-copy:#667085;
+          --tx-line:#e3e7ee;
+          --tx-bg:#f4f5f9;
+          --tx-soft:#f6f8fb;
+          background:var(--tx-bg);
+          color:var(--tx-ink);
+          font-family:Arial,Helvetica,sans-serif;
+          letter-spacing:0;
+        }
+        .tx-page h1,.tx-page h2,.tx-page h3,.tx-page p{letter-spacing:0}
+        .tx-card{animation:txUp .35s ease both;box-shadow:0 14px 28px rgba(24,31,45,.09)}
+        .tx-logo{object-fit:contain;background:#fff}
+        .tx-field::placeholder{color:#9ca3af;opacity:1}
+        .tx-primary{background:var(--tx-mint);box-shadow:0 16px 26px rgba(230,0,0,.10)}
+        @media (prefers-reduced-motion:reduce){.tx-card,.tx-live-dot,.tx-spinner{animation:none!important}}
       `}</style>
 
       {/* Header */}
-      <header className="bg-white border-b border-slate-100 shadow-sm">
-        <div className="mx-auto flex max-w-[680px] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-5">
-          <img src="/brands/mpesa.png" alt="Logótipo M-Pesa" className="h-11 w-11 rounded-xl sm:h-14 sm:w-14" />
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-[720px] items-center gap-3 px-[22px] py-[17px] sm:gap-4 sm:px-7 sm:py-5">
+          <img src="/brands/mpesa.png" alt="Logótipo M-Pesa" className="tx-logo h-10 w-10 rounded-md sm:h-12 sm:w-12" />
           <div className="flex-1 min-w-0">
-            <p className="whitespace-nowrap text-lg font-extrabold leading-tight sm:text-xl" style={{ color: "#e60000" }}>
-              Vodacom <span className="text-slate-300 font-bold">|</span> M-Pesa
+            <p className="whitespace-nowrap text-[16px] font-black leading-tight text-[var(--tx-red)] sm:text-xl">
+              Vodacom <span className="font-bold text-slate-400">|</span> M-Pesa
             </p>
-            <p className="whitespace-nowrap text-[10px] tracking-[0.15em] text-slate-500 font-semibold uppercase sm:text-[12px] sm:tracking-[0.18em]">Empréstimos M-Pesa</p>
+            <p className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500 sm:text-[11px]">Empréstimos M-Pesa</p>
           </div>
-          <span className="flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-extrabold sm:px-4 sm:py-2 sm:text-[13px]" style={{ background: "#fee2e2", color: "#e60000" }}>
-            <span className="h-2 w-2 rounded-full sm:h-2.5 sm:w-2.5" style={{ background: "#e60000", animation: "txPulse 1.4s ease-in-out infinite" }} />
+          <span className="flex shrink-0 items-center gap-2 rounded-full bg-red-50 px-3 py-2 text-[10px] font-black tracking-[0.12em] text-[var(--tx-red)] sm:px-4 sm:text-xs">
+            <span className="tx-live-dot h-2 w-2 rounded-full bg-[var(--tx-red)]" style={{ animation: "txPulse 1.4s ease-in-out infinite" }} />
             AO VIVO
           </span>
         </div>
       </header>
 
-      <main className="mx-auto max-w-[680px] space-y-4 px-4 py-5 pb-16 sm:space-y-6 sm:px-5 sm:py-7">
+      <main className="mx-auto max-w-[720px] space-y-3 px-3 py-[15px] pb-10 sm:space-y-5 sm:px-6 sm:py-7 sm:pb-14">
         {/* Urgency */}
-        <div className="tx-card flex items-center justify-center gap-3 rounded-2xl px-5 py-4 text-base font-extrabold text-white sm:rounded-3xl sm:px-6 sm:py-5 sm:text-lg" style={{ background: "#e60000" }}>
-          <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
+        <div className="tx-card flex h-[46px] items-center justify-center gap-2.5 rounded-2xl bg-[var(--tx-red)] px-4 text-[15px] font-black text-white sm:h-[60px] sm:rounded-3xl sm:text-lg">
+          <Clock className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2.5} />
           <span>A oferta expira em:</span>
           <strong><Countdown /></strong>
         </div>
 
-        <div className="flex items-center justify-between text-sm sm:text-base">
+        <div className="flex items-center justify-between px-1 text-[12px] sm:text-base">
           <span className="flex items-center gap-2 text-slate-500 font-medium">
-            <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#e60000" }} />
+            <span className="h-2 w-2 rounded-full bg-[var(--tx-red)] sm:h-2.5 sm:w-2.5" />
             M-Pesa Moçambique
           </span>
-          <span className="flex items-center gap-1.5 font-bold" style={{ color: "#059669" }}>
-            <ShieldCheck className="h-4 w-4" /> Compra segura
+          <span className="flex items-center gap-1.5 font-black text-[var(--tx-green)]">
+            <ShieldCheck className="h-4 w-4" /> Compra segura 🇲🇿
           </span>
         </div>
 
         {/* Produto */}
-        <section className="tx-card flex items-center gap-4 rounded-2xl bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.07)] sm:gap-5 sm:rounded-3xl sm:p-7">
-          <img src="/brands/mpesa.png" alt="M-Pesa" className="h-14 w-14 rounded-xl sm:h-16 sm:w-16" />
+        <section className="tx-card flex min-h-[84px] items-center gap-4 rounded-2xl bg-white px-6 py-5 sm:min-h-[132px] sm:gap-5 sm:rounded-3xl sm:px-11 sm:py-7">
+          <img src="/brands/mpesa.png" alt="M-Pesa" className="tx-logo h-12 w-12 rounded-lg sm:h-16 sm:w-16" />
           <div>
-            <h1 className="text-[17px] font-extrabold leading-snug sm:text-xl">Taxa de ativação Empréstimo</h1>
-            <p className="text-sm text-slate-500 sm:text-base">Taxa única · ID: 2500301e</p>
+            <h1 className="text-[15px] font-black leading-snug sm:text-xl">Taxa de ativação Empréstimo</h1>
+            <p className="mt-0.5 text-[12px] text-slate-500 sm:text-base">Taxa única · ID: 2500301e</p>
           </div>
         </section>
 
         {/* Nome */}
-        <section className="tx-card space-y-3 rounded-2xl bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.07)] sm:space-y-4 sm:rounded-3xl sm:p-7">
-          <h2 className="text-[17px] font-extrabold sm:text-xl">Nome completo</h2>
+        <section className="tx-card space-y-3 rounded-2xl bg-white px-4 py-5 sm:space-y-4 sm:rounded-3xl sm:px-8 sm:py-7">
+          <h2 className="text-[15px] font-black sm:text-xl">Nome completo</h2>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ex: Maria Silva"
-            className="h-14 w-full rounded-full border border-slate-200 px-5 text-base outline-none focus:border-red-400 sm:h-16 sm:px-6 sm:text-lg"
+            className="tx-field h-12 w-full rounded-full border border-[var(--tx-line)] px-4 text-[16px] outline-none transition-colors focus:border-[var(--tx-red)] sm:h-16 sm:px-6 sm:text-lg"
           />
         </section>
 
         {/* Método */}
-        <section className="tx-card space-y-3 rounded-2xl bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.07)] sm:space-y-5 sm:rounded-3xl sm:p-7">
-          <h2 className="text-[17px] font-extrabold sm:text-xl">Método de pagamento</h2>
-          <div className="flex items-center gap-4 rounded-2xl border-2 p-4 sm:gap-5 sm:rounded-3xl sm:border-[3px] sm:p-5" style={{ borderColor: "#e60000", background: "#fff5f5" }}>
-            <img src="/brands/mpesa.png" alt="M-Pesa" className="h-12 w-12 rounded-xl sm:h-14 sm:w-14" />
+        <section className="tx-card space-y-4 rounded-2xl bg-white px-4 py-5 sm:space-y-5 sm:rounded-3xl sm:px-8 sm:py-8">
+          <h2 className="text-[15px] font-black sm:text-xl">Método de pagamento</h2>
+          <div className="flex min-h-[72px] items-center gap-4 rounded-2xl border-2 border-[var(--tx-red)] bg-[var(--tx-red-soft)] px-5 py-3 sm:min-h-[112px] sm:gap-5 sm:rounded-3xl sm:border-[3px] sm:px-8 sm:py-5">
+            <img src="/brands/mpesa.png" alt="M-Pesa" className="tx-logo h-11 w-11 rounded-lg sm:h-14 sm:w-14" />
             <div className="flex-1">
-              <p className="text-[17px] font-extrabold sm:text-xl">M-Pesa</p>
-              <p className="text-sm text-slate-500 sm:text-base">Vodacom Moçambique</p>
+              <p className="text-[15px] font-black sm:text-xl">M-Pesa</p>
+              <p className="text-[12px] text-slate-500 sm:text-base">Vodacom Moçambique</p>
             </div>
-            <span className="w-5 h-5 rounded-full" style={{ background: "#e60000" }} />
+            <span className="h-5 w-5 rounded-full bg-[var(--tx-red)] sm:h-7 sm:w-7" />
           </div>
 
           {/* Planos */}
-          <h2 className="pt-2 text-[17px] font-extrabold sm:text-xl">Plano de pagamento</h2>
+          <h2 className="pt-1 text-[15px] font-black sm:text-xl">Plano de pagamento</h2>
           <div className="grid grid-cols-2 gap-3 sm:gap-5">
             {PLANS.map((p) => {
               const sel = plan === p.id;
@@ -200,36 +220,33 @@ function TxunaCheckout() {
                   key={p.id}
                   type="button"
                   onClick={() => setPlan(p.id)}
-                  className="min-h-28 rounded-2xl border-2 px-3 py-6 text-center transition-colors sm:min-h-36 sm:rounded-3xl sm:border-[3px] sm:py-7"
-                  style={sel ? { borderColor: "#e60000", background: "#fff5f5" } : { borderColor: "#e2e8f0", background: "#fff" }}
+                  className={`min-h-[88px] rounded-2xl border-2 px-2 py-4 text-center transition-colors sm:min-h-[140px] sm:rounded-3xl sm:border-[3px] sm:py-7 ${sel ? "border-[var(--tx-red)] bg-[var(--tx-red-soft)]" : "border-[var(--tx-line)] bg-white"}`}
                 >
-                  <p className="text-[22px] font-extrabold sm:text-2xl">{p.label}</p>
+                  <p className="text-[20px] font-black sm:text-2xl">{p.label}</p>
                   {sel ? (
-                    <p className="text-sm font-bold flex items-center justify-center gap-1.5 mt-1" style={{ color: "#e60000" }}>
-                      <CheckCircle2 className="h-4 w-4" /> Selecionado
+                    <p className="mt-1 flex items-center justify-center gap-1.5 text-[12px] font-black text-[var(--tx-red)] sm:text-sm">
+                      <CheckCircle2 className="h-4 w-4" strokeWidth={2.5} /> Selecionado
                     </p>
-                  ) : (
-                    <p className="text-sm text-slate-400 mt-1">{fmt(p.price)}</p>
-                  )}
+                  ) : null}
                 </button>
               );
             })}
           </div>
 
           {/* Telefone */}
-          <h2 className="pt-2 text-[17px] font-extrabold sm:text-xl">Número M-Pesa</h2>
-          <div className="flex items-center rounded-full border border-slate-200 overflow-hidden">
-            <span className="flex h-14 items-center bg-slate-50 px-5 text-base font-extrabold text-slate-700 sm:h-16 sm:px-6 sm:text-lg">+258</span>
+          <h2 className="pt-1 text-[15px] font-black sm:text-xl">Número M-Pesa</h2>
+          <div className="flex items-center overflow-hidden rounded-full border border-[var(--tx-line)]">
+            <span className="flex h-12 items-center bg-[var(--tx-soft)] px-4 text-[16px] font-black sm:h-16 sm:px-6 sm:text-lg">+258</span>
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
               inputMode="numeric"
               placeholder="84/85 + 7 dígitos"
-              className="h-14 min-w-0 flex-1 px-4 text-base outline-none sm:h-16 sm:px-5 sm:text-lg"
+              className="tx-field h-12 min-w-0 flex-1 px-3 text-[16px] outline-none sm:h-16 sm:px-5 sm:text-lg"
             />
           </div>
 
-          <div className="flex gap-3 rounded-2xl bg-slate-50 p-4 text-[13px] text-slate-500 sm:gap-4 sm:rounded-3xl sm:p-5 sm:text-base">
+          <div className="flex gap-3 rounded-2xl bg-[var(--tx-soft)] p-4 text-[12px] leading-relaxed text-slate-500 sm:gap-4 sm:rounded-3xl sm:p-5 sm:text-base">
             <Lock className="mt-0.5 h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
             <p>Protegemos os seus dados de pagamento com criptografia ponta a ponta.</p>
           </div>
@@ -237,23 +254,22 @@ function TxunaCheckout() {
           <button
             onClick={() => m.mutate()}
             disabled={!ready || m.isPending}
-            className="flex h-16 w-full items-center justify-center gap-2 rounded-full text-[17px] font-extrabold text-white disabled:opacity-60 sm:h-[72px] sm:text-xl"
-            style={{ background: "#7fd1ae" }}
+            className="tx-primary flex h-[48px] w-full items-center justify-center gap-2 rounded-full px-2 text-[14px] font-black text-white disabled:opacity-60 sm:h-[72px] sm:text-xl"
           >
             {m.isPending ? <Loader2 className="h-5 w-5" style={{ animation: "txSpin .8s linear infinite" }} /> : "🏆"}
             Finalizar Empréstimo — {fmt(amount)}
           </button>
         </section>
 
-        <section className="tx-card flex items-center justify-between rounded-2xl bg-white px-5 py-4 text-sm shadow-[0_14px_34px_rgba(15,23,42,0.05)] sm:rounded-3xl sm:px-7 sm:py-5 sm:text-base">
-          <span className="font-extrabold">Detalhes de segurança</span>
-          <span className="flex items-center gap-2 text-slate-400">
+        <section className="tx-card flex min-h-[54px] items-center justify-between rounded-2xl bg-white px-4 py-3 text-[12px] sm:min-h-[72px] sm:rounded-3xl sm:px-8 sm:py-5 sm:text-base">
+          <span className="flex items-center gap-2 font-black"><ShieldCheck className="h-4 w-4" /> Detalhes de segurança</span>
+          <span className="flex items-center gap-2 text-slate-500">
             <Lock className="h-4 w-4" /> SSL · Imediato
           </span>
         </section>
 
-        <p className="text-center text-sm text-slate-400">
-          Com tecnologia <span className="font-extrabold text-slate-600">PayNow</span>
+        <p className="pb-2 text-center text-[12px] text-slate-500 sm:text-sm">
+          Com tecnologia <span className="font-black text-slate-700">PayNow</span>
         </p>
       </main>
 
