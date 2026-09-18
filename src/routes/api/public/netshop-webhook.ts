@@ -9,7 +9,8 @@ export const Route = createFileRoute("/api/public/netshop-webhook")({
       POST: async ({ request }) => {
         try {
           const raw = await request.text();
-          const secret = process.env.NETSHOP_WEBHOOK_SECRET;
+          // Secret configurado no painel NetShop; pode estar salvo como NETSHOP_WEBHOOK_SECRET ou STRIPE_WEBHOOK_SECRET
+          const secret = process.env.NETSHOP_WEBHOOK_SECRET || process.env.STRIPE_WEBHOOK_SECRET;
           const header = (request.headers.get("x-netshop-signature") || "").trim();
 
           if (secret) {
