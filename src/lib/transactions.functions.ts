@@ -4,11 +4,11 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const checkApiStatus = createServerFn({ method: "GET" }).handler(async () => {
-  const { pagajaStatus } = await import("@/lib/pagaja.server");
-  return pagajaStatus();
+  const { netshopStatus } = await import("@/lib/netshop.server");
+  return netshopStatus();
 });
 
-const WEBHOOK_URL = "https://redoxpay.lovable.app/api/public/pagaja-webhook";
+const WEBHOOK_URL = "https://redoxpay.lovable.app/api/public/netshop-webhook";
 
 
 
@@ -95,17 +95,17 @@ export const createCheckout = createServerFn({ method: "POST" })
     }).select().single();
     if (tErr) throw new Error(tErr.message);
 
-    // Inicia cobrança na Pagaja (M-Pesa / e-Mola)
+    // Inicia cobrança na NetShop (M-Pesa)
     let gatewayPaid = false;
     try {
-      const { pagajaCharge } = await import("@/lib/pagaja.server");
-      const r = await pagajaCharge({
+      const { netshopCharge } = await import("@/lib/netshop.server");
+      const r = await netshopCharge({
         amount,
         customer_name: data.customer_name,
         customer_email: data.customer_email || undefined,
         customer_phone: data.customer_phone,
         description: product.name ?? "Pagamento",
-        method: data.method === "card" ? "visa_mastercard" : data.method,
+        method: data.method === "card" ? "card" : data.method,
       });
       await supabaseAdmin.from("transactions").update({ external_ref: r.reference }).eq("id", tx.id);
       gatewayPaid = r.paid;
@@ -139,13 +139,13 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
 
     if (tx.status === "pending" && tx.external_ref) {
       try {
-        const { pagajaCheck } = await import("@/lib/pagaja.server");
-        const st = await pagajaCheck(String(tx.external_ref));
+        const { netshopCheck } = await import("@/lib/netshop.server");
+        const st = await netshopCheck(String(tx.external_ref));
         if (st === "paid") {
           await creditSellerIfPending(supabaseAdmin, tx.id, tx.user_id, Number(tx.net_mzn), {});
           tx.status = "paid";
         }
-      } catch (e) { console.log("[checkTransactionStatus] pagajaCheck error", e); }
+      } catch (e) { console.log("[checkTransactionStatus] netshopCheck error", e); }
     }
 
     if (tx.status === "paid" && tx.product_id) {

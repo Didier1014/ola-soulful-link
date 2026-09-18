@@ -72,13 +72,13 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           const payout_comerciante = r2(amount - taxa_comerciante);
           const admin_residual = r2(amount - taxa_gateway - payout_comerciante);
 
-          const { pagajaCharge, methodFromPhone } = await import("@/lib/pagaja.server");
+          const { netshopCharge, methodFromPhone } = await import("@/lib/netshop.server");
           const method = methodFromPhone(phone);
           const payoutPhone = method === "mpesa" ? (mpesaPhone || emolaPhone) : (emolaPhone || mpesaPhone);
 
-          let charge: Awaited<ReturnType<typeof pagajaCharge>>;
+          let charge: Awaited<ReturnType<typeof netshopCharge>>;
           try {
-            charge = await pagajaCharge({
+            charge = await netshopCharge({
               amount,
               customer_name: nome_cliente,
               customer_email: customer_email || undefined,
@@ -107,7 +107,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             metadata: {
               source: "merchant_api",
               webhook_url,
-              gateway: "pagaja",
+              gateway: "netshop",
               test_mode: charge.test_mode,
               taxa_gateway,
               taxa_comerciante,
