@@ -22,7 +22,7 @@ import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as ApiDebugNotificationRouteImport } from './routes/api/debug-notification'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
-import { Route as ApiPublicPagajaWebhookRouteImport } from './routes/api/public/pagaja-webhook'
+import { Route as ApiPublicNetshopWebhookRouteImport } from './routes/api/public/netshop-webhook'
 import { Route as ApiPublicCreateMerchantPaymentRouteImport } from './routes/api/public/create-merchant-payment'
 import { Route as ApiPublicCheckPaymentStatusRouteImport } from './routes/api/public/check-payment-status'
 import { Route as AuthenticatedDashboardWithdrawalsRouteImport } from './routes/_authenticated/dashboard.withdrawals'
@@ -119,9 +119,9 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicPagajaWebhookRoute = ApiPublicPagajaWebhookRouteImport.update({
-  id: '/api/public/pagaja-webhook',
-  path: '/api/public/pagaja-webhook',
+const ApiPublicNetshopWebhookRoute = ApiPublicNetshopWebhookRouteImport.update({
+  id: '/api/public/netshop-webhook',
+  path: '/api/public/netshop-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicCreateMerchantPaymentRoute =
@@ -333,7 +333,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
-  '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
+  '/api/public/netshop-webhook': typeof ApiPublicNetshopWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
@@ -378,7 +378,7 @@ export interface FileRoutesByTo {
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
-  '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
+  '/api/public/netshop-webhook': typeof ApiPublicNetshopWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
@@ -425,7 +425,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
-  '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
+  '/api/public/netshop-webhook': typeof ApiPublicNetshopWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
@@ -472,7 +472,7 @@ export interface FileRouteTypes {
     | '/dashboard/withdrawals'
     | '/api/public/check-payment-status'
     | '/api/public/create-merchant-payment'
-    | '/api/public/pagaja-webhook'
+    | '/api/public/netshop-webhook'
     | '/lovable/email/suppression'
     | '/dashboard/'
     | '/dashboard/admin/produtos'
@@ -517,7 +517,7 @@ export interface FileRouteTypes {
     | '/dashboard/withdrawals'
     | '/api/public/check-payment-status'
     | '/api/public/create-merchant-payment'
-    | '/api/public/pagaja-webhook'
+    | '/api/public/netshop-webhook'
     | '/lovable/email/suppression'
     | '/dashboard'
     | '/dashboard/admin/produtos'
@@ -563,7 +563,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/withdrawals'
     | '/api/public/check-payment-status'
     | '/api/public/create-merchant-payment'
-    | '/api/public/pagaja-webhook'
+    | '/api/public/netshop-webhook'
     | '/lovable/email/suppression'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/admin/produtos'
@@ -592,7 +592,7 @@ export interface RootRouteChildren {
   LSlugRoute: typeof LSlugRoute
   ApiPublicCheckPaymentStatusRoute: typeof ApiPublicCheckPaymentStatusRoute
   ApiPublicCreateMerchantPaymentRoute: typeof ApiPublicCreateMerchantPaymentRoute
-  ApiPublicPagajaWebhookRoute: typeof ApiPublicPagajaWebhookRoute
+  ApiPublicNetshopWebhookRoute: typeof ApiPublicNetshopWebhookRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicEmbedScriptRoute: typeof ApiPublicEmbedScriptRoute
   ApiPublicNotificationsPollRoute: typeof ApiPublicNotificationsPollRoute
@@ -696,11 +696,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/pagaja-webhook': {
-      id: '/api/public/pagaja-webhook'
-      path: '/api/public/pagaja-webhook'
-      fullPath: '/api/public/pagaja-webhook'
-      preLoaderRoute: typeof ApiPublicPagajaWebhookRouteImport
+    '/api/public/netshop-webhook': {
+      id: '/api/public/netshop-webhook'
+      path: '/api/public/netshop-webhook'
+      fullPath: '/api/public/netshop-webhook'
+      preLoaderRoute: typeof ApiPublicNetshopWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/create-merchant-payment': {
@@ -1020,7 +1020,7 @@ const rootRouteChildren: RootRouteChildren = {
   LSlugRoute: LSlugRoute,
   ApiPublicCheckPaymentStatusRoute: ApiPublicCheckPaymentStatusRoute,
   ApiPublicCreateMerchantPaymentRoute: ApiPublicCreateMerchantPaymentRoute,
-  ApiPublicPagajaWebhookRoute: ApiPublicPagajaWebhookRoute,
+  ApiPublicNetshopWebhookRoute: ApiPublicNetshopWebhookRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicEmbedScriptRoute: ApiPublicEmbedScriptRoute,
   ApiPublicNotificationsPollRoute: ApiPublicNotificationsPollRoute,

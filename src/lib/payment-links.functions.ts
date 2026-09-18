@@ -62,10 +62,10 @@ export const payLink = createServerFn({ method: "POST" })
     }).select().single();
     if (error) throw new Error(error.message);
 
-    // Inicia cobrança na Pagaja
+    // Inicia cobrança na NetShop
     try {
-      const { pagajaCharge } = await import("@/lib/pagaja.server");
-      const r = await pagajaCharge({
+      const { netshopCharge } = await import("@/lib/netshop.server");
+      const r = await netshopCharge({
         amount,
         customer_name: data.customer_name,
         customer_email: data.customer_email || undefined,

@@ -1,24 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "crypto";
 
-// Webhook Pagaja — evento payment.completed
-// Header: x-pagaja-signature: t=TIMESTAMP,v1=HMAC_SHA256("{t}.{rawBody}", secret)
-export const Route = createFileRoute("/api/public/pagaja-webhook")({
+// Webhook NetShop — eventos charge.paid / charge.failed
+// Header: X-NetShop-Signature (HMAC-SHA256 do corpo cru)
+export const Route = createFileRoute("/api/public/netshop-webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         try {
           const raw = await request.text();
-          const secret = process.env.PAGAJA_WEBHOOK_SECRET;
-          const header = request.headers.get("x-pagaja-signature") || "";
+          const secret = process.env.NETSHOP_WEBHOOK_SECRET;
+          const header = (request.headers.get("x-netshop-signature") || "").trim();
 
           if (secret) {
-            const parts = header.split(",");
-            const t = (parts.find((p) => p.trim().startsWith("t=")) || "").replace("t=", "").trim();
-            const v1 = (parts.find((p) => p.trim().startsWith("v1=")) || "").replace("v1=", "").trim();
-            if (!t || !v1) return Response.json({ ok: false, reason: "missing_signature" }, { status: 401 });
-            const expected = createHmac("sha256", secret).update(`${t}.${raw}`).digest("hex");
-            const a = Buffer.from(v1, "utf8");
+            const expected = createHmac("sha256", secret).update(raw).digest("hex");
+            const given = header.replace(/^sha256=/, "");
+            const a = Buffer.from(given, "utf8");
             const b = Buffer.from(expected, "utf8");
             if (a.length !== b.length || !timingSafeEqual(a, b)) {
               return Response.json({ ok: false, reason: "invalid_signature" }, { status: 401 });
@@ -26,10 +23,9 @@ export const Route = createFileRoute("/api/public/pagaja-webhook")({
           }
 
           const body = JSON.parse(raw || "{}");
-          if (body?.event !== "payment.completed") {
-            return Response.json({ ok: false, reason: "ignored" }, { status: 200 });
-          }
-          const ref = body?.data?.id || body?.data?.reference;
+          const event = String(body?.event || body?.type || "");
+          const data = body?.data ?? body;
+          const ref = data?.id || data?.charge_id || data?.reference;
           if (!ref) return Response.json({ ok: false, reason: "no_reference" }, { status: 200 });
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -39,6 +35,24 @@ export const Route = createFileRoute("/api/public/pagaja-webhook")({
             .eq("external_ref", String(ref))
             .maybeSingle();
           if (!tx) return Response.json({ ok: false, reason: "tx_not_found" }, { status: 200 });
+
+          if (event === "charge.failed" || String(data?.status).toLowerCase() === "failed") {
+            if (tx.status === "pending") {
+              await supabaseAdmin
+                .from("transactions")
+                .update({
+                  status: "failed",
+                  metadata: { ...((tx.metadata ?? {}) as any), failed_reason: data?.failed_reason ?? null },
+                })
+                .eq("id", tx.id)
+                .eq("status", "pending");
+            }
+            return Response.json({ ok: true });
+          }
+
+          if (event !== "charge.paid" && String(data?.status).toLowerCase() !== "paid") {
+            return Response.json({ ok: false, reason: "ignored" }, { status: 200 });
+          }
           if (tx.status === "paid") return Response.json({ ok: true, already: true });
 
           const { data: changed } = await supabaseAdmin
@@ -66,19 +80,19 @@ export const Route = createFileRoute("/api/public/pagaja-webhook")({
                 body: JSON.stringify({ status: "paid", partner_transaction_id: tx.external_ref }),
               });
             } catch (e) {
-              console.log("[pagaja-webhook] merchant forward failed", e);
+              console.log("[netshop-webhook] merchant forward failed", e);
             }
           } else {
             try {
               const { notifyNewSale } = await import("@/lib/sale-notify.server");
               await notifyNewSale(supabaseAdmin, tx.id);
             } catch (e) {
-              console.log("[pagaja-webhook] notifyNewSale failed", e);
+              console.log("[netshop-webhook] notifyNewSale failed", e);
             }
           }
           return Response.json({ ok: true });
         } catch (e) {
-          console.log("[pagaja-webhook] error", e);
+          console.log("[netshop-webhook] error", e);
           return Response.json({ ok: false, error: String(e) }, { status: 200 });
         }
       },
