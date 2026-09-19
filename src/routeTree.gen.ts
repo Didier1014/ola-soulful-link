@@ -22,6 +22,7 @@ import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as ApiDebugNotificationRouteImport } from './routes/api/debug-notification'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as ApiPublicReconcilePendingRouteImport } from './routes/api/public/reconcile-pending'
 import { Route as ApiPublicNetshopWebhookRouteImport } from './routes/api/public/netshop-webhook'
 import { Route as ApiPublicCreateMerchantPaymentRouteImport } from './routes/api/public/create-merchant-payment'
 import { Route as ApiPublicCheckPaymentStatusRouteImport } from './routes/api/public/check-payment-status'
@@ -119,6 +120,12 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicReconcilePendingRoute =
+  ApiPublicReconcilePendingRouteImport.update({
+    id: '/api/public/reconcile-pending',
+    path: '/api/public/reconcile-pending',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicNetshopWebhookRoute = ApiPublicNetshopWebhookRouteImport.update({
   id: '/api/public/netshop-webhook',
   path: '/api/public/netshop-webhook',
@@ -334,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
   '/api/public/netshop-webhook': typeof ApiPublicNetshopWebhookRoute
+  '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
@@ -379,6 +387,7 @@ export interface FileRoutesByTo {
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
   '/api/public/netshop-webhook': typeof ApiPublicNetshopWebhookRoute
+  '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
@@ -426,6 +435,7 @@ export interface FileRoutesById {
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
   '/api/public/netshop-webhook': typeof ApiPublicNetshopWebhookRoute
+  '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
@@ -473,6 +483,7 @@ export interface FileRouteTypes {
     | '/api/public/check-payment-status'
     | '/api/public/create-merchant-payment'
     | '/api/public/netshop-webhook'
+    | '/api/public/reconcile-pending'
     | '/lovable/email/suppression'
     | '/dashboard/'
     | '/dashboard/admin/produtos'
@@ -518,6 +529,7 @@ export interface FileRouteTypes {
     | '/api/public/check-payment-status'
     | '/api/public/create-merchant-payment'
     | '/api/public/netshop-webhook'
+    | '/api/public/reconcile-pending'
     | '/lovable/email/suppression'
     | '/dashboard'
     | '/dashboard/admin/produtos'
@@ -564,6 +576,7 @@ export interface FileRouteTypes {
     | '/api/public/check-payment-status'
     | '/api/public/create-merchant-payment'
     | '/api/public/netshop-webhook'
+    | '/api/public/reconcile-pending'
     | '/lovable/email/suppression'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/admin/produtos'
@@ -593,6 +606,7 @@ export interface RootRouteChildren {
   ApiPublicCheckPaymentStatusRoute: typeof ApiPublicCheckPaymentStatusRoute
   ApiPublicCreateMerchantPaymentRoute: typeof ApiPublicCreateMerchantPaymentRoute
   ApiPublicNetshopWebhookRoute: typeof ApiPublicNetshopWebhookRoute
+  ApiPublicReconcilePendingRoute: typeof ApiPublicReconcilePendingRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicEmbedScriptRoute: typeof ApiPublicEmbedScriptRoute
   ApiPublicNotificationsPollRoute: typeof ApiPublicNotificationsPollRoute
@@ -694,6 +708,13 @@ declare module '@tanstack/react-router' {
       path: '/lovable/email/suppression'
       fullPath: '/lovable/email/suppression'
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/reconcile-pending': {
+      id: '/api/public/reconcile-pending'
+      path: '/api/public/reconcile-pending'
+      fullPath: '/api/public/reconcile-pending'
+      preLoaderRoute: typeof ApiPublicReconcilePendingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/netshop-webhook': {
@@ -1021,6 +1042,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCheckPaymentStatusRoute: ApiPublicCheckPaymentStatusRoute,
   ApiPublicCreateMerchantPaymentRoute: ApiPublicCreateMerchantPaymentRoute,
   ApiPublicNetshopWebhookRoute: ApiPublicNetshopWebhookRoute,
+  ApiPublicReconcilePendingRoute: ApiPublicReconcilePendingRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicEmbedScriptRoute: ApiPublicEmbedScriptRoute,
   ApiPublicNotificationsPollRoute: ApiPublicNotificationsPollRoute,

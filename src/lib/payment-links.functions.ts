@@ -72,17 +72,37 @@ export const payLink = createServerFn({ method: "POST" })
         customer_phone: data.customer_phone,
         description: "Link de pagamento",
         method: data.method,
+        idempotencyKey: tx.id,
       });
       await supabaseAdmin.from("transactions").update({ external_ref: r.reference }).eq("id", tx.id);
       await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
+      if (r.status === "failed") {
+        const reason = r.failed_reason || "Pagamento não confirmado no telemóvel";
+        await supabaseAdmin.from("transactions").update({
+          status: "failed",
+          metadata: {
+            ...(trackingClean && Object.keys(trackingClean).length ? { tracking: trackingClean } : {}),
+            failed_reason: reason,
+            response_code: r.response_code ?? null,
+            failed_at: new Date().toISOString(),
+          },
+        }).eq("id", tx.id).eq("status", "pending");
+        throw new Error(reason);
+      }
     } catch (e) {
       const errMsg = e instanceof Error ? e.message : "Falha ao iniciar pagamento";
-      const mergedMeta = {
-        ...(trackingClean && Object.keys(trackingClean).length ? { tracking: trackingClean } : {}),
-        error_message: errMsg,
-        failed_at: new Date().toISOString(),
-      };
-      await supabaseAdmin.from("transactions").update({ status: "failed", metadata: mergedMeta }).eq("id", tx.id);
+      const { data: cur } = await supabaseAdmin
+        .from("transactions").select("external_ref").eq("id", tx.id).maybeSingle();
+      if (!cur?.external_ref) {
+        await supabaseAdmin.from("transactions").update({
+          status: "failed",
+          metadata: {
+            ...(trackingClean && Object.keys(trackingClean).length ? { tracking: trackingClean } : {}),
+            error_message: errMsg,
+            failed_at: new Date().toISOString(),
+          },
+        }).eq("id", tx.id).eq("status", "pending");
+      }
       throw new Error(errMsg);
     }
     return { id: tx.id, status: "pending" };
