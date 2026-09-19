@@ -106,17 +106,41 @@ export const createCheckout = createServerFn({ method: "POST" })
         customer_phone: data.customer_phone,
         description: product.name ?? "Pagamento",
         method: data.method === "card" ? "card" : data.method,
+        idempotencyKey: tx.id,
       });
+      // Guardar SEMPRE a referência — é o que permite reconciliar por webhook/polling.
       await supabaseAdmin.from("transactions").update({ external_ref: r.reference }).eq("id", tx.id);
       gatewayPaid = r.paid;
+
+      if (r.status === "failed") {
+        const reason = r.failed_reason || "Pagamento não confirmado no telemóvel";
+        await supabaseAdmin.from("transactions").update({
+          status: "failed",
+          metadata: {
+            ...(trackingClean && Object.keys(trackingClean).length ? { tracking: trackingClean } : {}),
+            failed_reason: reason,
+            response_code: r.response_code ?? null,
+            failed_at: new Date().toISOString(),
+          },
+        }).eq("id", tx.id).eq("status", "pending");
+        throw new Error(reason);
+      }
     } catch (e) {
       const errMsg = e instanceof Error ? e.message : "Falha ao iniciar pagamento";
-      const mergedMeta = {
-        ...(trackingClean && Object.keys(trackingClean).length ? { tracking: trackingClean } : {}),
-        error_message: errMsg,
-        failed_at: new Date().toISOString(),
-      };
-      await supabaseAdmin.from("transactions").update({ status: "failed", metadata: mergedMeta }).eq("id", tx.id);
+      const { data: cur } = await supabaseAdmin
+        .from("transactions").select("external_ref,status").eq("id", tx.id).maybeSingle();
+      // Só marcar como falhada quando não existe referência no gateway.
+      // Com referência, fica pendente e é resolvida por webhook/polling (o cliente pode ter pago).
+      if (!cur?.external_ref) {
+        await supabaseAdmin.from("transactions").update({
+          status: "failed",
+          metadata: {
+            ...(trackingClean && Object.keys(trackingClean).length ? { tracking: trackingClean } : {}),
+            error_message: errMsg,
+            failed_at: new Date().toISOString(),
+          },
+        }).eq("id", tx.id).eq("status", "pending");
+      }
       throw new Error(errMsg);
     }
     if (gatewayPaid) {
