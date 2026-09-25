@@ -1,17 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "crypto";
 
-// Webhook NetShop — eventos charge.paid / charge.failed
-// Header: X-NetShop-Signature (HMAC-SHA256 do corpo cru)
-export const Route = createFileRoute("/api/public/netshop-webhook")({
+// Webhook ZumboPay — eventos payment.succeeded / payment.failed
+// Header: x-zumbopay-signature (HMAC-SHA256 do corpo cru)
+export const Route = createFileRoute("/api/public/zumbopay-webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         try {
           const raw = await request.text();
-          // Secret configurado no painel NetShop; pode estar salvo como NETSHOP_WEBHOOK_SECRET ou STRIPE_WEBHOOK_SECRET
-          const secret = process.env.NETSHOP_WEBHOOK_SECRET || process.env.STRIPE_WEBHOOK_SECRET;
-          const header = (request.headers.get("x-netshop-signature") || "").trim();
+          // Secret do painel ZumboPay (opcional); sem ele o pagamento é re-verificado na API
+          const secret = process.env.ZUMBOPAY_WEBHOOK_SECRET;
+          const header = (request.headers.get("x-zumbopay-signature") || "").trim();
 
           if (secret) {
             const expected = createHmac("sha256", secret).update(raw).digest("hex");
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/public/netshop-webhook")({
           const body = JSON.parse(raw || "{}");
           const event = String(body?.event || body?.type || "");
           const data = body?.data ?? body;
-          const ref = data?.id || data?.charge_id || data?.reference;
+          const ref = data?.reference || data?.payment_reference || data?.id;
           if (!ref) return Response.json({ ok: false, reason: "no_reference" }, { status: 200 });
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/api/public/netshop-webhook")({
             .maybeSingle();
           if (!tx) return Response.json({ ok: false, reason: "tx_not_found" }, { status: 200 });
 
-          if (event === "charge.failed" || String(data?.status).toLowerCase() === "failed") {
+          if (event === "payment.failed" || String(data?.status).toLowerCase() === "failed") {
             if (tx.status === "pending") {
               await supabaseAdmin
                 .from("transactions")
@@ -51,7 +51,7 @@ export const Route = createFileRoute("/api/public/netshop-webhook")({
             return Response.json({ ok: true });
           }
 
-          if (event !== "charge.paid" && String(data?.status).toLowerCase() !== "paid") {
+          if (!(await (async () => { if (event !== "payment.succeeded" && !["paid","success","succeeded"].includes(String(data?.status).toLowerCase())) return false; if (secret) return true; const { netshopCheck } = await import("@/lib/netshop.server"); return (await netshopCheck(String(ref))) === "paid"; })())) {
             return Response.json({ ok: false, reason: "ignored" }, { status: 200 });
           }
           if (tx.status === "paid") return Response.json({ ok: true, already: true });
@@ -81,19 +81,19 @@ export const Route = createFileRoute("/api/public/netshop-webhook")({
                 body: JSON.stringify({ status: "paid", partner_transaction_id: tx.external_ref }),
               });
             } catch (e) {
-              console.log("[netshop-webhook] merchant forward failed", e);
+              console.log("[zumbopay-webhook] merchant forward failed", e);
             }
           } else {
             try {
               const { notifyNewSale } = await import("@/lib/sale-notify.server");
               await notifyNewSale(supabaseAdmin, tx.id);
             } catch (e) {
-              console.log("[netshop-webhook] notifyNewSale failed", e);
+              console.log("[zumbopay-webhook] notifyNewSale failed", e);
             }
           }
           return Response.json({ ok: true });
         } catch (e) {
-          console.log("[netshop-webhook] error", e);
+          console.log("[zumbopay-webhook] error", e);
           return Response.json({ ok: false, error: String(e) }, { status: 200 });
         }
       },

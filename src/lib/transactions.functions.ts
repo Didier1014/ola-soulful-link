@@ -8,7 +8,7 @@ export const checkApiStatus = createServerFn({ method: "GET" }).handler(async ()
   return netshopStatus();
 });
 
-const WEBHOOK_URL = "https://redoxpay.lovable.app/api/public/netshop-webhook";
+const WEBHOOK_URL = "https://redoxpay.lovable.app/api/public/zumbopay-webhook";
 
 
 
