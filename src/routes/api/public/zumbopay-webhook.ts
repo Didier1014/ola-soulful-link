@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "crypto";
 
-// Webhook NetShop — eventos charge.paid / charge.failed
-// Header: X-NetShop-Signature (HMAC-SHA256 do corpo cru)
+// Webhook ZumboPay — eventos payment.succeeded / payment.failed
+// Header: x-zumbopay-signature (HMAC-SHA256 do corpo cru)
 export const Route = createFileRoute("/api/public/zumbopay-webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         try {
           const raw = await request.text();
-          // Secret configurado no painel NetShop; pode estar salvo como NETSHOP_WEBHOOK_SECRET ou STRIPE_WEBHOOK_SECRET
+          // Secret do painel ZumboPay (opcional); sem ele o pagamento é re-verificado na API
           const secret = process.env.ZUMBOPAY_WEBHOOK_SECRET;
           const header = (request.headers.get("x-zumbopay-signature") || "").trim();
 
