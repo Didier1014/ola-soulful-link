@@ -434,3 +434,7 @@ html {
     pointer-events: none;
   }
 }
+
+#lovable-badge {
+  display: none !important;
+}
