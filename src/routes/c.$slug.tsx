@@ -168,6 +168,7 @@ function CheckoutPage() {
       setModal({ status: "processing", id: undefined });
     },
     onSuccess: (r) => {
+      if ((r as any).checkout_url && r.status !== "paid") { window.location.href = (r as any).checkout_url; return; }
       if (r.status === "paid") {
         setModal({ status: "paid", id: r.id, delivery_url: r.delivery_url ?? null });
         toast.success("Pagamento confirmado!");

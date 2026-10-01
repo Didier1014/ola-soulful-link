@@ -47,7 +47,7 @@ function NewTransactionPage() {
         },
       });
     },
-    onSuccess: () => { toast.success("Pedido enviado!"); router.navigate({ to: "/dashboard/transactions" }); },
+    onSuccess: (r: any) => { if (r?.checkout_url) { window.open(r.checkout_url, "_blank"); } toast.success("Pedido enviado!"); router.navigate({ to: "/dashboard/transactions" }); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
   });
 

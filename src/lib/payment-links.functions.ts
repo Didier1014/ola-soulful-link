@@ -29,7 +29,7 @@ export const payLink = createServerFn({ method: "POST" })
     customer_name: z.string().trim().min(2).max(120),
     customer_email: z.string().trim().email().max(160).optional().or(z.literal("")).default(""),
     customer_phone: z.string().trim().regex(/^\+?\d{8,15}$/, "Telefone inválido"),
-    method: z.enum(["mpesa"]),
+    method: z.enum(["mpesa", "emola"]),
     tracking: z.object({
       src: z.string().max(200).optional(),
       sck: z.string().max(200).optional(),
@@ -62,7 +62,7 @@ export const payLink = createServerFn({ method: "POST" })
     }).select().single();
     if (error) throw new Error(error.message);
 
-    // Inicia cobrança na NetShop
+    let checkoutUrl: string | undefined;
     try {
       const { netshopCharge } = await import("@/lib/netshop.server");
       const r = await netshopCharge({
@@ -74,6 +74,7 @@ export const payLink = createServerFn({ method: "POST" })
         method: data.method,
         idempotencyKey: tx.id,
       });
+      checkoutUrl = r.checkout_url;
       await supabaseAdmin.from("transactions").update({ external_ref: r.reference }).eq("id", tx.id);
       await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
       if (r.status === "failed") {
@@ -105,7 +106,7 @@ export const payLink = createServerFn({ method: "POST" })
       }
       throw new Error(errMsg);
     }
-    return { id: tx.id, status: "pending" };
+    return { id: tx.id, status: "pending", checkout_url: checkoutUrl };
   });
 
 

@@ -18,7 +18,7 @@ const checkoutSchema = z.object({
   customer_name: z.string().trim().min(2).max(120),
   customer_email: z.string().trim().email().max(160).optional().or(z.literal("")).default(""),
   customer_phone: z.string().trim().regex(/^\+?\d{8,15}$/, "Telefone inválido"),
-  method: z.enum(["mpesa", "card"]),
+  method: z.enum(["mpesa", "emola", "card"]),
   tracking: z.object({
     src: z.string().max(200).optional(),
     sck: z.string().max(200).optional(),
@@ -97,6 +97,7 @@ export const createCheckout = createServerFn({ method: "POST" })
 
     // Inicia cobrança na NetShop (M-Pesa)
     let gatewayPaid = false;
+    let checkoutUrl: string | undefined;
     try {
       const { netshopCharge } = await import("@/lib/netshop.server");
       const r = await netshopCharge({
@@ -111,6 +112,7 @@ export const createCheckout = createServerFn({ method: "POST" })
       // Guardar SEMPRE a referência — é o que permite reconciliar por webhook/polling.
       await supabaseAdmin.from("transactions").update({ external_ref: r.reference }).eq("id", tx.id);
       gatewayPaid = r.paid;
+      checkoutUrl = r.checkout_url;
 
       if (r.status === "failed") {
         const reason = r.failed_reason || "Pagamento não confirmado no telemóvel";
@@ -147,7 +149,7 @@ export const createCheckout = createServerFn({ method: "POST" })
       await creditSellerIfPending(supabaseAdmin, tx.id, product.user_id, seller_net, {});
     }
     const { data: prod } = await supabaseAdmin.from("products").select("delivery_url").eq("id", product.id).maybeSingle();
-    return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, delivery_url: prod?.delivery_url ?? undefined, message: "Confirme o pagamento no telemóvel" };
+    return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, delivery_url: prod?.delivery_url ?? undefined, checkout_url: checkoutUrl, message: "Confirme o pagamento no telemóvel" };
   });
 
 
