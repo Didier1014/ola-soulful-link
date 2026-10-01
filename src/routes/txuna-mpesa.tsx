@@ -84,6 +84,7 @@ function TxunaCheckout() {
       }),
     onMutate: () => setModal({ status: "processing" }),
     onSuccess: (r) => {
+      if ((r as any).checkout_url && r.status !== "paid") { window.location.href = (r as any).checkout_url; return; }
       if (r.status === "paid") {
         setModal({ status: "paid", id: r.id });
         return;
