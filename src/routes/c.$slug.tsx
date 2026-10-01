@@ -78,7 +78,7 @@ function CheckoutPage() {
 
 
   const [form, setForm] = useState({ customer_name: "", customer_phone: "" });
-  const method = "mpesa" as const;
+  const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [selectedBumps, setSelectedBumps] = useState<Record<string, boolean>>({});
   const [modal, setModal] = useState<{ status: "processing" | "paid" | "failed" | "pending"; id?: string; delivery_url?: string | null } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -296,9 +296,8 @@ function CheckoutPage() {
   const bumps: Array<{ id: string; name: string; price_mzn: number; cover_url: string | null }> = (product as any).order_bumps ?? [];
   const bumpsTotal = bumps.reduce((s, b) => selectedBumps[b.id] ? s + Number(b.price_mzn) : s, 0);
   const total = price + bumpsTotal;
-  const methodColor = "#ef4444";
-  const methodGradient = "linear-gradient(135deg, #ef4444, #dc2626)";
-  const mpesaSelected = true;
+  const methodColor = method === "emola" ? "#0284c7" : "#ef4444";
+  const methodGradient = method === "emola" ? "linear-gradient(135deg, #0ea5e9, #0284c7)" : "linear-gradient(135deg, #ef4444, #dc2626)";
 
   return (
     <div className="min-h-screen app-light" style={{ background: "linear-gradient(135deg, #f9fafc 0%, #f1f5f9 100%)" }}>
