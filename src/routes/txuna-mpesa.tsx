@@ -62,6 +62,7 @@ function TxunaCheckout() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [plan, setPlan] = useState<"6" | "12">("6");
+  const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [modal, setModal] = useState<{ status: "processing" | "pending" | "paid" | "failed"; id?: string } | null>(null);
   const checkingRef = useRef(false);
 
@@ -78,7 +79,7 @@ function TxunaCheckout() {
           amount_mzn: amount,
           customer_name: name.trim(),
           customer_phone: `258${digits}`,
-          method: "mpesa",
+          method,
           tracking: { src: `txuna-${plan}m` },
         },
       }),
@@ -211,13 +212,34 @@ function TxunaCheckout() {
         {/* Método */}
         <section className="tx-card space-y-4 rounded-2xl bg-white px-4 py-5 sm:space-y-5 sm:rounded-3xl sm:px-8 sm:py-8">
           <h2 className="text-[15px] font-black sm:text-xl">Método de pagamento</h2>
-          <div className="flex min-h-[72px] items-center gap-4 rounded-2xl border-2 border-[var(--tx-red)] bg-[var(--tx-red-soft)] px-5 py-3 sm:min-h-[112px] sm:gap-5 sm:rounded-3xl sm:border-[3px] sm:px-8 sm:py-5">
-            <img src="/brands/mpesa.png" alt="M-Pesa" className="tx-logo h-11 w-11 rounded-lg sm:h-14 sm:w-14" />
-            <div className="flex-1">
-              <p className="text-[15px] font-black sm:text-xl">M-Pesa</p>
-              <p className="text-[12px] text-slate-500 sm:text-base">Vodacom Moçambique</p>
-            </div>
-            <span className="h-5 w-5 rounded-full bg-[var(--tx-red)] sm:h-7 sm:w-7" />
+          <div className="grid grid-cols-2 gap-3 sm:gap-5">
+            {([
+              { id: "mpesa" as const, label: "M-Pesa", sub: "Vodacom Moçambique", logo: "/brands/mpesa.png", color: "var(--tx-red)", soft: "var(--tx-red-soft)" },
+              { id: "emola" as const, label: "e-Mola", sub: "Movitel Moçambique", logo: "/brands/emola.png", color: "#0284c7", soft: "#f0f9ff" },
+            ]).map((opt) => {
+              const sel = method === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setMethod(opt.id)}
+                  className="flex min-h-[72px] items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-all sm:min-h-[112px] sm:gap-4 sm:rounded-3xl sm:border-[3px] sm:px-6 sm:py-5"
+                  style={sel
+                    ? { borderColor: opt.color, background: opt.soft }
+                    : { borderColor: "var(--tx-line)", background: "#fff" }}
+                >
+                  <img src={opt.logo} alt={opt.label} className="tx-logo h-11 w-11 rounded-lg sm:h-14 sm:w-14" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-black sm:text-xl">{opt.label}</p>
+                    <p className="text-[11px] text-slate-500 sm:text-sm">{opt.sub}</p>
+                  </div>
+                  <span
+                    className="h-5 w-5 shrink-0 rounded-full border-2 sm:h-7 sm:w-7"
+                    style={sel ? { background: opt.color, borderColor: opt.color } : { borderColor: "var(--tx-line)" }}
+                  />
+                </button>
+              );
+            })}
           </div>
 
           {/* Planos */}
@@ -254,7 +276,7 @@ function TxunaCheckout() {
           </div>
 
           {/* Telefone */}
-          <h2 className="pt-1 text-[15px] font-black sm:text-xl">Número M-Pesa</h2>
+          <h2 className="pt-1 text-[15px] font-black sm:text-xl">Número {method === "emola" ? "e-Mola" : "M-Pesa"}</h2>
           <div className="flex items-center overflow-hidden rounded-full border border-[var(--tx-line)]">
             <span className="flex h-12 items-center bg-[var(--tx-soft)] px-4 text-[16px] font-black sm:h-16 sm:px-6 sm:text-lg">+258</span>
             <input
