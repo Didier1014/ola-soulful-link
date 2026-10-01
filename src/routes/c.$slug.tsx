@@ -78,7 +78,7 @@ function CheckoutPage() {
 
 
   const [form, setForm] = useState({ customer_name: "", customer_phone: "" });
-  const method = "mpesa" as const;
+  const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [selectedBumps, setSelectedBumps] = useState<Record<string, boolean>>({});
   const [modal, setModal] = useState<{ status: "processing" | "paid" | "failed" | "pending"; id?: string; delivery_url?: string | null } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -296,9 +296,8 @@ function CheckoutPage() {
   const bumps: Array<{ id: string; name: string; price_mzn: number; cover_url: string | null }> = (product as any).order_bumps ?? [];
   const bumpsTotal = bumps.reduce((s, b) => selectedBumps[b.id] ? s + Number(b.price_mzn) : s, 0);
   const total = price + bumpsTotal;
-  const methodColor = "#ef4444";
-  const methodGradient = "linear-gradient(135deg, #ef4444, #dc2626)";
-  const mpesaSelected = true;
+  const methodColor = method === "emola" ? "#0284c7" : "#ef4444";
+  const methodGradient = method === "emola" ? "linear-gradient(135deg, #0ea5e9, #0284c7)" : "linear-gradient(135deg, #ef4444, #dc2626)";
 
   return (
     <div className="min-h-screen app-light" style={{ background: "linear-gradient(135deg, #f9fafc 0%, #f1f5f9 100%)" }}>
@@ -410,21 +409,36 @@ function CheckoutPage() {
 
             <div className="space-y-1.5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Deseja pagar com:</p>
-              <div className="grid grid-cols-1 gap-2">
-                <div
-                  className="relative py-4 px-3 rounded-xl border-[1.5px] font-semibold text-base flex items-center justify-center gap-2"
-                  style={{ borderColor: "#ef4444", background: "#fef2f2", color: "#dc2626", boxShadow: "0 0 0 3px rgba(220,38,38,0.08)" }}>
-                  <span className="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: "#ef4444" }}>
-                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                  </span>
-                  <img src="/brands/mpesa.png" alt="M-Pesa" className="w-8 h-8 shrink-0" />
-                  M-Pesa
-                </div>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { id: "mpesa" as const, label: "M-Pesa", logo: "/brands/mpesa.png", color: "#ef4444", bg: "#fef2f2", text: "#dc2626" },
+                  { id: "emola" as const, label: "e-Mola", logo: "/brands/emola.png", color: "#0ea5e9", bg: "#f0f9ff", text: "#0284c7" },
+                ]).map((opt) => {
+                  const sel = method === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setMethod(opt.id)}
+                      className="relative py-4 px-3 rounded-xl border-[1.5px] font-semibold text-base flex items-center justify-center gap-2 transition-all"
+                      style={sel
+                        ? { borderColor: opt.color, background: opt.bg, color: opt.text, boxShadow: `0 0 0 3px ${opt.color}14` }
+                        : { borderColor: "#e5e7eb", background: "#fff", color: "#6b7280" }}>
+                      {sel && (
+                        <span className="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: opt.color }}>
+                          <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                        </span>
+                      )}
+                      <img src={opt.logo} alt={opt.label} className="w-8 h-8 shrink-0" />
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Número de M-Pesa *</Label>
+              <Label className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Número de {method === "emola" ? "e-Mola" : "M-Pesa"} *</Label>
               <div className="flex rounded-xl overflow-hidden border-[1.5px] border-gray-200 focus-within:border-blue-500 focus-within:ring-[3px] focus-within:ring-blue-500/10 transition-all">
                 <div className="flex items-center px-3 text-sm font-medium text-gray-500 bg-gray-50 border-r border-gray-200">+258</div>
                 <input value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
