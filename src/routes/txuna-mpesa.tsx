@@ -75,8 +75,6 @@ function TxunaCheckout() {
           product_id: product?.id ?? "",
           amount_mzn: amount,
           customer_name: name.trim(),
-          customer_phone: `258${digits}`,
-          method,
           tracking: { src: `txuna-${plan}m` },
         },
       }),
