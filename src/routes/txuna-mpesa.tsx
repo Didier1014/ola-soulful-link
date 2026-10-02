@@ -60,16 +60,13 @@ function TxunaCheckout() {
 
 
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [plan, setPlan] = useState<"6" | "12">("6");
-  const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [modal, setModal] = useState<{ status: "processing" | "pending" | "paid" | "failed"; id?: string } | null>(null);
   const checkingRef = useRef(false);
 
   const selectedPlan = PLANS.find((p) => p.id === plan);
   const amount = selectedPlan?.price ?? PLANS[0].price;
-  const digits = phone.replace(/\D/g, "");
-  const ready = name.trim().length >= 3 && digits.length === 9 && !!product?.id;
+  const ready = name.trim().length >= 3 && !!product?.id;
 
   const m = useMutation({
     mutationFn: () =>
