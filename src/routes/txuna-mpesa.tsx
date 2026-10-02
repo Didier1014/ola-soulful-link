@@ -204,37 +204,13 @@ function TxunaCheckout() {
           />
         </section>
 
-        {/* Método */}
+        {/* Método + Planos */}
         <section className="tx-card space-y-4 rounded-2xl bg-white px-4 py-5 sm:space-y-5 sm:rounded-3xl sm:px-8 sm:py-8">
           <h2 className="text-[15px] font-black sm:text-xl">Método de pagamento</h2>
-          <div className="grid grid-cols-2 gap-3 sm:gap-5">
-            {([
-              { id: "mpesa" as const, label: "M-Pesa", sub: "Vodacom Moçambique", logo: "/brands/mpesa.png", color: "var(--tx-red)", soft: "var(--tx-red-soft)" },
-              { id: "emola" as const, label: "e-Mola", sub: "Movitel Moçambique", logo: "/brands/emola.png", color: "#0284c7", soft: "#f0f9ff" },
-            ]).map((opt) => {
-              const sel = method === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setMethod(opt.id)}
-                  className="flex min-h-[72px] items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-all sm:min-h-[112px] sm:gap-4 sm:rounded-3xl sm:border-[3px] sm:px-6 sm:py-5"
-                  style={sel
-                    ? { borderColor: opt.color, background: opt.soft }
-                    : { borderColor: "var(--tx-line)", background: "#fff" }}
-                >
-                  <img src={opt.logo} alt={opt.label} className="tx-logo h-11 w-11 rounded-lg sm:h-14 sm:w-14" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-black sm:text-xl">{opt.label}</p>
-                    <p className="text-[11px] text-slate-500 sm:text-sm">{opt.sub}</p>
-                  </div>
-                  <span
-                    className="h-5 w-5 shrink-0 rounded-full border-2 sm:h-7 sm:w-7"
-                    style={sel ? { background: opt.color, borderColor: opt.color } : { borderColor: "var(--tx-line)" }}
-                  />
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-3 rounded-2xl border border-[var(--tx-line)] bg-[var(--tx-soft)] px-4 py-3 sm:gap-4 sm:rounded-3xl sm:px-6 sm:py-4">
+            <img src="/brands/mpesa.png" alt="M-Pesa" className="tx-logo h-10 w-10 rounded-lg sm:h-12 sm:w-12" />
+            <img src="/brands/emola.png" alt="e-Mola" className="tx-logo h-10 w-10 rounded-lg sm:h-12 sm:w-12" />
+            <p className="text-[12px] font-bold text-slate-600 sm:text-sm">M-Pesa ou e-Mola — escolhe na página de pagamento segura</p>
           </div>
 
           {/* Planos */}
