@@ -60,16 +60,13 @@ function TxunaCheckout() {
 
 
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [plan, setPlan] = useState<"6" | "12">("6");
-  const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [modal, setModal] = useState<{ status: "processing" | "pending" | "paid" | "failed"; id?: string } | null>(null);
   const checkingRef = useRef(false);
 
   const selectedPlan = PLANS.find((p) => p.id === plan);
   const amount = selectedPlan?.price ?? PLANS[0].price;
-  const digits = phone.replace(/\D/g, "");
-  const ready = name.trim().length >= 3 && digits.length === 9 && !!product?.id;
+  const ready = name.trim().length >= 3 && !!product?.id;
 
   const m = useMutation({
     mutationFn: () =>
@@ -78,8 +75,6 @@ function TxunaCheckout() {
           product_id: product?.id ?? "",
           amount_mzn: amount,
           customer_name: name.trim(),
-          customer_phone: `258${digits}`,
-          method,
           tracking: { src: `txuna-${plan}m` },
         },
       }),
@@ -209,37 +204,13 @@ function TxunaCheckout() {
           />
         </section>
 
-        {/* Método */}
+        {/* Método + Planos */}
         <section className="tx-card space-y-4 rounded-2xl bg-white px-4 py-5 sm:space-y-5 sm:rounded-3xl sm:px-8 sm:py-8">
           <h2 className="text-[15px] font-black sm:text-xl">Método de pagamento</h2>
-          <div className="grid grid-cols-2 gap-3 sm:gap-5">
-            {([
-              { id: "mpesa" as const, label: "M-Pesa", sub: "Vodacom Moçambique", logo: "/brands/mpesa.png", color: "var(--tx-red)", soft: "var(--tx-red-soft)" },
-              { id: "emola" as const, label: "e-Mola", sub: "Movitel Moçambique", logo: "/brands/emola.png", color: "#0284c7", soft: "#f0f9ff" },
-            ]).map((opt) => {
-              const sel = method === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setMethod(opt.id)}
-                  className="flex min-h-[72px] items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-all sm:min-h-[112px] sm:gap-4 sm:rounded-3xl sm:border-[3px] sm:px-6 sm:py-5"
-                  style={sel
-                    ? { borderColor: opt.color, background: opt.soft }
-                    : { borderColor: "var(--tx-line)", background: "#fff" }}
-                >
-                  <img src={opt.logo} alt={opt.label} className="tx-logo h-11 w-11 rounded-lg sm:h-14 sm:w-14" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-black sm:text-xl">{opt.label}</p>
-                    <p className="text-[11px] text-slate-500 sm:text-sm">{opt.sub}</p>
-                  </div>
-                  <span
-                    className="h-5 w-5 shrink-0 rounded-full border-2 sm:h-7 sm:w-7"
-                    style={sel ? { background: opt.color, borderColor: opt.color } : { borderColor: "var(--tx-line)" }}
-                  />
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-3 rounded-2xl border border-[var(--tx-line)] bg-[var(--tx-soft)] px-4 py-3 sm:gap-4 sm:rounded-3xl sm:px-6 sm:py-4">
+            <img src="/brands/mpesa.png" alt="M-Pesa" className="tx-logo h-10 w-10 rounded-lg sm:h-12 sm:w-12" />
+            <img src="/brands/emola.png" alt="e-Mola" className="tx-logo h-10 w-10 rounded-lg sm:h-12 sm:w-12" />
+            <p className="text-[12px] font-bold text-slate-600 sm:text-sm">M-Pesa ou e-Mola — escolhe na página de pagamento segura</p>
           </div>
 
           {/* Planos */}
@@ -275,22 +246,9 @@ function TxunaCheckout() {
             })}
           </div>
 
-          {/* Telefone */}
-          <h2 className="pt-1 text-[15px] font-black sm:text-xl">Número {method === "emola" ? "e-Mola" : "M-Pesa"}</h2>
-          <div className="flex items-center overflow-hidden rounded-full border border-[var(--tx-line)]">
-            <span className="flex h-12 items-center bg-[var(--tx-soft)] px-4 text-[16px] font-black sm:h-16 sm:px-6 sm:text-lg">+258</span>
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
-              inputMode="numeric"
-              placeholder="84/85 + 7 dígitos"
-              className="tx-field h-12 min-w-0 flex-1 px-3 text-[16px] outline-none sm:h-16 sm:px-5 sm:text-lg"
-            />
-          </div>
-
           <div className="flex gap-3 rounded-2xl bg-[var(--tx-soft)] p-4 text-[12px] leading-relaxed text-slate-500 sm:gap-4 sm:rounded-3xl sm:p-5 sm:text-base">
             <Lock className="mt-0.5 h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
-            <p>Protegemos os seus dados de pagamento com criptografia ponta a ponta.</p>
+            <p>Vai preencher o seu número M-Pesa ou e-Mola na página de pagamento segura. Os seus dados estão protegidos com criptografia ponta a ponta.</p>
           </div>
 
           <button
