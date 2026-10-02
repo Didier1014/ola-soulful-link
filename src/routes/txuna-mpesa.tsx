@@ -246,22 +246,9 @@ function TxunaCheckout() {
             })}
           </div>
 
-          {/* Telefone */}
-          <h2 className="pt-1 text-[15px] font-black sm:text-xl">Número {method === "emola" ? "e-Mola" : "M-Pesa"}</h2>
-          <div className="flex items-center overflow-hidden rounded-full border border-[var(--tx-line)]">
-            <span className="flex h-12 items-center bg-[var(--tx-soft)] px-4 text-[16px] font-black sm:h-16 sm:px-6 sm:text-lg">+258</span>
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
-              inputMode="numeric"
-              placeholder="84/85 + 7 dígitos"
-              className="tx-field h-12 min-w-0 flex-1 px-3 text-[16px] outline-none sm:h-16 sm:px-5 sm:text-lg"
-            />
-          </div>
-
           <div className="flex gap-3 rounded-2xl bg-[var(--tx-soft)] p-4 text-[12px] leading-relaxed text-slate-500 sm:gap-4 sm:rounded-3xl sm:p-5 sm:text-base">
             <Lock className="mt-0.5 h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
-            <p>Protegemos os seus dados de pagamento com criptografia ponta a ponta.</p>
+            <p>Vai preencher o seu número M-Pesa ou e-Mola na página de pagamento segura. Os seus dados estão protegidos com criptografia ponta a ponta.</p>
           </div>
 
           <button
