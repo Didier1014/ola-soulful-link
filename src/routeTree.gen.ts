@@ -9,70 +9,60 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
-import { Route as TxunaMpesaRouteImport } from './routes/txuna-mpesa'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as ObrigadoRouteImport } from './routes/obrigado'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as LSlugRouteImport } from './routes/l.$slug'
-import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
-import { Route as CSlugRouteImport } from './routes/c.$slug'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ObrigadoRouteImport } from './routes/obrigado'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TxunaEmolaRouteImport } from './routes/txuna-emola'
+import { Route as TxunaMpesaRouteImport } from './routes/txuna-mpesa'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ApiDebugNotificationRouteImport } from './routes/api/debug-notification'
+import { Route as CSlugRouteImport } from './routes/c.$slug'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
-import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
-import { Route as ApiPublicVpayWebhookRouteImport } from './routes/api/public/vpay-webhook'
-import { Route as ApiPublicReconcilePendingRouteImport } from './routes/api/public/reconcile-pending'
-import { Route as ApiPublicCreateMerchantPaymentRouteImport } from './routes/api/public/create-merchant-payment'
-import { Route as ApiPublicCheckPaymentStatusRouteImport } from './routes/api/public/check-payment-status'
-import { Route as AuthenticatedDashboardWithdrawalsRouteImport } from './routes/_authenticated/dashboard.withdrawals'
-import { Route as AuthenticatedDashboardTransactionsRouteImport } from './routes/_authenticated/dashboard.transactions'
-import { Route as AuthenticatedDashboardSubscriptionsRouteImport } from './routes/_authenticated/dashboard.subscriptions'
-import { Route as AuthenticatedDashboardSmsRouteImport } from './routes/_authenticated/dashboard.sms'
-import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_authenticated/dashboard.settings'
-import { Route as AuthenticatedDashboardReportsRouteImport } from './routes/_authenticated/dashboard.reports'
-import { Route as AuthenticatedDashboardProfileRouteImport } from './routes/_authenticated/dashboard.profile'
-import { Route as AuthenticatedDashboardProductsRouteImport } from './routes/_authenticated/dashboard.products'
-import { Route as AuthenticatedDashboardPaymentLinksRouteImport } from './routes/_authenticated/dashboard.payment-links'
-import { Route as AuthenticatedDashboardNotificationsRouteImport } from './routes/_authenticated/dashboard.notifications'
-import { Route as AuthenticatedDashboardNewTransactionRouteImport } from './routes/_authenticated/dashboard.new-transaction'
-import { Route as AuthenticatedDashboardIntegrationsRouteImport } from './routes/_authenticated/dashboard.integrations'
-import { Route as AuthenticatedDashboardIntegrationLogsRouteImport } from './routes/_authenticated/dashboard.integration-logs'
-import { Route as AuthenticatedDashboardEmailLogsRouteImport } from './routes/_authenticated/dashboard.email-logs'
-import { Route as AuthenticatedDashboardCustomersRouteImport } from './routes/_authenticated/dashboard.customers'
-import { Route as AuthenticatedDashboardCompleteProfileRouteImport } from './routes/_authenticated/dashboard.complete-profile'
-import { Route as AuthenticatedDashboardApiRouteImport } from './routes/_authenticated/dashboard.api'
 import { Route as AuthenticatedDashboardAdminRouteImport } from './routes/_authenticated/dashboard.admin'
-import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
-import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
-import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
-import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
-import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
-import { Route as ApiPublicNotificationsPollRouteImport } from './routes/api/public/notifications.poll'
-import { Route as ApiPublicEmbedScriptRouteImport } from './routes/api/public/embed.script'
-import { Route as AuthenticatedDashboardNotificationsConfigRouteImport } from './routes/_authenticated/dashboard.notifications.config'
-import { Route as AuthenticatedDashboardAdminUsuariosRouteImport } from './routes/_authenticated/dashboard.admin.usuarios'
+import { Route as AuthenticatedDashboardApiRouteImport } from './routes/_authenticated/dashboard.api'
+import { Route as AuthenticatedDashboardCompleteProfileRouteImport } from './routes/_authenticated/dashboard.complete-profile'
+import { Route as AuthenticatedDashboardCustomersRouteImport } from './routes/_authenticated/dashboard.customers'
+import { Route as AuthenticatedDashboardEmailLogsRouteImport } from './routes/_authenticated/dashboard.email-logs'
+import { Route as AuthenticatedDashboardIntegrationLogsRouteImport } from './routes/_authenticated/dashboard.integration-logs'
+import { Route as AuthenticatedDashboardIntegrationsRouteImport } from './routes/_authenticated/dashboard.integrations'
+import { Route as AuthenticatedDashboardNewTransactionRouteImport } from './routes/_authenticated/dashboard.new-transaction'
+import { Route as AuthenticatedDashboardNotificationsRouteImport } from './routes/_authenticated/dashboard.notifications'
+import { Route as AuthenticatedDashboardPaymentLinksRouteImport } from './routes/_authenticated/dashboard.payment-links'
+import { Route as AuthenticatedDashboardProductsRouteImport } from './routes/_authenticated/dashboard.products'
+import { Route as AuthenticatedDashboardProfileRouteImport } from './routes/_authenticated/dashboard.profile'
+import { Route as AuthenticatedDashboardReportsRouteImport } from './routes/_authenticated/dashboard.reports'
+import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_authenticated/dashboard.settings'
+import { Route as AuthenticatedDashboardSmsRouteImport } from './routes/_authenticated/dashboard.sms'
+import { Route as AuthenticatedDashboardSubscriptionsRouteImport } from './routes/_authenticated/dashboard.subscriptions'
+import { Route as AuthenticatedDashboardTransactionsRouteImport } from './routes/_authenticated/dashboard.transactions'
+import { Route as AuthenticatedDashboardWithdrawalsRouteImport } from './routes/_authenticated/dashboard.withdrawals'
+import { Route as ApiPublicCheckPaymentStatusRouteImport } from './routes/api/public/check-payment-status'
+import { Route as ApiPublicCreateMerchantPaymentRouteImport } from './routes/api/public/create-merchant-payment'
+import { Route as ApiPublicReconcilePendingRouteImport } from './routes/api/public/reconcile-pending'
+import { Route as ApiPublicVpayWebhookRouteImport } from './routes/api/public/vpay-webhook'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedDashboardAdminProdutosRouteImport } from './routes/_authenticated/dashboard.admin.produtos'
+import { Route as AuthenticatedDashboardAdminUsuariosRouteImport } from './routes/_authenticated/dashboard.admin.usuarios'
+import { Route as AuthenticatedDashboardNotificationsConfigRouteImport } from './routes/_authenticated/dashboard.notifications.config'
+import { Route as ApiPublicEmbedScriptRouteImport } from './routes/api/public/embed.script'
+import { Route as ApiPublicNotificationsPollRouteImport } from './routes/api/public/notifications.poll'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 
-const UnsubscribeRoute = UnsubscribeRouteImport.update({
-  id: '/unsubscribe',
-  path: '/unsubscribe',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TxunaMpesaRoute = TxunaMpesaRouteImport.update({
-  id: '/txuna-mpesa',
-  path: '/txuna-mpesa',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ObrigadoRoute = ObrigadoRouteImport.update({
-  id: '/obrigado',
-  path: '/obrigado',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -80,23 +70,34 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const ObrigadoRoute = ObrigadoRouteImport.update({
+  id: '/obrigado',
+  path: '/obrigado',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LSlugRoute = LSlugRouteImport.update({
-  id: '/l/$slug',
-  path: '/l/$slug',
+const TxunaEmolaRoute = TxunaEmolaRouteImport.update({
+  id: '/txuna-emola',
+  path: '/txuna-emola',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
-  id: '/email/unsubscribe',
-  path: '/email/unsubscribe',
+const TxunaMpesaRoute = TxunaMpesaRouteImport.update({
+  id: '/txuna-mpesa',
+  path: '/txuna-mpesa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDebugNotificationRoute = ApiDebugNotificationRouteImport.update({
+  id: '/api/debug-notification',
+  path: '/api/debug-notification',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CSlugRoute = CSlugRouteImport.update({
@@ -104,9 +105,14 @@ const CSlugRoute = CSlugRouteImport.update({
   path: '/c/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiDebugNotificationRoute = ApiDebugNotificationRouteImport.update({
-  id: '/api/debug-notification',
-  path: '/api/debug-notification',
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LSlugRoute = LSlugRouteImport.update({
+  id: '/l/$slug',
+  path: '/l/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedDashboardIndexRoute =
@@ -115,128 +121,10 @@ const AuthenticatedDashboardIndexRoute =
     path: '/dashboard/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
-  id: '/lovable/email/suppression',
-  path: '/lovable/email/suppression',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicVpayWebhookRoute = ApiPublicVpayWebhookRouteImport.update({
-  id: '/api/public/vpay-webhook',
-  path: '/api/public/vpay-webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicReconcilePendingRoute =
-  ApiPublicReconcilePendingRouteImport.update({
-    id: '/api/public/reconcile-pending',
-    path: '/api/public/reconcile-pending',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicCreateMerchantPaymentRoute =
-  ApiPublicCreateMerchantPaymentRouteImport.update({
-    id: '/api/public/create-merchant-payment',
-    path: '/api/public/create-merchant-payment',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicCheckPaymentStatusRoute =
-  ApiPublicCheckPaymentStatusRouteImport.update({
-    id: '/api/public/check-payment-status',
-    path: '/api/public/check-payment-status',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const AuthenticatedDashboardWithdrawalsRoute =
-  AuthenticatedDashboardWithdrawalsRouteImport.update({
-    id: '/dashboard/withdrawals',
-    path: '/dashboard/withdrawals',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardTransactionsRoute =
-  AuthenticatedDashboardTransactionsRouteImport.update({
-    id: '/dashboard/transactions',
-    path: '/dashboard/transactions',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardSubscriptionsRoute =
-  AuthenticatedDashboardSubscriptionsRouteImport.update({
-    id: '/dashboard/subscriptions',
-    path: '/dashboard/subscriptions',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardSmsRoute =
-  AuthenticatedDashboardSmsRouteImport.update({
-    id: '/dashboard/sms',
-    path: '/dashboard/sms',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardSettingsRoute =
-  AuthenticatedDashboardSettingsRouteImport.update({
-    id: '/dashboard/settings',
-    path: '/dashboard/settings',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardReportsRoute =
-  AuthenticatedDashboardReportsRouteImport.update({
-    id: '/dashboard/reports',
-    path: '/dashboard/reports',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardProfileRoute =
-  AuthenticatedDashboardProfileRouteImport.update({
-    id: '/dashboard/profile',
-    path: '/dashboard/profile',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardProductsRoute =
-  AuthenticatedDashboardProductsRouteImport.update({
-    id: '/dashboard/products',
-    path: '/dashboard/products',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardPaymentLinksRoute =
-  AuthenticatedDashboardPaymentLinksRouteImport.update({
-    id: '/dashboard/payment-links',
-    path: '/dashboard/payment-links',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardNotificationsRoute =
-  AuthenticatedDashboardNotificationsRouteImport.update({
-    id: '/dashboard/notifications',
-    path: '/dashboard/notifications',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardNewTransactionRoute =
-  AuthenticatedDashboardNewTransactionRouteImport.update({
-    id: '/dashboard/new-transaction',
-    path: '/dashboard/new-transaction',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardIntegrationsRoute =
-  AuthenticatedDashboardIntegrationsRouteImport.update({
-    id: '/dashboard/integrations',
-    path: '/dashboard/integrations',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardIntegrationLogsRoute =
-  AuthenticatedDashboardIntegrationLogsRouteImport.update({
-    id: '/dashboard/integration-logs',
-    path: '/dashboard/integration-logs',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardEmailLogsRoute =
-  AuthenticatedDashboardEmailLogsRouteImport.update({
-    id: '/dashboard/email-logs',
-    path: '/dashboard/email-logs',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardCustomersRoute =
-  AuthenticatedDashboardCustomersRouteImport.update({
-    id: '/dashboard/customers',
-    path: '/dashboard/customers',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDashboardCompleteProfileRoute =
-  AuthenticatedDashboardCompleteProfileRouteImport.update({
-    id: '/dashboard/complete-profile',
-    path: '/dashboard/complete-profile',
+const AuthenticatedDashboardAdminRoute =
+  AuthenticatedDashboardAdminRouteImport.update({
+    id: '/dashboard/admin',
+    path: '/dashboard/admin',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDashboardApiRoute =
@@ -245,38 +133,151 @@ const AuthenticatedDashboardApiRoute =
     path: '/dashboard/api',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedDashboardAdminRoute =
-  AuthenticatedDashboardAdminRouteImport.update({
-    id: '/dashboard/admin',
-    path: '/dashboard/admin',
+const AuthenticatedDashboardCompleteProfileRoute =
+  AuthenticatedDashboardCompleteProfileRouteImport.update({
+    id: '/dashboard/complete-profile',
+    path: '/dashboard/complete-profile',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const LovableEmailTransactionalSendRoute =
-  LovableEmailTransactionalSendRouteImport.update({
-    id: '/lovable/email/transactional/send',
-    path: '/lovable/email/transactional/send',
+const AuthenticatedDashboardCustomersRoute =
+  AuthenticatedDashboardCustomersRouteImport.update({
+    id: '/dashboard/customers',
+    path: '/dashboard/customers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardEmailLogsRoute =
+  AuthenticatedDashboardEmailLogsRouteImport.update({
+    id: '/dashboard/email-logs',
+    path: '/dashboard/email-logs',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardIntegrationLogsRoute =
+  AuthenticatedDashboardIntegrationLogsRouteImport.update({
+    id: '/dashboard/integration-logs',
+    path: '/dashboard/integration-logs',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardIntegrationsRoute =
+  AuthenticatedDashboardIntegrationsRouteImport.update({
+    id: '/dashboard/integrations',
+    path: '/dashboard/integrations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardNewTransactionRoute =
+  AuthenticatedDashboardNewTransactionRouteImport.update({
+    id: '/dashboard/new-transaction',
+    path: '/dashboard/new-transaction',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardNotificationsRoute =
+  AuthenticatedDashboardNotificationsRouteImport.update({
+    id: '/dashboard/notifications',
+    path: '/dashboard/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardPaymentLinksRoute =
+  AuthenticatedDashboardPaymentLinksRouteImport.update({
+    id: '/dashboard/payment-links',
+    path: '/dashboard/payment-links',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardProductsRoute =
+  AuthenticatedDashboardProductsRouteImport.update({
+    id: '/dashboard/products',
+    path: '/dashboard/products',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardProfileRoute =
+  AuthenticatedDashboardProfileRouteImport.update({
+    id: '/dashboard/profile',
+    path: '/dashboard/profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardReportsRoute =
+  AuthenticatedDashboardReportsRouteImport.update({
+    id: '/dashboard/reports',
+    path: '/dashboard/reports',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardSettingsRoute =
+  AuthenticatedDashboardSettingsRouteImport.update({
+    id: '/dashboard/settings',
+    path: '/dashboard/settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardSmsRoute =
+  AuthenticatedDashboardSmsRouteImport.update({
+    id: '/dashboard/sms',
+    path: '/dashboard/sms',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardSubscriptionsRoute =
+  AuthenticatedDashboardSubscriptionsRouteImport.update({
+    id: '/dashboard/subscriptions',
+    path: '/dashboard/subscriptions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardTransactionsRoute =
+  AuthenticatedDashboardTransactionsRouteImport.update({
+    id: '/dashboard/transactions',
+    path: '/dashboard/transactions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardWithdrawalsRoute =
+  AuthenticatedDashboardWithdrawalsRouteImport.update({
+    id: '/dashboard/withdrawals',
+    path: '/dashboard/withdrawals',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicCheckPaymentStatusRoute =
+  ApiPublicCheckPaymentStatusRouteImport.update({
+    id: '/api/public/check-payment-status',
+    path: '/api/public/check-payment-status',
     getParentRoute: () => rootRouteImport,
   } as any)
-const LovableEmailTransactionalPreviewRoute =
-  LovableEmailTransactionalPreviewRouteImport.update({
-    id: '/lovable/email/transactional/preview',
-    path: '/lovable/email/transactional/preview',
+const ApiPublicCreateMerchantPaymentRoute =
+  ApiPublicCreateMerchantPaymentRouteImport.update({
+    id: '/api/public/create-merchant-payment',
+    path: '/api/public/create-merchant-payment',
     getParentRoute: () => rootRouteImport,
   } as any)
-const LovableEmailQueueProcessRoute =
-  LovableEmailQueueProcessRouteImport.update({
-    id: '/lovable/email/queue/process',
-    path: '/lovable/email/queue/process',
+const ApiPublicReconcilePendingRoute =
+  ApiPublicReconcilePendingRouteImport.update({
+    id: '/api/public/reconcile-pending',
+    path: '/api/public/reconcile-pending',
     getParentRoute: () => rootRouteImport,
   } as any)
-const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
-  id: '/lovable/email/auth/webhook',
-  path: '/lovable/email/auth/webhook',
+const ApiPublicVpayWebhookRoute = ApiPublicVpayWebhookRouteImport.update({
+  id: '/api/public/vpay-webhook',
+  path: '/api/public/vpay-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
-  id: '/lovable/email/auth/preview',
-  path: '/lovable/email/auth/preview',
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDashboardAdminProdutosRoute =
+  AuthenticatedDashboardAdminProdutosRouteImport.update({
+    id: '/produtos',
+    path: '/produtos',
+    getParentRoute: () => AuthenticatedDashboardAdminRoute,
+  } as any)
+const AuthenticatedDashboardAdminUsuariosRoute =
+  AuthenticatedDashboardAdminUsuariosRouteImport.update({
+    id: '/usuarios',
+    path: '/usuarios',
+    getParentRoute: () => AuthenticatedDashboardAdminRoute,
+  } as any)
+const AuthenticatedDashboardNotificationsConfigRoute =
+  AuthenticatedDashboardNotificationsConfigRouteImport.update({
+    id: '/config',
+    path: '/config',
+    getParentRoute: () => AuthenticatedDashboardNotificationsRoute,
+  } as any)
+const ApiPublicEmbedScriptRoute = ApiPublicEmbedScriptRouteImport.update({
+  id: '/api/public/embed/script',
+  path: '/api/public/embed/script',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicNotificationsPollRoute =
@@ -285,28 +286,33 @@ const ApiPublicNotificationsPollRoute =
     path: '/api/public/notifications/poll',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicEmbedScriptRoute = ApiPublicEmbedScriptRouteImport.update({
-  id: '/api/public/embed/script',
-  path: '/api/public/embed/script',
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedDashboardNotificationsConfigRoute =
-  AuthenticatedDashboardNotificationsConfigRouteImport.update({
-    id: '/config',
-    path: '/config',
-    getParentRoute: () => AuthenticatedDashboardNotificationsRoute,
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const AuthenticatedDashboardAdminUsuariosRoute =
-  AuthenticatedDashboardAdminUsuariosRouteImport.update({
-    id: '/usuarios',
-    path: '/usuarios',
-    getParentRoute: () => AuthenticatedDashboardAdminRoute,
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const AuthenticatedDashboardAdminProdutosRoute =
-  AuthenticatedDashboardAdminProdutosRouteImport.update({
-    id: '/produtos',
-    path: '/produtos',
-    getParentRoute: () => AuthenticatedDashboardAdminRoute,
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
+    getParentRoute: () => rootRouteImport,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -314,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/txuna-emola': typeof TxunaEmolaRoute
   '/txuna-mpesa': typeof TxunaMpesaRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
@@ -360,6 +367,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/txuna-emola': typeof TxunaEmolaRoute
   '/txuna-mpesa': typeof TxunaMpesaRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
@@ -408,6 +416,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/txuna-emola': typeof TxunaEmolaRoute
   '/txuna-mpesa': typeof TxunaMpesaRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
@@ -456,6 +465,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/obrigado'
     | '/reset-password'
+    | '/txuna-emola'
     | '/txuna-mpesa'
     | '/unsubscribe'
     | '/api/debug-notification'
@@ -502,6 +512,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/obrigado'
     | '/reset-password'
+    | '/txuna-emola'
     | '/txuna-mpesa'
     | '/unsubscribe'
     | '/api/debug-notification'
@@ -549,6 +560,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/obrigado'
     | '/reset-password'
+    | '/txuna-emola'
     | '/txuna-mpesa'
     | '/unsubscribe'
     | '/api/debug-notification'
@@ -597,6 +609,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ObrigadoRoute: typeof ObrigadoRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TxunaEmolaRoute: typeof TxunaEmolaRoute
   TxunaMpesaRoute: typeof TxunaMpesaRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   ApiDebugNotificationRoute: typeof ApiDebugNotificationRoute
@@ -619,39 +632,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/unsubscribe': {
-      id: '/unsubscribe'
-      path: '/unsubscribe'
-      fullPath: '/unsubscribe'
-      preLoaderRoute: typeof UnsubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/txuna-mpesa': {
-      id: '/txuna-mpesa'
-      path: '/txuna-mpesa'
-      fullPath: '/txuna-mpesa'
-      preLoaderRoute: typeof TxunaMpesaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/obrigado': {
-      id: '/obrigado'
-      path: '/obrigado'
-      fullPath: '/obrigado'
-      preLoaderRoute: typeof ObrigadoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -661,32 +646,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/l/$slug': {
-      id: '/l/$slug'
-      path: '/l/$slug'
-      fullPath: '/l/$slug'
-      preLoaderRoute: typeof LSlugRouteImport
+    '/obrigado': {
+      id: '/obrigado'
+      path: '/obrigado'
+      fullPath: '/obrigado'
+      preLoaderRoute: typeof ObrigadoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/email/unsubscribe': {
-      id: '/email/unsubscribe'
-      path: '/email/unsubscribe'
-      fullPath: '/email/unsubscribe'
-      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/c/$slug': {
-      id: '/c/$slug'
-      path: '/c/$slug'
-      fullPath: '/c/$slug'
-      preLoaderRoute: typeof CSlugRouteImport
+    '/txuna-emola': {
+      id: '/txuna-emola'
+      path: '/txuna-emola'
+      fullPath: '/txuna-emola'
+      preLoaderRoute: typeof TxunaEmolaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/txuna-mpesa': {
+      id: '/txuna-mpesa'
+      path: '/txuna-mpesa'
+      fullPath: '/txuna-mpesa'
+      preLoaderRoute: typeof TxunaMpesaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/debug-notification': {
@@ -696,165 +695,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDebugNotificationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/c/$slug': {
+      id: '/c/$slug'
+      path: '/c/$slug'
+      fullPath: '/c/$slug'
+      preLoaderRoute: typeof CSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/l/$slug': {
+      id: '/l/$slug'
+      path: '/l/$slug'
+      fullPath: '/l/$slug'
+      preLoaderRoute: typeof LSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard/': {
       id: '/_authenticated/dashboard/'
       path: '/dashboard'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/lovable/email/suppression': {
-      id: '/lovable/email/suppression'
-      path: '/lovable/email/suppression'
-      fullPath: '/lovable/email/suppression'
-      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/vpay-webhook': {
-      id: '/api/public/vpay-webhook'
-      path: '/api/public/vpay-webhook'
-      fullPath: '/api/public/vpay-webhook'
-      preLoaderRoute: typeof ApiPublicVpayWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/reconcile-pending': {
-      id: '/api/public/reconcile-pending'
-      path: '/api/public/reconcile-pending'
-      fullPath: '/api/public/reconcile-pending'
-      preLoaderRoute: typeof ApiPublicReconcilePendingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/create-merchant-payment': {
-      id: '/api/public/create-merchant-payment'
-      path: '/api/public/create-merchant-payment'
-      fullPath: '/api/public/create-merchant-payment'
-      preLoaderRoute: typeof ApiPublicCreateMerchantPaymentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/check-payment-status': {
-      id: '/api/public/check-payment-status'
-      path: '/api/public/check-payment-status'
-      fullPath: '/api/public/check-payment-status'
-      preLoaderRoute: typeof ApiPublicCheckPaymentStatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/dashboard/withdrawals': {
-      id: '/_authenticated/dashboard/withdrawals'
-      path: '/dashboard/withdrawals'
-      fullPath: '/dashboard/withdrawals'
-      preLoaderRoute: typeof AuthenticatedDashboardWithdrawalsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/transactions': {
-      id: '/_authenticated/dashboard/transactions'
-      path: '/dashboard/transactions'
-      fullPath: '/dashboard/transactions'
-      preLoaderRoute: typeof AuthenticatedDashboardTransactionsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/subscriptions': {
-      id: '/_authenticated/dashboard/subscriptions'
-      path: '/dashboard/subscriptions'
-      fullPath: '/dashboard/subscriptions'
-      preLoaderRoute: typeof AuthenticatedDashboardSubscriptionsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/sms': {
-      id: '/_authenticated/dashboard/sms'
-      path: '/dashboard/sms'
-      fullPath: '/dashboard/sms'
-      preLoaderRoute: typeof AuthenticatedDashboardSmsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/settings': {
-      id: '/_authenticated/dashboard/settings'
-      path: '/dashboard/settings'
-      fullPath: '/dashboard/settings'
-      preLoaderRoute: typeof AuthenticatedDashboardSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/reports': {
-      id: '/_authenticated/dashboard/reports'
-      path: '/dashboard/reports'
-      fullPath: '/dashboard/reports'
-      preLoaderRoute: typeof AuthenticatedDashboardReportsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/profile': {
-      id: '/_authenticated/dashboard/profile'
-      path: '/dashboard/profile'
-      fullPath: '/dashboard/profile'
-      preLoaderRoute: typeof AuthenticatedDashboardProfileRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/products': {
-      id: '/_authenticated/dashboard/products'
-      path: '/dashboard/products'
-      fullPath: '/dashboard/products'
-      preLoaderRoute: typeof AuthenticatedDashboardProductsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/payment-links': {
-      id: '/_authenticated/dashboard/payment-links'
-      path: '/dashboard/payment-links'
-      fullPath: '/dashboard/payment-links'
-      preLoaderRoute: typeof AuthenticatedDashboardPaymentLinksRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/notifications': {
-      id: '/_authenticated/dashboard/notifications'
-      path: '/dashboard/notifications'
-      fullPath: '/dashboard/notifications'
-      preLoaderRoute: typeof AuthenticatedDashboardNotificationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/new-transaction': {
-      id: '/_authenticated/dashboard/new-transaction'
-      path: '/dashboard/new-transaction'
-      fullPath: '/dashboard/new-transaction'
-      preLoaderRoute: typeof AuthenticatedDashboardNewTransactionRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/integrations': {
-      id: '/_authenticated/dashboard/integrations'
-      path: '/dashboard/integrations'
-      fullPath: '/dashboard/integrations'
-      preLoaderRoute: typeof AuthenticatedDashboardIntegrationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/integration-logs': {
-      id: '/_authenticated/dashboard/integration-logs'
-      path: '/dashboard/integration-logs'
-      fullPath: '/dashboard/integration-logs'
-      preLoaderRoute: typeof AuthenticatedDashboardIntegrationLogsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/email-logs': {
-      id: '/_authenticated/dashboard/email-logs'
-      path: '/dashboard/email-logs'
-      fullPath: '/dashboard/email-logs'
-      preLoaderRoute: typeof AuthenticatedDashboardEmailLogsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/customers': {
-      id: '/_authenticated/dashboard/customers'
-      path: '/dashboard/customers'
-      fullPath: '/dashboard/customers'
-      preLoaderRoute: typeof AuthenticatedDashboardCustomersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/complete-profile': {
-      id: '/_authenticated/dashboard/complete-profile'
-      path: '/dashboard/complete-profile'
-      fullPath: '/dashboard/complete-profile'
-      preLoaderRoute: typeof AuthenticatedDashboardCompleteProfileRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/api': {
-      id: '/_authenticated/dashboard/api'
-      path: '/dashboard/api'
-      fullPath: '/dashboard/api'
-      preLoaderRoute: typeof AuthenticatedDashboardApiRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard/admin': {
@@ -864,39 +730,186 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/lovable/email/transactional/send': {
-      id: '/lovable/email/transactional/send'
-      path: '/lovable/email/transactional/send'
-      fullPath: '/lovable/email/transactional/send'
-      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+    '/_authenticated/dashboard/api': {
+      id: '/_authenticated/dashboard/api'
+      path: '/dashboard/api'
+      fullPath: '/dashboard/api'
+      preLoaderRoute: typeof AuthenticatedDashboardApiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/complete-profile': {
+      id: '/_authenticated/dashboard/complete-profile'
+      path: '/dashboard/complete-profile'
+      fullPath: '/dashboard/complete-profile'
+      preLoaderRoute: typeof AuthenticatedDashboardCompleteProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/customers': {
+      id: '/_authenticated/dashboard/customers'
+      path: '/dashboard/customers'
+      fullPath: '/dashboard/customers'
+      preLoaderRoute: typeof AuthenticatedDashboardCustomersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/email-logs': {
+      id: '/_authenticated/dashboard/email-logs'
+      path: '/dashboard/email-logs'
+      fullPath: '/dashboard/email-logs'
+      preLoaderRoute: typeof AuthenticatedDashboardEmailLogsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/integration-logs': {
+      id: '/_authenticated/dashboard/integration-logs'
+      path: '/dashboard/integration-logs'
+      fullPath: '/dashboard/integration-logs'
+      preLoaderRoute: typeof AuthenticatedDashboardIntegrationLogsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/integrations': {
+      id: '/_authenticated/dashboard/integrations'
+      path: '/dashboard/integrations'
+      fullPath: '/dashboard/integrations'
+      preLoaderRoute: typeof AuthenticatedDashboardIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/new-transaction': {
+      id: '/_authenticated/dashboard/new-transaction'
+      path: '/dashboard/new-transaction'
+      fullPath: '/dashboard/new-transaction'
+      preLoaderRoute: typeof AuthenticatedDashboardNewTransactionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/notifications': {
+      id: '/_authenticated/dashboard/notifications'
+      path: '/dashboard/notifications'
+      fullPath: '/dashboard/notifications'
+      preLoaderRoute: typeof AuthenticatedDashboardNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/payment-links': {
+      id: '/_authenticated/dashboard/payment-links'
+      path: '/dashboard/payment-links'
+      fullPath: '/dashboard/payment-links'
+      preLoaderRoute: typeof AuthenticatedDashboardPaymentLinksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/products': {
+      id: '/_authenticated/dashboard/products'
+      path: '/dashboard/products'
+      fullPath: '/dashboard/products'
+      preLoaderRoute: typeof AuthenticatedDashboardProductsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/profile': {
+      id: '/_authenticated/dashboard/profile'
+      path: '/dashboard/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof AuthenticatedDashboardProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/reports': {
+      id: '/_authenticated/dashboard/reports'
+      path: '/dashboard/reports'
+      fullPath: '/dashboard/reports'
+      preLoaderRoute: typeof AuthenticatedDashboardReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/settings': {
+      id: '/_authenticated/dashboard/settings'
+      path: '/dashboard/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof AuthenticatedDashboardSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/sms': {
+      id: '/_authenticated/dashboard/sms'
+      path: '/dashboard/sms'
+      fullPath: '/dashboard/sms'
+      preLoaderRoute: typeof AuthenticatedDashboardSmsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/subscriptions': {
+      id: '/_authenticated/dashboard/subscriptions'
+      path: '/dashboard/subscriptions'
+      fullPath: '/dashboard/subscriptions'
+      preLoaderRoute: typeof AuthenticatedDashboardSubscriptionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/transactions': {
+      id: '/_authenticated/dashboard/transactions'
+      path: '/dashboard/transactions'
+      fullPath: '/dashboard/transactions'
+      preLoaderRoute: typeof AuthenticatedDashboardTransactionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/withdrawals': {
+      id: '/_authenticated/dashboard/withdrawals'
+      path: '/dashboard/withdrawals'
+      fullPath: '/dashboard/withdrawals'
+      preLoaderRoute: typeof AuthenticatedDashboardWithdrawalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/check-payment-status': {
+      id: '/api/public/check-payment-status'
+      path: '/api/public/check-payment-status'
+      fullPath: '/api/public/check-payment-status'
+      preLoaderRoute: typeof ApiPublicCheckPaymentStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/transactional/preview': {
-      id: '/lovable/email/transactional/preview'
-      path: '/lovable/email/transactional/preview'
-      fullPath: '/lovable/email/transactional/preview'
-      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+    '/api/public/create-merchant-payment': {
+      id: '/api/public/create-merchant-payment'
+      path: '/api/public/create-merchant-payment'
+      fullPath: '/api/public/create-merchant-payment'
+      preLoaderRoute: typeof ApiPublicCreateMerchantPaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+    '/api/public/reconcile-pending': {
+      id: '/api/public/reconcile-pending'
+      path: '/api/public/reconcile-pending'
+      fullPath: '/api/public/reconcile-pending'
+      preLoaderRoute: typeof ApiPublicReconcilePendingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/auth/webhook': {
-      id: '/lovable/email/auth/webhook'
-      path: '/lovable/email/auth/webhook'
-      fullPath: '/lovable/email/auth/webhook'
-      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+    '/api/public/vpay-webhook': {
+      id: '/api/public/vpay-webhook'
+      path: '/api/public/vpay-webhook'
+      fullPath: '/api/public/vpay-webhook'
+      preLoaderRoute: typeof ApiPublicVpayWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/auth/preview': {
-      id: '/lovable/email/auth/preview'
-      path: '/lovable/email/auth/preview'
-      fullPath: '/lovable/email/auth/preview'
-      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard/admin/produtos': {
+      id: '/_authenticated/dashboard/admin/produtos'
+      path: '/produtos'
+      fullPath: '/dashboard/admin/produtos'
+      preLoaderRoute: typeof AuthenticatedDashboardAdminProdutosRouteImport
+      parentRoute: typeof AuthenticatedDashboardAdminRoute
+    }
+    '/_authenticated/dashboard/admin/usuarios': {
+      id: '/_authenticated/dashboard/admin/usuarios'
+      path: '/usuarios'
+      fullPath: '/dashboard/admin/usuarios'
+      preLoaderRoute: typeof AuthenticatedDashboardAdminUsuariosRouteImport
+      parentRoute: typeof AuthenticatedDashboardAdminRoute
+    }
+    '/_authenticated/dashboard/notifications/config': {
+      id: '/_authenticated/dashboard/notifications/config'
+      path: '/config'
+      fullPath: '/dashboard/notifications/config'
+      preLoaderRoute: typeof AuthenticatedDashboardNotificationsConfigRouteImport
+      parentRoute: typeof AuthenticatedDashboardNotificationsRoute
+    }
+    '/api/public/embed/script': {
+      id: '/api/public/embed/script'
+      path: '/api/public/embed/script'
+      fullPath: '/api/public/embed/script'
+      preLoaderRoute: typeof ApiPublicEmbedScriptRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/notifications/poll': {
@@ -906,33 +919,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicNotificationsPollRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/embed/script': {
-      id: '/api/public/embed/script'
-      path: '/api/public/embed/script'
-      fullPath: '/api/public/embed/script'
-      preLoaderRoute: typeof ApiPublicEmbedScriptRouteImport
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/dashboard/notifications/config': {
-      id: '/_authenticated/dashboard/notifications/config'
-      path: '/config'
-      fullPath: '/dashboard/notifications/config'
-      preLoaderRoute: typeof AuthenticatedDashboardNotificationsConfigRouteImport
-      parentRoute: typeof AuthenticatedDashboardNotificationsRoute
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/dashboard/admin/usuarios': {
-      id: '/_authenticated/dashboard/admin/usuarios'
-      path: '/usuarios'
-      fullPath: '/dashboard/admin/usuarios'
-      preLoaderRoute: typeof AuthenticatedDashboardAdminUsuariosRouteImport
-      parentRoute: typeof AuthenticatedDashboardAdminRoute
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/dashboard/admin/produtos': {
-      id: '/_authenticated/dashboard/admin/produtos'
-      path: '/produtos'
-      fullPath: '/dashboard/admin/produtos'
-      preLoaderRoute: typeof AuthenticatedDashboardAdminProdutosRouteImport
-      parentRoute: typeof AuthenticatedDashboardAdminRoute
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -1033,6 +1053,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ObrigadoRoute: ObrigadoRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TxunaEmolaRoute: TxunaEmolaRoute,
   TxunaMpesaRoute: TxunaMpesaRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   ApiDebugNotificationRoute: ApiDebugNotificationRoute,

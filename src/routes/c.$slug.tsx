@@ -15,6 +15,7 @@ import { toast } from "sonner";
 const CUSTOM_CHECKOUTS: Record<string, string> = {
   "txuna-mpesa": "/txuna-mpesa",
   "txuna-mpesa-erique": "/txuna-mpesa",
+  "txuna-emola": "/txuna-emola",
 };
 
 export const Route = createFileRoute("/c/$slug")({
