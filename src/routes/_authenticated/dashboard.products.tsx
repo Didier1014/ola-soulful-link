@@ -184,7 +184,7 @@ function ProductsPage() {
             <div className="sm:hidden">
               <div className="aspect-[16/10] w-full bg-secondary overflow-hidden">
                 {p.cover_url
-                  ? <img src={p.cover_url} alt={p.name} className="w-full h-full object-cover" />
+                  ? <img src={p.cover_url} alt={p.name} className="w-full h-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} />
                   : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><PackageIcon className="h-10 w-10" /></div>}
               </div>
               <div className="p-4 space-y-3">
@@ -213,7 +213,7 @@ function ProductsPage() {
             <div className="hidden sm:flex sm:items-center sm:gap-3 sm:w-full">
               <div className="h-14 w-14 rounded-xl bg-secondary overflow-hidden shrink-0">
                 {p.cover_url
-                  ? <img src={p.cover_url} alt={p.name} className="w-full h-full object-cover" />
+                  ? <img src={p.cover_url} alt={p.name} className="w-full h-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} />
                   : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><PackageIcon className="h-5 w-5" /></div>}
               </div>
               <div className="flex-1 min-w-0">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
 
 type Theme = "dark" | "light";
@@ -40,10 +41,14 @@ export function useTheme() {
  * Futuristic segmented dark/light selector.
  * Small pill with a glowing slider that snaps between icons.
  */
-export function ThemeToggle({ className = "" }: { className?: string }) {
+export function ThemeToggle({ className = "", minimal = false }: { className?: string; minimal?: boolean }) {
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
 
+  if (minimal) return <div role="radiogroup" aria-label="Selecionar tema" className={`flex items-center gap-0.5 rounded-md border border-border bg-secondary p-0.5 ${className}`}>
+    <Button role="radio" aria-checked={isDark} aria-label="Modo escuro" title="Modo escuro" variant="ghost" size="icon" onClick={() => setTheme("dark")} className={`size-7 rounded-sm ${isDark ? "bg-card text-foreground" : "text-muted-foreground"}`}><Moon className="size-3.5" /></Button>
+    <Button role="radio" aria-checked={!isDark} aria-label="Modo claro" title="Modo claro" variant="ghost" size="icon" onClick={() => setTheme("light")} className={`size-7 rounded-sm ${!isDark ? "bg-card text-foreground" : "text-muted-foreground"}`}><Sun className="size-3.5" /></Button>
+  </div>;
   return (
     <div
       role="radiogroup"

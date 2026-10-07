@@ -2,17 +2,17 @@ import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } fr
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, Package, Receipt, Wallet, LogOut, Menu, X,
-  PlusCircle, BarChart3, Plug, BookOpen, Settings as SettingsIcon, Sun, Moon,
-  Users, Link2, Code2, MessageSquare, RotateCcw, User, Shield, Bell, Mail,
+  PlusCircle, BarChart3, Plug, Settings as SettingsIcon,
+  Users, Link2, MessageSquare, RotateCcw, User, Shield, Bell, Mail,
 } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 import { FloatingSaleNotification } from "@/components/floating-sale-notification";
-import { ThemeToggle, useTheme } from "@/components/theme-toggle";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -64,7 +64,12 @@ function AuthedShell() {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const path = useRouterState({ select: (state) => state.location.pathname });
-  const overview = path === "/dashboard" || path === "/dashboard/";
+  const activeItem = navItems.find(item => item.exact ? path === item.to || path === `${item.to}/` : path.startsWith(item.to));
+  const ActiveIcon = activeItem?.icon ?? LayoutDashboard;
+  useEffect(() => {
+    document.body.classList.add("saas-active");
+    return () => document.body.classList.remove("saas-active");
+  }, []);
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -72,50 +77,28 @@ function AuthedShell() {
   }
 
   return (
-    <div className={overview ? `dash-shell min-h-screen text-foreground ${collapsed ? "dash-collapsed" : ""}` : "min-h-screen text-foreground relative overflow-x-hidden"}>
-
-      {/* Ambient glow */}
-      <div aria-hidden className={`${overview ? "hidden" : ""} pointer-events-none fixed inset-0 z-0`}>
-        <div className="absolute -top-40 -left-32 h-[420px] w-[420px] rounded-full bg-primary/20 blur-[140px]" />
-        <div className="absolute top-1/3 -right-32 h-[380px] w-[380px] rounded-full bg-primary-glow/15 blur-[140px]" />
-        <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:40px_40px]" />
-      </div>
-
-      {overview && <aside className="dash-sidebar hidden lg:flex">
+    <div className={`dash-shell min-h-screen text-foreground ${collapsed ? "dash-collapsed" : ""}`}>
+      <aside className="dash-sidebar hidden lg:flex">
         <Link to="/dashboard" className="dash-brand"><span className="dash-brand-symbol">R</span>{!collapsed && <span>REDOX<span className="text-primary-glow"> PAY</span></span>}</Link>
         {!collapsed && <p className="px-4 pt-7 pb-3 text-[10px] text-muted-foreground">ESPAÇO DE TRABALHO</p>}
-        <nav className="flex-1 min-h-0 overflow-y-auto space-y-1 py-3">{navItems.map(it => <Link key={it.to} to={it.to} title={it.label} activeOptions={{ exact: it.exact }} className="dash-nav-link" activeProps={{ className: "dash-nav-link dash-nav-active" }}><it.icon className="size-4 shrink-0" />{!collapsed && <span className="truncate">{it.label}</span>}</Link>)}</nav>
+        <nav aria-label="Menu principal" className="flex-1 min-h-0 overflow-y-auto space-y-1 py-3">{navItems.map(it => <Link key={it.to} to={it.to} title={it.label} activeOptions={{ exact: it.exact }} className="dash-nav-link" activeProps={{ className: "dash-nav-link dash-nav-active" }}><it.icon className="size-4 shrink-0" strokeWidth={1.65} />{!collapsed && <span className="truncate">{it.label}</span>}</Link>)}</nav>
         <div className="border-t border-border pt-3 space-y-1"><Button variant="ghost" onClick={() => setCollapsed(v => !v)} title={collapsed ? "Expandir menu" : "Recolher menu"} aria-label={collapsed ? "Expandir menu" : "Recolher menu"} className="dash-nav-link w-full justify-start"><Menu className="size-4 shrink-0" />{!collapsed && "Recolher menu"}</Button><Button variant="ghost" onClick={signOut} title="Sair" className="dash-nav-link w-full justify-start"><LogOut className="size-4 shrink-0" />{!collapsed && "Sair"}</Button></div>
-      </aside>}
-      <div className={overview ? "dash-workspace relative z-10 min-h-screen" : "relative z-10 bg-background min-h-screen"}>
-        <header className={overview ? "dash-topbar sticky top-0 z-40 border-b border-border" : "sticky top-0 z-40 backdrop-blur-xl bg-background/60 border-b border-white/5"}>
-          <div className="max-w-7xl mx-auto flex items-center gap-2 px-4 lg:px-8 h-14">
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className={overview ? "lg:hidden rounded-md h-8 w-8 bg-secondary border-border text-foreground" : "rounded-xl h-10 w-10 bg-white/5 border-white/10 hover:bg-white/10 text-foreground"}>
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="bg-sidebar text-sidebar-foreground w-80 p-0 border-r border-white/5 [&>button]:hidden">
-                <DrawerContent close={() => setOpen(false)} onSignOut={signOut} />
-              </SheetContent>
-            </Sheet>
-            <Link to="/dashboard" className={overview ? "font-semibold text-xs ml-2 flex items-center gap-1.5 lg:hidden" : "font-bold tracking-tight ml-2 flex items-center gap-1.5"}>
-              <span className="h-2 w-2 rounded-full bg-primary-glow shadow-[0_0_12px_var(--primary-glow)]" />
-              REDOX <span className="text-gradient-red">PAY</span>
-            </Link>
-            {overview && <span className="hidden lg:flex text-xs text-muted-foreground items-center gap-2"><LayoutDashboard className="size-3.5" />Visão geral</span>}
-            <div className="ml-auto flex items-center gap-2">
-              <ThemeToggle />
-              <NotificationBell />
+      </aside>
+      <div className="dash-workspace relative z-10 min-h-screen">
+        <header className="dash-topbar sticky top-0 z-40 border-b border-border">
+          <div className="max-w-7xl mx-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 lg:px-10 h-14">
+            <div className="flex items-center gap-3 min-w-0">
+              <Sheet open={open} onOpenChange={setOpen}>
+                <SheetTrigger asChild><Button variant="outline" size="icon" aria-label="Abrir menu" className="lg:hidden rounded-md size-8 shrink-0 bg-secondary border-border text-foreground"><Menu className="size-4" /></Button></SheetTrigger>
+                <SheetContent side="left" className="saas-mobile-menu w-72 p-0 [&>button]:hidden"><SheetTitle className="sr-only">Menu Redox Pay</SheetTitle><DrawerContent close={() => setOpen(false)} onSignOut={signOut} /></SheetContent>
+              </Sheet>
+              <Link to="/dashboard" className="font-semibold text-xs flex items-center gap-1 lg:hidden">REDOX <span className="text-primary-glow">PAY</span></Link>
+              <span className="hidden lg:flex text-xs text-muted-foreground items-center gap-2 min-w-0"><ActiveIcon className="size-3.5 shrink-0" /><span className="truncate">{activeItem?.label ?? "Redox Pay"}</span></span>
             </div>
-
+            <div className="flex items-center gap-2 shrink-0"><ThemeToggle minimal /><NotificationBell /></div>
           </div>
         </header>
-
-        <main className={overview ? "max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-7 lg:py-9 pb-16" : "max-w-7xl mx-auto px-4 lg:px-8 py-5 lg:py-8 pb-24"}>
-          <Outlet />
-        </main>
+        <main className="saas-content max-w-7xl mx-auto min-w-0 px-5 sm:px-8 lg:px-10 py-7 lg:py-9 pb-16"><Outlet /></main>
         <FloatingSaleNotification />
       </div>
     </div>
@@ -123,57 +106,10 @@ function AuthedShell() {
 }
 
 function DrawerContent({ close, onSignOut }: { close: () => void; onSignOut: () => void }) {
-  const { theme, toggle } = useTheme();
-  const isDark = theme === "dark";
-
-  return (
-    <div className="flex flex-col h-full bg-sidebar relative">
-      <div aria-hidden className="absolute top-0 left-0 h-40 w-full bg-gradient-to-b from-primary/15 to-transparent pointer-events-none" />
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 relative">
-        <button onClick={close} className="h-9 w-9 rounded-lg border border-white/10 bg-white/5 flex items-center justify-center hover:bg-white/10">
-          <X className="h-4 w-4" />
-        </button>
-        <span className="font-bold tracking-widest text-sm flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-primary-glow shadow-[0_0_8px_var(--primary-glow)]" />
-          REDOX PAY
-        </span>
-        <div className="w-9" />
-      </div>
-
-      <p className="px-5 pt-5 pb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Menu</p>
-      <nav className="px-3 flex-1 min-h-0 overflow-y-auto flex flex-col gap-1 pb-3">
-        {navItems.map((it) => (
-          <Link
-            key={it.to}
-            to={it.to}
-            onClick={close}
-            activeOptions={{ exact: !!it.exact }}
-            className="group flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-sm font-medium text-foreground/70 hover:bg-white/5 hover:text-foreground transition-colors"
-            activeProps={{ className: "group flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-sm bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30 text-foreground font-semibold shadow-[0_0_20px_-8px_var(--primary-glow)]" }}
-          >
-            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02] text-primary-glow shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] group-hover:border-primary/40 group-hover:text-primary-glow group-hover:shadow-[0_0_16px_-4px_var(--primary-glow)] transition-all">
-              <span aria-hidden className="absolute top-0 left-0 h-1.5 w-1.5 border-t border-l border-primary-glow/60 rounded-tl-lg" />
-              <span aria-hidden className="absolute bottom-0 right-0 h-1.5 w-1.5 border-b border-r border-primary-glow/60 rounded-br-lg" />
-              <it.icon className="h-4 w-4" strokeWidth={1.75} />
-            </span>
-            <span className="truncate">{it.label}</span>
-          </Link>
-        ))}
-      </nav>
-
-      <div className="mt-auto border-t border-white/5 p-3 space-y-2">
-        <div className="px-1 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Tema</span>
-          <ThemeToggle />
-        </div>
-        <button onClick={toggle} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-foreground/60 hover:bg-white/5">
-          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />} {isDark ? "Alternar para claro" : "Alternar para escuro"}
-        </button>
-
-        <button onClick={() => { onSignOut(); close(); }} className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-foreground/60 hover:bg-white/5">
-          <LogOut className="h-4 w-4" /> Sair
-        </button>
-      </div>
-    </div>
-  );
+  return <div className="flex flex-col h-full bg-background text-foreground">
+    <div className="flex items-center justify-between px-5 py-5 border-b border-border"><Link to="/dashboard" onClick={close} className="dash-brand"><span className="dash-brand-symbol">R</span><span>REDOX<span className="text-primary-glow"> PAY</span></span></Link><Button size="icon" variant="ghost" aria-label="Fechar menu" onClick={close}><X className="size-4" /></Button></div>
+    <p className="px-6 pt-5 pb-2 text-[10px] text-muted-foreground">ESPAÇO DE TRABALHO</p>
+    <nav aria-label="Menu principal" className="px-3 flex-1 min-h-0 overflow-y-auto space-y-1 py-2">{navItems.map(it => <Link key={it.to} to={it.to} onClick={close} activeOptions={{ exact:it.exact }} className="dash-nav-link" activeProps={{ className:"dash-nav-link dash-nav-active" }}><it.icon className="size-4 shrink-0" strokeWidth={1.65} /><span className="truncate">{it.label}</span></Link>)}</nav>
+    <div className="border-t border-border p-4 flex items-center justify-between"><ThemeToggle minimal /><Button variant="ghost" onClick={() => { onSignOut(); close(); }}><LogOut className="size-4" />Sair</Button></div>
+  </div>;
 }
