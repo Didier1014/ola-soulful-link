@@ -6,6 +6,6 @@
 
 # Shared SaaS visual system
 
-- [ ] Extend the reference-led shell, icons and surfaces to all authenticated areas.
-- [ ] Match mobile menus, forms and dialogs to the shared system without touching checkouts.
-- [ ] Verify transactions, products, customers, links and other internal pages.
+- [x] Extend the reference-led shell, icons and surfaces to all authenticated areas.
+- [x] Match mobile menus, forms and dialogs to the shared system without touching checkouts.
+- [x] Verify transactions, products, customers, links and other internal pages.
