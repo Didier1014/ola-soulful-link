@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, Package, Receipt, Wallet, LogOut, Menu, X,
@@ -62,6 +62,9 @@ const navItems = [
 function AuthedShell() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const path = useRouterState({ select: (state) => state.location.pathname });
+  const overview = path === "/dashboard" || path === "/dashboard/";
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -69,21 +72,27 @@ function AuthedShell() {
   }
 
   return (
-    <div className="min-h-screen text-foreground relative overflow-x-hidden">
+    <div className={overview ? `dash-shell min-h-screen text-foreground ${collapsed ? "dash-collapsed" : ""}` : "min-h-screen text-foreground relative overflow-x-hidden"}>
 
       {/* Ambient glow */}
-      <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
+      <div aria-hidden className={`${overview ? "hidden" : ""} pointer-events-none fixed inset-0 z-0`}>
         <div className="absolute -top-40 -left-32 h-[420px] w-[420px] rounded-full bg-primary/20 blur-[140px]" />
         <div className="absolute top-1/3 -right-32 h-[380px] w-[380px] rounded-full bg-primary-glow/15 blur-[140px]" />
         <div className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:40px_40px]" />
       </div>
 
-      <div className="relative z-10 bg-background min-h-screen">
-        <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/60 border-b border-white/5">
+      {overview && <aside className="dash-sidebar hidden lg:flex">
+        <Link to="/dashboard" className="dash-brand"><span className="dash-brand-symbol">R</span>{!collapsed && <span>REDOX<span className="text-primary-glow"> PAY</span></span>}</Link>
+        {!collapsed && <p className="px-4 pt-7 pb-3 text-[10px] text-muted-foreground">ESPAÇO DE TRABALHO</p>}
+        <nav className="flex-1 min-h-0 overflow-y-auto space-y-1 py-3">{navItems.map(it => <Link key={it.to} to={it.to} title={it.label} activeOptions={{ exact: it.exact }} className="dash-nav-link" activeProps={{ className: "dash-nav-link dash-nav-active" }}><it.icon className="size-4 shrink-0" />{!collapsed && <span className="truncate">{it.label}</span>}</Link>)}</nav>
+        <div className="border-t border-border pt-3 space-y-1"><Button variant="ghost" onClick={() => setCollapsed(v => !v)} title={collapsed ? "Expandir menu" : "Recolher menu"} aria-label={collapsed ? "Expandir menu" : "Recolher menu"} className="dash-nav-link w-full justify-start"><Menu className="size-4 shrink-0" />{!collapsed && "Recolher menu"}</Button><Button variant="ghost" onClick={signOut} title="Sair" className="dash-nav-link w-full justify-start"><LogOut className="size-4 shrink-0" />{!collapsed && "Sair"}</Button></div>
+      </aside>}
+      <div className={overview ? "dash-workspace relative z-10 min-h-screen" : "relative z-10 bg-background min-h-screen"}>
+        <header className={overview ? "dash-topbar sticky top-0 z-40 border-b border-border" : "sticky top-0 z-40 backdrop-blur-xl bg-background/60 border-b border-white/5"}>
           <div className="max-w-7xl mx-auto flex items-center gap-2 px-4 lg:px-8 h-14">
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="rounded-xl h-10 w-10 bg-white/5 border-white/10 hover:bg-white/10 text-foreground">
+                <Button variant="outline" size="icon" className={overview ? "lg:hidden rounded-md h-8 w-8 bg-secondary border-border text-foreground" : "rounded-xl h-10 w-10 bg-white/5 border-white/10 hover:bg-white/10 text-foreground"}>
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
@@ -91,10 +100,11 @@ function AuthedShell() {
                 <DrawerContent close={() => setOpen(false)} onSignOut={signOut} />
               </SheetContent>
             </Sheet>
-            <Link to="/dashboard" className="font-bold tracking-tight ml-2 flex items-center gap-1.5">
+            <Link to="/dashboard" className={overview ? "font-semibold text-xs ml-2 flex items-center gap-1.5 lg:hidden" : "font-bold tracking-tight ml-2 flex items-center gap-1.5"}>
               <span className="h-2 w-2 rounded-full bg-primary-glow shadow-[0_0_12px_var(--primary-glow)]" />
               REDOX <span className="text-gradient-red">PAY</span>
             </Link>
+            {overview && <span className="hidden lg:flex text-xs text-muted-foreground items-center gap-2"><LayoutDashboard className="size-3.5" />Visão geral</span>}
             <div className="ml-auto flex items-center gap-2">
               <ThemeToggle />
               <NotificationBell />
@@ -103,7 +113,7 @@ function AuthedShell() {
           </div>
         </header>
 
-        <main className="max-w-7xl mx-auto px-4 lg:px-8 py-5 lg:py-8 pb-24">
+        <main className={overview ? "max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-7 lg:py-9 pb-16" : "max-w-7xl mx-auto px-4 lg:px-8 py-5 lg:py-8 pb-24"}>
           <Outlet />
         </main>
         <FloatingSaleNotification />

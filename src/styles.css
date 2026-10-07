@@ -438,3 +438,66 @@ html {
 #lovable-badge {
   display: none !important;
 }
+
+
+/* Reference-led financial overview, isolated from public checkout themes. */
+@theme inline {
+  --color-dash-red: var(--dash-red);
+  --color-dash-cyan: var(--dash-cyan);
+  --color-dash-amber: var(--dash-amber);
+}
+.dash-shell {
+  --dash-red: oklch(0.7 0.19 12);
+  --dash-cyan: oklch(0.72 0.12 210);
+  --dash-amber: oklch(0.76 0.16 60);
+  --dash-sphere-base: oklch(0.03 0 0);
+  --dash-sphere-light: oklch(0.93 0 0);
+  --dash-shadow: 0 0 34px -12px color-mix(in oklab, var(--channel-color) 48%, transparent);
+  background: var(--background);
+}
+.dark .dash-shell {
+  --background: oklch(0.105 0.002 270);
+  --foreground: oklch(0.94 0.003 270);
+  --card: oklch(0.14 0.004 270);
+  --muted: oklch(0.2 0.005 270);
+  --muted-foreground: oklch(0.61 0.008 270);
+  --border: oklch(0.24 0.004 270);
+  --secondary: oklch(0.18 0.004 270);
+  --popover: oklch(0.17 0.004 270);
+  --primary: oklch(0.64 0.22 25);
+  --primary-glow: oklch(0.68 0.2 25);
+  --destructive: oklch(0.7 0.18 25);
+}
+.dash-shell h1, .dash-shell h2, .dash-shell p, .dash-shell a { letter-spacing: 0; }
+.dash-topbar { background: color-mix(in oklab, var(--background) 94%, transparent); backdrop-filter: blur(16px); }
+.dash-sidebar { position: fixed; inset: 0 auto 0 0; width: 216px; z-index: 45; flex-direction: column; padding: 22px 12px 14px; background: var(--background); border-right: 1px solid var(--border); }
+.dash-brand { display:flex; align-items:center; gap:10px; font-size:12px; font-weight:650; padding: 0 8px; height:32px; }
+.dash-brand-symbol { width:27px; height:27px; display:grid; place-items:center; background:var(--primary); color:var(--primary-foreground); border-radius:7px; font-size:17px; }
+.dash-nav-link { display:flex; align-items:center; gap:10px; height:36px; padding:0 12px; border-radius:6px; font-size:11px; color:var(--muted-foreground); transition: background .18s,color .18s; }
+.dash-nav-link:hover { background:var(--secondary); color:var(--foreground); }
+.dash-nav-active { background:var(--secondary); color:var(--foreground); box-shadow:inset 2px 0 var(--primary-glow); }
+.dash-period { padding:3px; background:var(--secondary); border:1px solid var(--border); border-radius:7px; }
+.dash-period .dash-period-active { background:var(--foreground); color:var(--background); }
+.dash-period button { height:28px; padding:0 12px; font-size:11px; border-radius:4px; }
+.dash-primary { background:var(--primary); color:var(--primary-foreground); border-radius:6px; }
+.dash-label { font-size:10px; color:var(--muted-foreground); }
+.dash-balance strong { font-size:64px; line-height:1.08; }
+.dash-channel-bar { background:var(--muted); }
+.dash-bar-red { background:var(--dash-red); }
+.dash-bar-amber { background:var(--dash-amber); }
+.dash-bar-cyan { background:var(--dash-cyan); }
+.dash-dot { display:inline-block; width:5px; height:5px; border-radius:50%; }
+.dash-channel { padding:18px; border:1px solid var(--border); border-radius:8px; background:var(--card); overflow:hidden; }
+.dash-channel-red { --channel-color:var(--dash-red); }
+.dash-channel-amber { --channel-color:var(--dash-amber); }
+.dash-channel-cyan { --channel-color:var(--dash-cyan); }
+.dash-globe-frame { position:relative; margin:20px auto 16px; width:156px; aspect-ratio:1; border-radius:50%; background:var(--dash-sphere-base); box-shadow:var(--dash-shadow); border:1px solid color-mix(in oklab, var(--channel-color) 36%, transparent); }
+.dash-globe { width:100%; height:100%; border-radius:50%; opacity:.55; object-fit:cover; }
+.dash-globe-frame::after { content:""; position:absolute; inset:0; border-radius:50%; background:var(--channel-color); mix-blend-mode:color; pointer-events:none; }
+.dash-globe-pin { position:absolute; top:69%; left:49%; width:5px; height:5px; border-radius:50%; background:var(--dash-sphere-light); box-shadow:0 0 0 4px color-mix(in oklab, var(--channel-color) 30%, transparent),0 0 12px var(--channel-color); }
+.dash-globe-orbit { position:absolute; inset:-6px; border:1px solid color-mix(in oklab, var(--channel-color) 12%, transparent); border-radius:50%; }
+.dash-channel-count { color:var(--channel-color); font-size:18px; }
+.dash-avatar { width:32px; height:32px; display:grid; place-items:center; border:1px solid var(--border); border-radius:7px; background:var(--secondary); color:var(--muted-foreground); }
+@media(min-width:1024px) { .dash-workspace { margin-left:216px; } .dash-collapsed .dash-sidebar { width:64px; padding-inline:7px; } .dash-collapsed .dash-workspace { margin-left:64px; } .dash-collapsed .dash-nav-link { padding:0; justify-content:center; } .dash-collapsed .dash-brand { padding:0; justify-content:center; } }
+@media(max-width:639px) { .dash-balance strong { font-size:44px; } .dash-channel { padding:18px; } .dash-globe-frame { width:148px; } }
+@media(prefers-reduced-motion:reduce) { .dash-shell * { animation:none !important; transition:none !important; } }
