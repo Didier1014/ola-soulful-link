@@ -553,6 +553,12 @@ body.saas-active [role="dialog"] { background-color: var(--background); color: v
 body.saas-active [role="dialog"] :is([data-slot="card"],.neo-card,.glass-card) { background: var(--card); border-color: var(--border); border-radius: 8px; box-shadow: none; }
 body.saas-active .saas-mobile-menu { border-radius: 0; }
 body.saas-active [data-radix-popper-content-wrapper] { color: var(--foreground); }
+body.saas-active [role="dialog"] [class*="blur"] { display: none; }
+body.saas-active [role="dialog"] [class*="shadow-"] { box-shadow: none; }
+body.saas-active [role="dialog"] [class*="bg-gradient-"] { background-image: none; }
+body.saas-active [role="dialog"] [class*="border-white"] { border-color: var(--border); }
+body.saas-active [role="dialog"] .text-white { color: var(--primary-foreground); }
+body.saas-active [role="dialog"] .lucide { stroke-width: 1.65; }
 @media(max-width:639px) {
   .saas-content h1 { font-size: 23px; }
   .saas-content > div > div:first-child:has(h1) { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; align-items: center; }
