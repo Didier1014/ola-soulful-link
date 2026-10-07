@@ -1,4 +1,4 @@
 # Architecture rules
 
-- Keep Dashboard visual tokens scoped in the global stylesheet so the financial overview can evolve without restyling public checkouts.
+- Scope the professional SaaS visual system to the authenticated shell and its portals; public checkouts must remain visually isolated.
 - Dashboard visualizations consume existing transaction and stats functions; presentation changes must not alter payment or balance logic.
