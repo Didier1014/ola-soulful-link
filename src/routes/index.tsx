@@ -19,6 +19,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Receba pagamentos via M-Pesa em segundos. Checkout, links, QR Code e API para o seu negócio em Moçambique." },
       { property: "og:title", content: "Redox Pay — Pagamentos online em Moçambique" },
       { property: "og:description", content: "M-Pesa, checkout, links, QR Code e API. Liquidação em tempo real." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Landing,
