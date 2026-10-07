@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ObrigadoRouteImport } from './routes/obrigado'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TxunaEmolaRouteImport } from './routes/txuna-emola'
 import { Route as TxunaMpesaRouteImport } from './routes/txuna-mpesa'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ApiDebugNotificationRouteImport } from './routes/api/debug-notification'
@@ -77,6 +78,11 @@ const ObrigadoRoute = ObrigadoRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TxunaEmolaRoute = TxunaEmolaRouteImport.update({
+  id: '/txuna-emola',
+  path: '/txuna-emola',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TxunaMpesaRoute = TxunaMpesaRouteImport.update({
@@ -314,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/txuna-emola': typeof TxunaEmolaRoute
   '/txuna-mpesa': typeof TxunaMpesaRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
@@ -360,6 +367,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/txuna-emola': typeof TxunaEmolaRoute
   '/txuna-mpesa': typeof TxunaMpesaRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
@@ -408,6 +416,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/txuna-emola': typeof TxunaEmolaRoute
   '/txuna-mpesa': typeof TxunaMpesaRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/api/debug-notification': typeof ApiDebugNotificationRoute
@@ -456,6 +465,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/obrigado'
     | '/reset-password'
+    | '/txuna-emola'
     | '/txuna-mpesa'
     | '/unsubscribe'
     | '/api/debug-notification'
@@ -502,6 +512,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/obrigado'
     | '/reset-password'
+    | '/txuna-emola'
     | '/txuna-mpesa'
     | '/unsubscribe'
     | '/api/debug-notification'
@@ -549,6 +560,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/obrigado'
     | '/reset-password'
+    | '/txuna-emola'
     | '/txuna-mpesa'
     | '/unsubscribe'
     | '/api/debug-notification'
@@ -597,6 +609,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ObrigadoRoute: typeof ObrigadoRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TxunaEmolaRoute: typeof TxunaEmolaRoute
   TxunaMpesaRoute: typeof TxunaMpesaRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   ApiDebugNotificationRoute: typeof ApiDebugNotificationRoute
@@ -652,6 +665,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/txuna-emola': {
+      id: '/txuna-emola'
+      path: '/txuna-emola'
+      fullPath: '/txuna-emola'
+      preLoaderRoute: typeof TxunaEmolaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/txuna-mpesa': {
@@ -1033,6 +1053,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ObrigadoRoute: ObrigadoRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TxunaEmolaRoute: TxunaEmolaRoute,
   TxunaMpesaRoute: TxunaMpesaRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   ApiDebugNotificationRoute: ApiDebugNotificationRoute,
