@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getProductBySlug } from "@/lib/products.functions";
-import { createCheckout, checkTransactionStatus } from "@/lib/transactions.functions";
+import { createCheckout, checkTransactionStatus, warmGateway } from "@/lib/transactions.functions";
 import { Loader2, Lock, ShieldCheck, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
