@@ -64,6 +64,9 @@ function TxunaCheckout() {
   const [modal, setModal] = useState<{ status: "processing" | "pending" | "paid" | "failed"; id?: string } | null>(null);
   const checkingRef = useRef(false);
 
+  // Aquece o token do gateway em segundo plano para o clique em "Pagar" ser imediato.
+  useEffect(() => { warmGateway().catch(() => {}); }, []);
+
   const selectedPlan = PLANS.find((p) => p.id === plan);
   const amount = selectedPlan?.price ?? PLANS[0].price;
   const ready = name.trim().length >= 3 && !!product?.id;
