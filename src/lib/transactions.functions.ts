@@ -8,6 +8,15 @@ export const checkApiStatus = createServerFn({ method: "GET" }).handler(async ()
   return netshopStatus();
 });
 
+// Aquece o token do gateway assim que o checkout abre, para o clique em "Pagar" ser rápido.
+export const warmGateway = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const { netshopStatus } = await import("@/lib/netshop.server");
+    await netshopStatus();
+  } catch { /* ignora — é só aquecimento */ }
+  return { ok: true };
+});
+
 const WEBHOOK_URL = "https://redoxpay.lovable.app/api/public/zumbopay-webhook";
 
 
@@ -67,7 +76,7 @@ export const createCheckout = createServerFn({ method: "POST" })
 
     const { data: product, error: pErr } = await supabaseAdmin
       .from("products")
-      .select("id,user_id,price_mzn,active,name")
+      .select("id,user_id,price_mzn,active,name,delivery_url")
       .eq("id", data.product_id).maybeSingle();
     if (pErr) throw new Error(pErr.message);
     if (!product || !product.active) throw new Error("Produto indisponível");
@@ -148,8 +157,7 @@ export const createCheckout = createServerFn({ method: "POST" })
     if (gatewayPaid) {
       await creditSellerIfPending(supabaseAdmin, tx.id, product.user_id, seller_net, {});
     }
-    const { data: prod } = await supabaseAdmin.from("products").select("delivery_url").eq("id", product.id).maybeSingle();
-    return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, delivery_url: prod?.delivery_url ?? undefined, checkout_url: checkoutUrl, message: "Confirme o pagamento no telemóvel" };
+    return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, delivery_url: (product as any).delivery_url ?? undefined, checkout_url: checkoutUrl, message: "Confirme o pagamento no telemóvel" };
   });
 
 
