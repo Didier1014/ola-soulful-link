@@ -138,7 +138,6 @@ function TxunaCheckout() {
           0%,100%{transform:scale(1);box-shadow:0 14px 26px rgba(230,0,0,.32),0 0 0 0 rgba(230,0,0,.45)}
           50%{transform:scale(1.025);box-shadow:0 22px 40px rgba(230,0,0,.45),0 0 0 16px rgba(230,0,0,0)}
         }
-        @keyframes txBtnShine{to{background-position:200% center}}
         .tx-page{
           --tx-red:#e60000;
           --tx-red-soft:#fff6f6;
@@ -159,10 +158,9 @@ function TxunaCheckout() {
         .tx-logo{object-fit:contain;background:#fff}
         .tx-field::placeholder{color:#9ca3af;opacity:1}
         .tx-primary{
-          background:linear-gradient(120deg,#e60000 0%,#ff5f3d 28%,#13a873 50%,#ff5f3d 72%,#e60000 100%);
-          background-size:200% auto;
+          background:linear-gradient(120deg,#ff5f3d 0%,#e60000 45%,#13a873 100%);
           color:#fff;
-          animation:txBtnPulse 1.7s ease-in-out infinite,txBtnShine 3.2s linear infinite;
+          animation:txBtnPulse 1.7s ease-in-out infinite;
         }
         .tx-primary:hover{filter:brightness(1.07)}
         .tx-primary:disabled{filter:saturate(.85) brightness(.97)}

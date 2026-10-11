@@ -137,7 +137,6 @@ function TxunaEmolaCheckout() {
           0%,100%{transform:scale(1);box-shadow:0 14px 26px rgba(242,101,34,.34),0 0 0 0 rgba(242,101,34,.48)}
           50%{transform:scale(1.025);box-shadow:0 22px 40px rgba(242,101,34,.48),0 0 0 16px rgba(242,101,34,0)}
         }
-        @keyframes txBtnShine{to{background-position:200% center}}
         .tx-page{
           --tx-orange:#f26522;
           --tx-orange-soft:#fff7f0;
@@ -158,10 +157,9 @@ function TxunaEmolaCheckout() {
         .tx-logo{object-fit:contain;background:#fff}
         .tx-field::placeholder{color:#9ca3af;opacity:1}
         .tx-primary{
-          background:linear-gradient(120deg,#f26522 0%,#ffc23a 28%,#e60000 50%,#ffc23a 72%,#f26522 100%);
-          background-size:200% auto;
+          background:linear-gradient(120deg,#ffc23a 0%,#f26522 45%,#e60000 100%);
           color:#fff;
-          animation:txBtnPulse 1.7s ease-in-out infinite,txBtnShine 3.2s linear infinite;
+          animation:txBtnPulse 1.7s ease-in-out infinite;
         }
         .tx-primary:hover{filter:brightness(1.07)}
         .tx-primary:disabled{filter:saturate(.85) brightness(.97)}
