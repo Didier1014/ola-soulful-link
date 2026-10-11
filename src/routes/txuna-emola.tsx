@@ -133,6 +133,11 @@ function TxunaEmolaCheckout() {
         @keyframes txSpin{to{transform:rotate(360deg)}}
         @keyframes txPulse{0%,100%{opacity:1}50%{opacity:.35}}
         @keyframes txUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes txBtnPulse{
+          0%,100%{transform:scale(1);box-shadow:0 14px 26px rgba(242,101,34,.34),0 0 0 0 rgba(242,101,34,.48)}
+          50%{transform:scale(1.025);box-shadow:0 22px 40px rgba(242,101,34,.48),0 0 0 16px rgba(242,101,34,0)}
+        }
+        @keyframes txBtnShine{to{background-position:200% center}}
         .tx-page{
           --tx-orange:#f26522;
           --tx-orange-soft:#fff7f0;
@@ -152,8 +157,15 @@ function TxunaEmolaCheckout() {
         .tx-card{animation:txUp .35s ease both;box-shadow:0 14px 28px rgba(45,28,12,.09)}
         .tx-logo{object-fit:contain;background:#fff}
         .tx-field::placeholder{color:#9ca3af;opacity:1}
-        .tx-primary{background:var(--tx-orange);box-shadow:0 16px 26px rgba(242,101,34,.18)}
-        @media (prefers-reduced-motion:reduce){.tx-card,.tx-live-dot,.tx-spinner{animation:none!important}}
+        .tx-primary{
+          background:linear-gradient(120deg,#ffc23a 0%,#f26522 45%,#e60000 100%);
+          background-size:200% auto;
+          color:#fff;
+          animation:txBtnPulse 1.7s ease-in-out infinite,txBtnShine 3.2s linear infinite;
+        }
+        .tx-primary:hover{filter:brightness(1.07)}
+        .tx-primary:disabled{animation:none;filter:none}
+        @media (prefers-reduced-motion:reduce){.tx-card,.tx-live-dot,.tx-spinner,.tx-primary{animation:none!important}}
       `}</style>
 
       {/* Header */}
