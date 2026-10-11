@@ -81,6 +81,8 @@ function TxunaCheckout() {
           product_id: product?.id ?? "",
           amount_mzn: amount,
           customer_name: name.trim(),
+          customer_phone: `258${phoneDigits}`,
+          method: "mpesa",
           tracking: { src: `txuna-${plan}m` },
         },
       }),
@@ -208,6 +210,21 @@ function TxunaCheckout() {
             placeholder="Ex: Maria Silva"
             className="tx-field h-12 w-full rounded-full border border-[var(--tx-line)] px-4 text-[16px] outline-none transition-colors focus:border-[var(--tx-red)] sm:h-16 sm:px-6 sm:text-lg"
           />
+
+          <h2 className="pt-1 text-[15px] font-black sm:text-xl">Número M-Pesa</h2>
+          <div className={`flex h-12 items-center gap-2 rounded-full border px-4 transition-colors sm:h-16 sm:px-6 ${phoneDigits.length > 0 && !phoneValid ? "border-red-400" : "border-[var(--tx-line)] focus-within:border-[var(--tx-red)]"}`}>
+            <span className="shrink-0 text-[16px] font-black text-slate-500 sm:text-lg">+258</span>
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
+              inputMode="numeric"
+              placeholder="84 / 85 XXX XXXX"
+              className="tx-field h-full w-full bg-transparent text-[16px] outline-none sm:text-lg"
+            />
+          </div>
+          {phoneDigits.length > 0 && !phoneValid ? (
+            <p className="text-[12px] font-bold text-red-500 sm:text-sm">O número deve começar por 84 ou 85 e ter 9 dígitos.</p>
+          ) : null}
         </section>
 
         {/* Método + Planos */}
