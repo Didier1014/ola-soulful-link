@@ -232,7 +232,6 @@ function TxunaCheckout() {
           <h2 className="text-[15px] font-black sm:text-xl">Método de pagamento</h2>
           <div className="flex items-center gap-3 rounded-2xl border border-[var(--tx-line)] bg-[var(--tx-soft)] px-4 py-3 sm:gap-4 sm:rounded-3xl sm:px-6 sm:py-4">
             <img src="/brands/mpesa.png" alt="M-Pesa" className="tx-logo h-10 w-10 rounded-lg sm:h-12 sm:w-12" />
-            <img src="/brands/emola.png" alt="e-Mola" className="tx-logo h-10 w-10 rounded-lg sm:h-12 sm:w-12" />
             <p className="text-[12px] font-bold text-slate-600 sm:text-sm">M-Pesa — confirma o pagamento com o PIN no seu telemóvel</p>
           </div>
 
