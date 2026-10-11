@@ -43,7 +43,7 @@ import { Route as AuthenticatedDashboardWithdrawalsRouteImport } from './routes/
 import { Route as ApiPublicCheckPaymentStatusRouteImport } from './routes/api/public/check-payment-status'
 import { Route as ApiPublicCreateMerchantPaymentRouteImport } from './routes/api/public/create-merchant-payment'
 import { Route as ApiPublicReconcilePendingRouteImport } from './routes/api/public/reconcile-pending'
-import { Route as ApiPublicVpayWebhookRouteImport } from './routes/api/public/vpay-webhook'
+import { Route as ApiPublicZumbopayWebhookRouteImport } from './routes/api/public/zumbopay-webhook'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedDashboardAdminProdutosRouteImport } from './routes/_authenticated/dashboard.admin.produtos'
 import { Route as AuthenticatedDashboardAdminUsuariosRouteImport } from './routes/_authenticated/dashboard.admin.usuarios'
@@ -247,11 +247,12 @@ const ApiPublicReconcilePendingRoute =
     path: '/api/public/reconcile-pending',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicVpayWebhookRoute = ApiPublicVpayWebhookRouteImport.update({
-  id: '/api/public/vpay-webhook',
-  path: '/api/public/vpay-webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const ApiPublicZumbopayWebhookRoute =
+  ApiPublicZumbopayWebhookRouteImport.update({
+    id: '/api/public/zumbopay-webhook',
+    path: '/api/public/zumbopay-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -348,7 +349,7 @@ export interface FileRoutesByFullPath {
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
-  '/api/public/vpay-webhook': typeof ApiPublicVpayWebhookRoute
+  '/api/public/zumbopay-webhook': typeof ApiPublicZumbopayWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
@@ -395,7 +396,7 @@ export interface FileRoutesByTo {
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
-  '/api/public/vpay-webhook': typeof ApiPublicVpayWebhookRoute
+  '/api/public/zumbopay-webhook': typeof ApiPublicZumbopayWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
@@ -444,7 +445,7 @@ export interface FileRoutesById {
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
-  '/api/public/vpay-webhook': typeof ApiPublicVpayWebhookRoute
+  '/api/public/zumbopay-webhook': typeof ApiPublicZumbopayWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
@@ -493,7 +494,7 @@ export interface FileRouteTypes {
     | '/api/public/check-payment-status'
     | '/api/public/create-merchant-payment'
     | '/api/public/reconcile-pending'
-    | '/api/public/vpay-webhook'
+    | '/api/public/zumbopay-webhook'
     | '/lovable/email/suppression'
     | '/dashboard/'
     | '/dashboard/admin/produtos'
@@ -540,7 +541,7 @@ export interface FileRouteTypes {
     | '/api/public/check-payment-status'
     | '/api/public/create-merchant-payment'
     | '/api/public/reconcile-pending'
-    | '/api/public/vpay-webhook'
+    | '/api/public/zumbopay-webhook'
     | '/lovable/email/suppression'
     | '/dashboard'
     | '/dashboard/admin/produtos'
@@ -588,7 +589,7 @@ export interface FileRouteTypes {
     | '/api/public/check-payment-status'
     | '/api/public/create-merchant-payment'
     | '/api/public/reconcile-pending'
-    | '/api/public/vpay-webhook'
+    | '/api/public/zumbopay-webhook'
     | '/lovable/email/suppression'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/admin/produtos'
@@ -619,7 +620,7 @@ export interface RootRouteChildren {
   ApiPublicCheckPaymentStatusRoute: typeof ApiPublicCheckPaymentStatusRoute
   ApiPublicCreateMerchantPaymentRoute: typeof ApiPublicCreateMerchantPaymentRoute
   ApiPublicReconcilePendingRoute: typeof ApiPublicReconcilePendingRoute
-  ApiPublicVpayWebhookRoute: typeof ApiPublicVpayWebhookRoute
+  ApiPublicZumbopayWebhookRoute: typeof ApiPublicZumbopayWebhookRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicEmbedScriptRoute: typeof ApiPublicEmbedScriptRoute
   ApiPublicNotificationsPollRoute: typeof ApiPublicNotificationsPollRoute
@@ -870,11 +871,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicReconcilePendingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/vpay-webhook': {
-      id: '/api/public/vpay-webhook'
-      path: '/api/public/vpay-webhook'
-      fullPath: '/api/public/vpay-webhook'
-      preLoaderRoute: typeof ApiPublicVpayWebhookRouteImport
+    '/api/public/zumbopay-webhook': {
+      id: '/api/public/zumbopay-webhook'
+      path: '/api/public/zumbopay-webhook'
+      fullPath: '/api/public/zumbopay-webhook'
+      preLoaderRoute: typeof ApiPublicZumbopayWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lovable/email/suppression': {
@@ -1063,7 +1064,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCheckPaymentStatusRoute: ApiPublicCheckPaymentStatusRoute,
   ApiPublicCreateMerchantPaymentRoute: ApiPublicCreateMerchantPaymentRoute,
   ApiPublicReconcilePendingRoute: ApiPublicReconcilePendingRoute,
-  ApiPublicVpayWebhookRoute: ApiPublicVpayWebhookRoute,
+  ApiPublicZumbopayWebhookRoute: ApiPublicZumbopayWebhookRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicEmbedScriptRoute: ApiPublicEmbedScriptRoute,
   ApiPublicNotificationsPollRoute: ApiPublicNotificationsPollRoute,
