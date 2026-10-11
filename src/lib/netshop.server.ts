@@ -1,52 +1,46 @@
-// Gateway VPay — https://api.vpay.co.mz
-// Auth: POST /v1/auth/token {client_id, client_secret} -> Bearer (1h)
-// Pedido: POST /v1/orders -> { orderId, checkout } (cliente paga M-Pesa/e-Mola na página VPay)
-// Estado: GET /v1/orders/{id}/status
+// Gateway ZumboPay — https://zumbopay.com/api/public/v1
+// Auth: Authorization: Bearer zk_live_... + X-Merchant-Id
+// Endpoints: POST /charges (STK push), GET /payments/{ref}, GET /merchant/validate
 // (Nome do ficheiro mantido para não mexer nos imports existentes.)
 
-const BASE = "https://api.vpay.co.mz";
+const BASE = "https://zumbopay.com/api/public/v1";
+const MERCHANT_ID = "MCH_3D82A8F40B";
+const WALLET_MPESA = "0ad0f0a0-5b92-40c6-9ca4-caacee81641e";
 
 export type NetshopMethod = "mpesa" | "emola" | "mkesh" | "card";
 
-let tokenCache: { token: string; exp: number } | null = null;
-
-async function getToken(): Promise<string> {
-  if (tokenCache && tokenCache.exp > Date.now() + 60_000) return tokenCache.token;
-  const client_id = process.env.VPAY_CLIENT_ID;
-  const client_secret = process.env.VPAY_CLIENT_SECRET;
-  if (!client_id || !client_secret) throw new Error("Credenciais VPay não configuradas");
-  const res = await fetch(`${BASE}/v1/auth/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ client_id, client_secret }),
-    signal: AbortSignal.timeout(20_000),
-  });
-  const j: any = await res.json().catch(() => null);
-  const token = j?.data?.access_token;
-  if (!res.ok || !token) {
-    console.log("[vpay] auth failed", res.status, JSON.stringify(j)?.slice(0, 300));
-    throw new Error("Falha na autenticação com o gateway");
-  }
-  tokenCache = { token, exp: Date.now() + Number(j?.data?.expires_in ?? 3600) * 1000 };
-  return token;
+function creds() {
+  const key = process.env.ZUMBOPAY_API_KEY;
+  if (!key) throw new Error("Credenciais ZumboPay não configuradas");
+  return {
+    key,
+    merchant: process.env.ZUMBOPAY_MERCHANT_ID || MERCHANT_ID,
+    wallet: process.env.ZUMBOPAY_WALLET_MPESA || WALLET_MPESA,
+  };
 }
 
-async function call(path: string, init: { method?: string; body?: unknown; timeoutMs?: number } = {}) {
-  const doFetch = async () => {
-    const token = await getToken();
-    return fetch(`${BASE}${path}`, {
-      method: init.method ?? "GET",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      ...(init.body ? { body: JSON.stringify(init.body) } : {}),
-      signal: AbortSignal.timeout(init.timeoutMs ?? 30_000),
-    });
-  };
-  let res = await doFetch();
-  if (res.status === 401) { tokenCache = null; res = await doFetch(); }
+type RawResult = { ok: boolean; httpStatus: number; json: any; text: string };
+
+async function call(
+  path: string,
+  init: { method?: string; body?: unknown; idempotencyKey?: string; timeoutMs?: number } = {},
+): Promise<RawResult> {
+  const { key, merchant } = creds();
+  const res = await fetch(`${BASE}${path}`, {
+    method: init.method ?? "GET",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "X-Merchant-Id": merchant,
+      "Content-Type": "application/json",
+      ...(init.idempotencyKey ? { "Idempotency-Key": init.idempotencyKey } : {}),
+    },
+    ...(init.body ? { body: JSON.stringify(init.body) } : {}),
+    signal: AbortSignal.timeout(init.timeoutMs ?? 90_000),
+  });
   const text = await res.text();
   let json: any = null;
   try { json = JSON.parse(text); } catch { /* ignore */ }
-  if (!res.ok) console.log("[vpay]", path, "HTTP", res.status, text.slice(0, 500));
+  if (!res.ok) console.log("[zumbopay]", path, "HTTP", res.status, text.slice(0, 500));
   return { ok: res.ok, httpStatus: res.status, json, text };
 }
 
@@ -61,8 +55,8 @@ export function toMsisdn(raw: string) {
   return `258${normalizePhone(raw)}`;
 }
 
-export function methodFromPhone(phone: string): NetshopMethod {
-  return /^8[67]/.test(normalizePhone(phone)) ? "emola" : "mpesa";
+export function methodFromPhone(_phone: string): NetshopMethod {
+  return "mpesa"; // apenas carteira M-Pesa activa
 }
 
 export type NetshopChargeInput = {
@@ -90,8 +84,8 @@ export type NetshopChargeResult = {
 
 export function mapZumboStatus(s: unknown): "paid" | "pending" | "failed" {
   const v = String(s || "pending").toLowerCase();
-  if (["success", "succeeded", "paid", "completed", "approved"].includes(v)) return "paid";
-  if (["failed", "declined", "cancelled", "canceled", "expired", "rejected", "refunded"].includes(v)) return "failed";
+  if (["success", "succeeded", "paid", "completed"].includes(v)) return "paid";
+  if (["failed", "declined", "cancelled", "canceled", "expired", "rejected"].includes(v)) return "failed";
   return "pending";
 }
 
@@ -101,56 +95,72 @@ export async function netshopCharge(input: NetshopChargeInput): Promise<NetshopC
   const amount = Number(input.amount);
   if (!name) throw new Error("Nome do cliente é obrigatório");
   if (!phone || phone.length < 9) throw new Error("Telefone inválido (9 dígitos)");
+  if (!/^8[45]/.test(phone)) throw new Error("Use um número M-Pesa (84 ou 85)");
   if (!Number.isFinite(amount) || amount < 1) throw new Error("Valor inválido");
 
-  const ref = input.idempotencyKey || crypto.randomUUID();
-  const email = input.customer_email && input.customer_email.includes("@")
-    ? input.customer_email
-    : `cliente${phone}@redoxpay.site`;
+  const { wallet } = creds();
+  const idempotencyKey = input.idempotencyKey || crypto.randomUUID();
   const body = {
-    source: { source: "api" },
-    customer: { merchantCustomerId: ref, name, email, phone: `+258${phone}` },
-    shippingAddressDisabled: true,
-    deliveryInfoDisabled: true,
-    items: [{
-      originProductId: `redox-${ref}`,
-      name: (input.description || "Pagamento").slice(0, 120),
-      quantity: 1,
-      price: amount,
-    }],
+    wallet_id: wallet,
+    amount,
+    msisdn: toMsisdn(phone),
+    customer_name: name,
+    source_id: idempotencyKey,
   };
 
-  const r = await call("/v1/orders", { method: "POST", body });
-  const orderId = String(r.json?.orderId || r.json?.data?.orderId || "");
-  if (!orderId) throw new Error(r.json?.message || r.json?.error || `Gateway ${r.httpStatus}`);
-  const status = mapZumboStatus(r.json?.data?.status);
+  let r: RawResult;
+  try {
+    r = await call("/charges", { method: "POST", body, idempotencyKey });
+  } catch (e) {
+    console.log("[zumbopay] charge timeout, a repetir com mesma chave", e);
+    try {
+      r = await call("/charges", { method: "POST", body, idempotencyKey });
+    } catch {
+      throw new Error("O provedor não respondeu a tempo. Se o pagamento foi debitado será confirmado automaticamente.");
+    }
+  }
+
+  const data = r.json?.data ?? {};
+  const err = r.json?.error;
+  const reference = String(data?.reference || "");
+  if (!reference) {
+    const msg = err?.code === "psp_declined"
+      ? (err?.message || "Pagamento recusado pela operadora")
+      : (err?.message || `Gateway ${r.httpStatus}`);
+    return r.httpStatus === 402
+      ? { reference: "", status: "failed", test_mode: false, paid: false, failed_reason: msg, response_code: err?.code }
+      : Promise.reject(new Error(msg));
+  }
+
+  const status = mapZumboStatus(data?.status);
   return {
-    reference: orderId,
+    reference,
     status,
     test_mode: false,
     paid: status === "paid",
-    checkout_url: r.json?.checkout || `https://checkout.vpay.co.mz/${orderId}`,
+    failed_reason: status === "failed" ? (data?.message || err?.message) : undefined,
+    response_code: data?.code ?? undefined,
   };
 }
 
 export async function netshopCheck(reference: string): Promise<"paid" | "pending" | "failed"> {
   try {
-    const r = await call(`/v1/orders/${encodeURIComponent(reference)}/status`, { timeoutMs: 20_000 });
+    const r = await call(`/payments/${encodeURIComponent(reference)}`, { timeoutMs: 20_000 });
     if (!r.ok) return "pending";
-    return mapZumboStatus(r.json?.data?.status);
+    const d = r.json?.data ?? {};
+    return mapZumboStatus(d?.status ?? d?.payment_status);
   } catch (e) {
-    console.log("[vpay check] error", e);
+    console.log("[zumbopay check] error", e);
     return "pending";
   }
 }
 
 export async function netshopStatus() {
   const t0 = Date.now();
-  const configured = Boolean(process.env.VPAY_CLIENT_ID && process.env.VPAY_CLIENT_SECRET);
+  const configured = Boolean(process.env.ZUMBOPAY_API_KEY);
   try {
-    tokenCache = null;
-    await getToken();
-    return { ok: true, configured, latency_ms: Date.now() - t0 };
+    const r = await call("/merchant/validate", { timeoutMs: 15_000 });
+    return { ok: r.ok, configured, latency_ms: Date.now() - t0, message: r.ok ? undefined : `HTTP ${r.httpStatus}` };
   } catch (e) {
     return { ok: false, configured, latency_ms: Date.now() - t0, message: e instanceof Error ? e.message : "erro" };
   }
