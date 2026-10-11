@@ -60,6 +60,7 @@ function TxunaCheckout() {
 
 
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [plan, setPlan] = useState<"6" | "12">("6");
   const [modal, setModal] = useState<{ status: "processing" | "pending" | "paid" | "failed"; id?: string } | null>(null);
   const checkingRef = useRef(false);
@@ -69,7 +70,9 @@ function TxunaCheckout() {
 
   const selectedPlan = PLANS.find((p) => p.id === plan);
   const amount = selectedPlan?.price ?? PLANS[0].price;
-  const ready = name.trim().length >= 3 && !!product?.id;
+  const phoneDigits = phone.replace(/\D/g, "");
+  const phoneValid = /^8[45]\d{7}$/.test(phoneDigits);
+  const ready = name.trim().length >= 3 && phoneValid && !!product?.id;
 
   const m = useMutation({
     mutationFn: () =>
