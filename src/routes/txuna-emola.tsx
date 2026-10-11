@@ -164,7 +164,7 @@ function TxunaEmolaCheckout() {
           animation:txBtnPulse 1.7s ease-in-out infinite,txBtnShine 3.2s linear infinite;
         }
         .tx-primary:hover{filter:brightness(1.07)}
-        .tx-primary:disabled{animation:none;filter:none}
+        .tx-primary:disabled{filter:saturate(.85) brightness(.97)}
         @media (prefers-reduced-motion:reduce){.tx-card,.tx-live-dot,.tx-spinner,.tx-primary{animation:none!important}}
       `}</style>
 
