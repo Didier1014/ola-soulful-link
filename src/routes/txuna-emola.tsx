@@ -59,6 +59,7 @@ function TxunaEmolaCheckout() {
   });
 
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [plan, setPlan] = useState<"6" | "12">("6");
   const [modal, setModal] = useState<{ status: "processing" | "pending" | "paid" | "failed"; id?: string } | null>(null);
   const checkingRef = useRef(false);
@@ -68,7 +69,9 @@ function TxunaEmolaCheckout() {
 
   const selectedPlan = PLANS.find((p) => p.id === plan);
   const amount = selectedPlan?.price ?? PLANS[0].price;
-  const ready = name.trim().length >= 3 && !!product?.id;
+  const phoneDigits = phone.replace(/\D/g, "");
+  const phoneValid = /^8[67]\d{7}$/.test(phoneDigits);
+  const ready = name.trim().length >= 3 && phoneValid && !!product?.id;
 
   const m = useMutation({
     mutationFn: () =>
@@ -77,6 +80,8 @@ function TxunaEmolaCheckout() {
           product_id: product?.id ?? "",
           amount_mzn: amount,
           customer_name: name.trim(),
+          customer_phone: `258${phoneDigits}`,
+          method: "emola",
           tracking: { src: `txuna-emola-${plan}m` },
         },
       }),
@@ -204,6 +209,21 @@ function TxunaEmolaCheckout() {
             placeholder="Ex: Maria Silva"
             className="tx-field h-12 w-full rounded-full border border-[var(--tx-line)] px-4 text-[16px] outline-none transition-colors focus:border-[var(--tx-orange)] sm:h-16 sm:px-6 sm:text-lg"
           />
+
+          <h2 className="pt-1 text-[15px] font-black sm:text-xl">Número e-Mola</h2>
+          <div className={`flex h-12 items-center gap-2 rounded-full border px-4 transition-colors sm:h-16 sm:px-6 ${phoneDigits.length > 0 && !phoneValid ? "border-red-400" : "border-[var(--tx-line)] focus-within:border-[var(--tx-orange)]"}`}>
+            <span className="shrink-0 text-[16px] font-black text-slate-500 sm:text-lg">+258</span>
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
+              inputMode="numeric"
+              placeholder="86 / 87 XXX XXXX"
+              className="tx-field h-full w-full bg-transparent text-[16px] outline-none sm:text-lg"
+            />
+          </div>
+          {phoneDigits.length > 0 && !phoneValid ? (
+            <p className="text-[12px] font-bold text-red-500 sm:text-sm">O número deve começar por 86 ou 87 e ter 9 dígitos.</p>
+          ) : null}
         </section>
 
         {/* Método + Planos */}
@@ -211,8 +231,7 @@ function TxunaEmolaCheckout() {
           <h2 className="text-[15px] font-black sm:text-xl">Método de pagamento</h2>
           <div className="flex items-center gap-3 rounded-2xl border border-[var(--tx-line)] bg-[var(--tx-soft)] px-4 py-3 sm:gap-4 sm:rounded-3xl sm:px-6 sm:py-4">
             <img src="/brands/emola.png" alt="e-Mola" className="tx-logo h-10 w-10 rounded-lg sm:h-12 sm:w-12" />
-            <img src="/brands/mpesa.png" alt="M-Pesa" className="tx-logo h-10 w-10 rounded-lg sm:h-12 sm:w-12" />
-            <p className="text-[12px] font-bold text-slate-600 sm:text-sm">e-Mola ou M-Pesa — escolhe na página de pagamento segura</p>
+            <p className="text-[12px] font-bold text-slate-600 sm:text-sm">e-Mola — confirma o pagamento com o PIN no seu telemóvel</p>
           </div>
 
           {/* Planos */}
@@ -250,7 +269,7 @@ function TxunaEmolaCheckout() {
 
           <div className="flex gap-3 rounded-2xl bg-[var(--tx-soft)] p-4 text-[12px] leading-relaxed text-slate-500 sm:gap-4 sm:rounded-3xl sm:p-5 sm:text-base">
             <Lock className="mt-0.5 h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
-            <p>Vai preencher o seu número e-Mola ou M-Pesa na página de pagamento segura. Os seus dados estão protegidos com criptografia ponta a ponta.</p>
+            <p>Ao clicar em pagar, vai receber um pedido no seu telemóvel para confirmar com o PIN e-Mola. Os seus dados estão protegidos com criptografia ponta a ponta.</p>
           </div>
 
           <button
