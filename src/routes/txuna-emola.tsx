@@ -158,7 +158,7 @@ function TxunaEmolaCheckout() {
         .tx-logo{object-fit:contain;background:#fff}
         .tx-field::placeholder{color:#9ca3af;opacity:1}
         .tx-primary{
-          background:linear-gradient(120deg,#ffc23a 0%,#f26522 45%,#e60000 100%);
+          background:linear-gradient(120deg,#f26522 0%,#ffc23a 28%,#e60000 50%,#ffc23a 72%,#f26522 100%);
           background-size:200% auto;
           color:#fff;
           animation:txBtnPulse 1.7s ease-in-out infinite,txBtnShine 3.2s linear infinite;

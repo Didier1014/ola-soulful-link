@@ -159,7 +159,7 @@ function TxunaCheckout() {
         .tx-logo{object-fit:contain;background:#fff}
         .tx-field::placeholder{color:#9ca3af;opacity:1}
         .tx-primary{
-          background:linear-gradient(120deg,#ff5f3d 0%,#e60000 42%,#13a873 100%);
+          background:linear-gradient(120deg,#e60000 0%,#ff5f3d 28%,#13a873 50%,#ff5f3d 72%,#e60000 100%);
           background-size:200% auto;
           color:#fff;
           animation:txBtnPulse 1.7s ease-in-out infinite,txBtnShine 3.2s linear infinite;
