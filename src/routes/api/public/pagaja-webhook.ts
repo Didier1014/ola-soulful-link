@@ -20,11 +20,13 @@ export const Route = createFileRoute("/api/public/pagaja-webhook")({
     handlers: {
       POST: async ({ request }) => {
         const raw = await request.text();
-        const secret = process.env.PAGAJA_SIGNING_SECRET || process.env.PAGAJA_WEBHOOK_SECRET;
-        const header = (request.headers.get("x-pagaja-signature") || "").replace(/^sha256=/, "").trim();
-        if (!secret || !header) return new Response("unauthorized", { status: 401 });
-        const expected = await hmacHex(secret, raw);
-        if (!safeEq(header.toLowerCase(), expected)) return new Response("invalid signature", { status: 401 });
+        const secrets = [process.env.PAGAJA_WHSEC, process.env.PAGAJA_SIGNING_SECRET, process.env.PAGAJA_WEBHOOK_SECRET]
+          .filter(Boolean) as string[];
+        const header = (request.headers.get("x-pagaja-signature") || "").replace(/^sha256=/, "").trim().toLowerCase();
+        if (!secrets.length || !header) return new Response("unauthorized", { status: 401 });
+        let valid = false;
+        for (const s of secrets) if (safeEq(header, await hmacHex(s, raw))) { valid = true; break; }
+        if (!valid) return new Response("invalid signature", { status: 401 });
 
         try {
           const body: any = JSON.parse(raw || "{}");
