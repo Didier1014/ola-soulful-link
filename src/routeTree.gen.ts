@@ -42,6 +42,7 @@ import { Route as AuthenticatedDashboardTransactionsRouteImport } from './routes
 import { Route as AuthenticatedDashboardWithdrawalsRouteImport } from './routes/_authenticated/dashboard.withdrawals'
 import { Route as ApiPublicCheckPaymentStatusRouteImport } from './routes/api/public/check-payment-status'
 import { Route as ApiPublicCreateMerchantPaymentRouteImport } from './routes/api/public/create-merchant-payment'
+import { Route as ApiPublicPagajaWebhookRouteImport } from './routes/api/public/pagaja-webhook'
 import { Route as ApiPublicReconcilePendingRouteImport } from './routes/api/public/reconcile-pending'
 import { Route as ApiPublicVpayWebhookRouteImport } from './routes/api/public/vpay-webhook'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -241,6 +242,11 @@ const ApiPublicCreateMerchantPaymentRoute =
     path: '/api/public/create-merchant-payment',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPagajaWebhookRoute = ApiPublicPagajaWebhookRouteImport.update({
+  id: '/api/public/pagaja-webhook',
+  path: '/api/public/pagaja-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicReconcilePendingRoute =
   ApiPublicReconcilePendingRouteImport.update({
     id: '/api/public/reconcile-pending',
@@ -347,6 +353,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
+  '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/api/public/vpay-webhook': typeof ApiPublicVpayWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -394,6 +401,7 @@ export interface FileRoutesByTo {
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
+  '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/api/public/vpay-webhook': typeof ApiPublicVpayWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -443,6 +451,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
+  '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/api/public/vpay-webhook': typeof ApiPublicVpayWebhookRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -492,6 +501,7 @@ export interface FileRouteTypes {
     | '/dashboard/withdrawals'
     | '/api/public/check-payment-status'
     | '/api/public/create-merchant-payment'
+    | '/api/public/pagaja-webhook'
     | '/api/public/reconcile-pending'
     | '/api/public/vpay-webhook'
     | '/lovable/email/suppression'
@@ -539,6 +549,7 @@ export interface FileRouteTypes {
     | '/dashboard/withdrawals'
     | '/api/public/check-payment-status'
     | '/api/public/create-merchant-payment'
+    | '/api/public/pagaja-webhook'
     | '/api/public/reconcile-pending'
     | '/api/public/vpay-webhook'
     | '/lovable/email/suppression'
@@ -587,6 +598,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/withdrawals'
     | '/api/public/check-payment-status'
     | '/api/public/create-merchant-payment'
+    | '/api/public/pagaja-webhook'
     | '/api/public/reconcile-pending'
     | '/api/public/vpay-webhook'
     | '/lovable/email/suppression'
@@ -618,6 +630,7 @@ export interface RootRouteChildren {
   LSlugRoute: typeof LSlugRoute
   ApiPublicCheckPaymentStatusRoute: typeof ApiPublicCheckPaymentStatusRoute
   ApiPublicCreateMerchantPaymentRoute: typeof ApiPublicCreateMerchantPaymentRoute
+  ApiPublicPagajaWebhookRoute: typeof ApiPublicPagajaWebhookRoute
   ApiPublicReconcilePendingRoute: typeof ApiPublicReconcilePendingRoute
   ApiPublicVpayWebhookRoute: typeof ApiPublicVpayWebhookRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -863,6 +876,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCreateMerchantPaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/pagaja-webhook': {
+      id: '/api/public/pagaja-webhook'
+      path: '/api/public/pagaja-webhook'
+      fullPath: '/api/public/pagaja-webhook'
+      preLoaderRoute: typeof ApiPublicPagajaWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/reconcile-pending': {
       id: '/api/public/reconcile-pending'
       path: '/api/public/reconcile-pending'
@@ -1062,6 +1082,7 @@ const rootRouteChildren: RootRouteChildren = {
   LSlugRoute: LSlugRoute,
   ApiPublicCheckPaymentStatusRoute: ApiPublicCheckPaymentStatusRoute,
   ApiPublicCreateMerchantPaymentRoute: ApiPublicCreateMerchantPaymentRoute,
+  ApiPublicPagajaWebhookRoute: ApiPublicPagajaWebhookRoute,
   ApiPublicReconcilePendingRoute: ApiPublicReconcilePendingRoute,
   ApiPublicVpayWebhookRoute: ApiPublicVpayWebhookRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
