@@ -12,6 +12,6 @@
 
 # PagAja production payments
 
-- [ ] Verify current PagAja documentation and configured production access.
-- [ ] Replace VPay for checkouts, payment links and merchant payments without changing prices or fees.
-- [ ] Verify payment creation, status checks and signed webhook handling.
+- [ ] Verify newly supplied credentials against the current provider documentation; blocked on the current documentation URL and confirmed production credentials.
+- [ ] Replace VPay for checkouts, payment links and merchant payments without changing prices or fees; blocked on verified provider access.
+- [ ] Verify payment creation, status checks and signed webhook handling after provider access is confirmed.
