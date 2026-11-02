@@ -10,8 +10,10 @@
 - [x] Match mobile menus, forms and dialogs to the shared system without touching checkouts.
 - [x] Verify transactions, products, customers, links and other internal pages.
 
-# PagAja production payments
+# Pagar production payments
 
-- [ ] Verify newly supplied credentials against the current provider documentation; blocked on the current documentation URL and confirmed production credentials.
-- [ ] Replace VPay for checkouts, payment links and merchant payments without changing prices or fees; blocked on verified provider access.
+- [x] Verify the current provider contract at https://pagar.co.mz/docs: direct C2B payments, signed POST requests and authenticated status queries.
+- [ ] Obtain and verify Pagar LIVE API key and signing secret securely; awaiting the user's production credentials.
+- [ ] Replace VPay for checkouts, payment links and merchant payments without changing prices or fees; blocked on verified production access.
+- [ ] Add Pagar timestamped webhook signature verification and obtain the LIVE webhook secret after the endpoint is ready.
 - [ ] Verify payment creation, status checks and signed webhook handling after provider access is confirmed.
