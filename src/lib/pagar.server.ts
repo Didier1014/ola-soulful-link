@@ -50,6 +50,10 @@ export async function pagarPayment(id: string): Promise<PagarPayment> {
   return data.payment;
 }
 
+export function resolveWebhookSecret(current: string | undefined, legacy: string | undefined) {
+  return current || legacy;
+}
+
 export function validWebhook(raw: string, header: string, secret: string, now = Date.now()) {
   const parts = Object.fromEntries(header.split(",").map((p) => p.trim().split("=")));
   if (!/^\d+$/.test(parts.t || "") || !/^[a-f0-9]{64}$/.test(parts.v1 || "")) return false;

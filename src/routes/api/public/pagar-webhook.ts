@@ -3,9 +3,9 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/public/pagar-webhook")({
   server: { handlers: { POST: async ({ request }) => {
     const raw = await request.text();
-    const secret = process.env.PAGAR_WEBHOOK_SECRET;
     const eventId = request.headers.get("Pagar-Event-Id");
-    const { validWebhook, pagarPayment, paymentState } = await import("@/lib/pagar.server");
+    const { validWebhook, pagarPayment, paymentState, resolveWebhookSecret } = await import("@/lib/pagar.server");
+    const secret = resolveWebhookSecret(process.env.PAGAR_WEBHOOK_SECRET, process.env.PAGAJA_WHSEC);
     if (!secret || !eventId || !validWebhook(raw, request.headers.get("Pagar-Signature") || "", secret)) return new Response("unauthorized", { status: 401 });
     try {
       const event = JSON.parse(raw);

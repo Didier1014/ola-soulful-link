@@ -1,10 +1,15 @@
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
 import { createHmac } from "node:crypto";
-import { paymentState, validWebhook } from "./pagar.server";
+import { paymentState, validWebhook, resolveWebhookSecret } from "./pagar.server";
 
 test("simulated PAID never credits real seller balance", () => {
   assert.equal(paymentState({ status: "PAID", environment: "TEST" }).canCredit, false);
+});
+test("webhook reuses the saved legacy secret when no dedicated Pagar secret is configured", () => {
+  assert.equal(resolveWebhookSecret(undefined, "legacy-fixture"), "legacy-fixture");
+  assert.equal(resolveWebhookSecret("current-fixture", "legacy-fixture"), "current-fixture");
+  assert.equal(resolveWebhookSecret(undefined, undefined), undefined);
 });
 test("confirmed LIVE payment can credit", () => {
   assert.equal(paymentState({ status: "PAID", environment: "LIVE" }).canCredit, true);
