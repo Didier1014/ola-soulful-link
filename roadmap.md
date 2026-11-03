@@ -14,6 +14,8 @@
 
 - [x] Verify the current provider contract at https://pagar.co.mz/docs: direct C2B payments, signed POST requests and authenticated status queries.
 - [ ] Obtain and verify Pagar LIVE API key and signing secret securely; GET /wallet authenticated successfully but the provider returned environment TEST, so production credentials are still required.
-- [ ] Replace VPay for checkouts, payment links and merchant payments without changing prices or fees; blocked on verified production access.
-- [ ] Add Pagar timestamped webhook signature verification and obtain the LIVE webhook secret after the endpoint is ready.
-- [ ] Verify payment creation, status checks and signed webhook handling after provider access is confirmed.
+- [x] Replace active VPay creation with Pagar direct C2B for checkouts, payment links and merchant payments; preserve prices and fees and exclude TEST operations from paid sales and balance credit.
+- [x] Add timestamped Pagar webhook signature verification and atomic LIVE settlement.
+- [ ] Configure PAGAR_WEBHOOK_SECRET; the secure request was declined, so webhook processing remains disabled.
+- [ ] Complete end-to-end payment tests; checkout and independent signed request both return API_SIGNATURE_INVALID, including after the signing secret was updated. Requires API key and matching signing secret from the same Pagar app.
+- [x] Pass local test-mode credit guards and webhook signature tests; validate preview compilation.

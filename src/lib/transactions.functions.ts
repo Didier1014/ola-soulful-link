@@ -50,16 +50,9 @@ function calcFee(amount: number) {
 }
 
 async function creditSellerIfPending(supabaseAdmin: any, txId: string, userId: string, sellerNet: number, updates: Record<string, unknown>) {
-  const { data: changed } = await supabaseAdmin
-    .from("transactions")
-    .update({ ...updates, status: "paid" })
-    .eq("id", txId)
-    .eq("status", "pending")
-    .select("id")
-    .maybeSingle();
+  const { data: changed, error } = await supabaseAdmin.rpc("settle_pagar_payment", { p_transaction_id: txId, p_event_id: `query:${txId}` });
+  if (error) throw error;
   if (!changed) return false;
-  const { data: prof } = await supabaseAdmin.from("profiles").select("balance_mzn").eq("id", userId).maybeSingle();
-  await supabaseAdmin.from("profiles").update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + sellerNet }).eq("id", userId);
   try {
     const { notifyNewSale } = await import("@/lib/sale-notify.server");
     await notifyNewSale(supabaseAdmin, txId);
