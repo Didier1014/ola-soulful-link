@@ -21,3 +21,4 @@
 - [x] Reuse the stored PAGAJA_WHSEC for Pagar webhook verification when PAGAR_WEBHOOK_SECRET is absent; provider delivery still needs validation.
 - [ ] Complete end-to-end payment tests; the current client and an independent copy of the official signing example both return API_SIGNATURE_INVALID after the LIVE update (request IDs req-epoh and req-epoo). Blocked on Pagar accepting a matching signing secret for this LIVE app; no real charge was triggered.
 - [x] Pass local test-mode credit guards and webhook signature tests; validate preview compilation.
+- [x] New LIVE credentials saved via secure form: signed POST /payments now returns 202 with environment LIVE (previously 401 API_SIGNATURE_INVALID).
