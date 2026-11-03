@@ -13,7 +13,7 @@
 # Pagar production payments
 
 - [x] Verify the current provider contract at https://pagar.co.mz/docs: direct C2B payments, signed POST requests and authenticated status queries.
-- [ ] Obtain and verify Pagar LIVE API key and signing secret securely; awaiting the user's production credentials.
+- [ ] Obtain and verify Pagar LIVE API key and signing secret securely; GET /wallet authenticated successfully but the provider returned environment TEST, so production credentials are still required.
 - [ ] Replace VPay for checkouts, payment links and merchant payments without changing prices or fees; blocked on verified production access.
 - [ ] Add Pagar timestamped webhook signature verification and obtain the LIVE webhook secret after the endpoint is ready.
 - [ ] Verify payment creation, status checks and signed webhook handling after provider access is confirmed.
