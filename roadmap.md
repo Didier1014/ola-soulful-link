@@ -12,10 +12,12 @@
 
 # Pagar production payments
 
+- [x] Investigate the reported failed checkout after the LIVE credential update: GET /wallet authenticates as LIVE, but both the existing client and the exact official signing example receive HTTP 401 API_SIGNATURE_INVALID on a non-chargeable validation request.
+
 - [x] Verify the current provider contract at https://pagar.co.mz/docs: direct C2B payments, signed POST requests and authenticated status queries.
-- [ ] Obtain and verify Pagar LIVE API key and signing secret securely; GET /wallet authenticated successfully but the provider returned environment TEST, so production credentials are still required.
+- [x] Obtain and verify Pagar LIVE API key securely; GET /wallet now authenticates successfully and returns environment LIVE.
 - [x] Replace active VPay creation with Pagar direct C2B for checkouts, payment links and merchant payments; preserve prices and fees and exclude TEST operations from paid sales and balance credit.
 - [x] Add timestamped Pagar webhook signature verification and atomic LIVE settlement.
 - [x] Reuse the stored PAGAJA_WHSEC for Pagar webhook verification when PAGAR_WEBHOOK_SECRET is absent; provider delivery still needs validation.
-- [ ] Complete end-to-end payment tests; checkout and independent signed request both return API_SIGNATURE_INVALID, including after the signing secret was updated. Requires API key and matching signing secret from the same Pagar app.
+- [ ] Complete end-to-end payment tests; the current client and an independent copy of the official signing example both return API_SIGNATURE_INVALID after the LIVE update (request IDs req-epoh and req-epoo). Blocked on Pagar accepting a matching signing secret for this LIVE app; no real charge was triggered.
 - [x] Pass local test-mode credit guards and webhook signature tests; validate preview compilation.
