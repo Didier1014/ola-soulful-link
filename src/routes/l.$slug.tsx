@@ -56,6 +56,7 @@ function LinkCheckout() {
   const m = useMutation({
     mutationFn: () => pay({ data: { link_id: link!.id, method, ...form, tracking: trackingRef.current } }),
     onSuccess: (r) => {
+      if (r.test_mode) { toast.info(r.gateway_status === "paid" ? "Teste concluído com sucesso — sem cobrança real ou crédito de saldo." : "Pagamento de teste — sem cobrança real."); return; }
       if ((r as any).checkout_url && r.status !== "paid") { window.location.href = (r as any).checkout_url; return; }
       setDone(r);
       if (r.status === "paid") toast.success("Pagamento confirmado!");

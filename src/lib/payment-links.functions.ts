@@ -63,6 +63,8 @@ export const payLink = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     let checkoutUrl: string | undefined;
+    let testMode = false;
+    let gatewayStatus = "pending";
     try {
       const { netshopCharge } = await import("@/lib/netshop.server");
       const r = await netshopCharge({
@@ -75,9 +77,14 @@ export const payLink = createServerFn({ method: "POST" })
         idempotencyKey: tx.id,
       });
       checkoutUrl = r.checkout_url;
-      await supabaseAdmin.from("transactions").update({ external_ref: r.reference }).eq("id", tx.id);
+      testMode = r.test_mode;
+      gatewayStatus = r.status;
+      await supabaseAdmin.from("transactions").update({ external_ref: r.reference,
+        metadata: { ...(tx.metadata as Record<string, unknown> ?? {}), gateway: "pagar", test_mode: r.test_mode, gateway_status: r.status },
+        ...(r.test_mode && r.status !== "pending" ? { status: "failed" } : {}),
+      }).eq("id", tx.id);
       await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
-      if (r.status === "failed") {
+      if (r.status === "failed" && !r.test_mode) {
         const reason = r.failed_reason || "Pagamento não confirmado no telemóvel";
         await supabaseAdmin.from("transactions").update({
           status: "failed",
@@ -106,7 +113,7 @@ export const payLink = createServerFn({ method: "POST" })
       }
       throw new Error(errMsg);
     }
-    return { id: tx.id, status: "pending", checkout_url: checkoutUrl };
+    return { id: tx.id, status: testMode && gatewayStatus !== "pending" ? "failed" : "pending", test_mode: testMode, gateway_status: gatewayStatus, checkout_url: checkoutUrl };
   });
 
 

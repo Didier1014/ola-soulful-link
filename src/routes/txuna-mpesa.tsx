@@ -7,6 +7,9 @@ import { createCheckout, checkTransactionStatus, warmGateway } from "@/lib/trans
 import { Loader2, Lock, ShieldCheck, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/txuna-mpesa")({
   component: TxunaCheckout,
@@ -60,6 +63,9 @@ function TxunaCheckout() {
 
 
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
+  const [testResult, setTestResult] = useState<string | null>(null);
   const [plan, setPlan] = useState<"6" | "12">("6");
   const [modal, setModal] = useState<{ status: "processing" | "pending" | "paid" | "failed"; id?: string } | null>(null);
   const checkingRef = useRef(false);
@@ -69,7 +75,7 @@ function TxunaCheckout() {
 
   const selectedPlan = PLANS.find((p) => p.id === plan);
   const amount = selectedPlan?.price ?? PLANS[0].price;
-  const ready = name.trim().length >= 3 && !!product?.id;
+  const ready = name.trim().length >= 3 && /^8[4567]\d{7}$/.test(phone.replace(/\D/g, "")) && !!product?.id;
 
   const m = useMutation({
     mutationFn: () =>
@@ -78,11 +84,17 @@ function TxunaCheckout() {
           product_id: product?.id ?? "",
           amount_mzn: amount,
           customer_name: name.trim(),
+          customer_phone: phone, method,
           tracking: { src: `txuna-${plan}m` },
         },
       }),
     onMutate: () => setModal({ status: "processing" }),
     onSuccess: (r) => {
+      if (r.test_mode && r.gateway_status !== "pending") {
+        setModal(null);
+        setTestResult(r.gateway_status === "paid" ? "Teste concluído com sucesso — sem cobrança real ou crédito de saldo." : "Teste de falha concluído — sem cobrança real ou crédito de saldo.");
+        return;
+      }
       if ((r as any).checkout_url && r.status !== "paid") { window.location.href = (r as any).checkout_url; return; }
       if (r.status === "paid") {
         setModal({ status: "paid", id: r.id });
@@ -109,16 +121,17 @@ function TxunaCheckout() {
       checkingRef.current = true;
       try {
         const r = await checkTransactionStatus({ data: { transaction_id: transactionId } });
-        if (r.status === "paid") { stopped = true; clearInterval(timer); setModal({ status: "paid", id: modal.id }); }
+        if (r.test_mode && r.gateway_status !== "pending") { stopped = true; clearInterval(timer); setModal(null); setTestResult(r.gateway_status === "paid" ? "Teste concluído com sucesso — sem cobrança real ou crédito de saldo." : "Teste de falha concluído — sem cobrança real ou crédito de saldo."); }
+        else if (r.status === "paid") { stopped = true; clearInterval(timer); setModal({ status: "paid", id: modal.id }); }
         else if (r.status === "failed") { stopped = true; clearInterval(timer); setModal({ status: "failed", id: modal.id }); }
       } catch {}
       checkingRef.current = false;
-    }, 3000);
+    }, 12000);
     return () => { stopped = true; clearInterval(timer); };
   }, [modal?.status, modal?.id]);
 
   useEffect(() => {
-    if (modal?.status !== "paid" || !modal.id) return;
+    if (testResult || modal?.status !== "paid" || !modal.id) return;
     const t = setTimeout(() => { window.location.href = `/obrigado?tx_id=${modal.id}&slug=${SLUG}`; }, 1600);
     return () => clearTimeout(t);
   }, [modal?.status, modal?.id]);
@@ -210,11 +223,18 @@ function TxunaCheckout() {
         {/* Método + Planos */}
         <section className="tx-card space-y-4 rounded-2xl bg-white px-4 py-5 sm:space-y-5 sm:rounded-3xl sm:px-8 sm:py-8">
           <h2 className="text-[15px] font-black sm:text-xl">Método de pagamento</h2>
-          <div className="flex items-center gap-3 rounded-2xl border border-[var(--tx-line)] bg-[var(--tx-soft)] px-4 py-3 sm:gap-4 sm:rounded-3xl sm:px-6 sm:py-4">
-            <img src="/brands/mpesa.png" alt="M-Pesa" className="tx-logo h-10 w-10 rounded-lg sm:h-12 sm:w-12" />
-            <img src="/brands/emola.png" alt="e-Mola" className="tx-logo h-10 w-10 rounded-lg sm:h-12 sm:w-12" />
-            <p className="text-[12px] font-bold text-slate-600 sm:text-sm">M-Pesa ou e-Mola — escolhe na página de pagamento segura</p>
+          <div className="grid grid-cols-2 gap-3">
+            {(["mpesa", "emola"] as const).map((value) => (
+              <Button key={value} type="button" variant={method === value ? "default" : "outline"} onClick={() => setMethod(value)} aria-pressed={method === value} className="h-14 gap-3">
+                <img src={`/brands/${value}.png`} alt="" className="h-8 w-8 object-contain" />{value === "mpesa" ? "M-Pesa" : "e-Mola"}
+              </Button>
+            ))}
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="payer-phone">Número {method === "mpesa" ? "M-Pesa" : "e-Mola"}</Label>
+            <Input id="payer-phone" type="tel" inputMode="numeric" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={method === "mpesa" ? "841234567" : "861234567"} maxLength={9} className="h-12" />
+          </div>
+          {testResult && <p role="status" className="text-sm font-semibold">{testResult}</p>}
 
           {/* Planos */}
           <h2 className="pt-1 text-[15px] font-black sm:text-xl">Plano de pagamento</h2>
@@ -251,7 +271,7 @@ function TxunaCheckout() {
 
           <div className="flex gap-3 rounded-2xl bg-[var(--tx-soft)] p-4 text-[12px] leading-relaxed text-slate-500 sm:gap-4 sm:rounded-3xl sm:p-5 sm:text-base">
             <Lock className="mt-0.5 h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
-            <p>Vai preencher o seu número M-Pesa ou e-Mola na página de pagamento segura. Os seus dados estão protegidos com criptografia ponta a ponta.</p>
+            <p>Confirme o pedido no número escolhido. Em modo de teste, nenhum dinheiro real é movimentado.</p>
           </div>
 
           <button

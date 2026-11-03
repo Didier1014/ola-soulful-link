@@ -17,7 +17,7 @@ export const warmGateway = createServerFn({ method: "GET" }).handler(async () =>
   return { ok: true };
 });
 
-const WEBHOOK_URL = "https://redoxpay.lovable.app/api/public/zumbopay-webhook";
+
 
 
 
@@ -26,7 +26,7 @@ const checkoutSchema = z.object({
   amount_mzn: z.number().min(50, "Valor mínimo é 50 MT").max(1_000_000).optional(),
   customer_name: z.string().trim().min(2).max(120),
   customer_email: z.string().trim().email().max(160).optional().or(z.literal("")).default(""),
-  customer_phone: z.string().trim().regex(/^\+?\d{8,15}$/, "Telefone inválido").optional().default("258000000000"),
+  customer_phone: z.string().trim().regex(/^\+?\d{8,15}$/, "Telefone inválido"),
   method: z.enum(["mpesa", "emola", "card"]).optional().default("mpesa"),
   tracking: z.object({
     src: z.string().max(200).optional(),
@@ -107,6 +107,8 @@ export const createCheckout = createServerFn({ method: "POST" })
     // Inicia cobrança na NetShop (M-Pesa)
     let gatewayPaid = false;
     let checkoutUrl: string | undefined;
+    let testMode = false;
+    let gatewayStatus = "pending";
     try {
       const { netshopCharge } = await import("@/lib/netshop.server");
       const r = await netshopCharge({
@@ -119,11 +121,16 @@ export const createCheckout = createServerFn({ method: "POST" })
         idempotencyKey: tx.id,
       });
       // Guardar SEMPRE a referência — é o que permite reconciliar por webhook/polling.
-      await supabaseAdmin.from("transactions").update({ external_ref: r.reference }).eq("id", tx.id);
+      testMode = r.test_mode;
+      gatewayStatus = r.status;
+      await supabaseAdmin.from("transactions").update({ external_ref: r.reference,
+        metadata: { ...(tx.metadata ?? {}), gateway: "pagar", test_mode: r.test_mode, gateway_status: r.status },
+        ...(r.test_mode && r.status !== "pending" ? { status: "failed" } : {}),
+      }).eq("id", tx.id);
       gatewayPaid = r.paid;
       checkoutUrl = r.checkout_url;
 
-      if (r.status === "failed") {
+      if (r.status === "failed" && !r.test_mode) {
         const reason = r.failed_reason || "Pagamento não confirmado no telemóvel";
         await supabaseAdmin.from("transactions").update({
           status: "failed",
@@ -157,7 +164,7 @@ export const createCheckout = createServerFn({ method: "POST" })
     if (gatewayPaid) {
       await creditSellerIfPending(supabaseAdmin, tx.id, product.user_id, seller_net, {});
     }
-    return { id: tx.id, status: "pending", amount, fee: seller_fee, net: seller_net, delivery_url: (product as any).delivery_url ?? undefined, checkout_url: checkoutUrl, message: "Confirme o pagamento no telemóvel" };
+    return { id: tx.id, status: testMode ? (gatewayStatus === "pending" ? "pending" : "failed") : (gatewayPaid ? "paid" : "pending"), test_mode: testMode, gateway_status: gatewayStatus, amount, fee: seller_fee, net: seller_net, delivery_url: (product as any).delivery_url ?? undefined, checkout_url: checkoutUrl, message: testMode ? "Modo TESTE: pagamento simulado, sem cobrança real e sem crédito de saldo." : "Confirme o pagamento no telemóvel" };
   });
 
 
@@ -171,10 +178,25 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
       .from("transactions").select("*").eq("id", data.transaction_id).maybeSingle();
     if (!tx) throw new Error("Transacção não encontrada");
 
-    if (tx.status === "pending" && tx.external_ref) {
+    if (tx.metadata?.test_mode && tx.status !== "pending") {
+      return { status: "failed", test_mode: true, gateway_status: tx.metadata.gateway_status };
+    }
+    if (tx.metadata?.gateway === "pagar" && tx.status === "pending" && tx.external_ref) {
       try {
-        const { netshopCheck } = await import("@/lib/netshop.server");
-        const st = await netshopCheck(String(tx.external_ref));
+        const { pagarPayment, paymentState } = await import("@/lib/pagar.server");
+        const state = paymentState(await pagarPayment(String(tx.external_ref)));
+        if (state.test_mode) {
+          await supabaseAdmin.from("transactions").update({
+            status: state.status === "pending" ? "pending" : "failed",
+            metadata: { ...tx.metadata, test_mode: true, gateway_status: state.status },
+          }).eq("id", tx.id).eq("status", "pending");
+          return { status: state.status === "pending" ? "pending" : "failed", test_mode: true, gateway_status: state.status };
+        }
+        const st = state.status;
+        if (st === "failed") {
+          await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id).eq("status", "pending");
+          tx.status = "failed";
+        }
         if (st === "paid") {
           await creditSellerIfPending(supabaseAdmin, tx.id, tx.user_id, Number(tx.net_mzn), {});
           tx.status = "paid";

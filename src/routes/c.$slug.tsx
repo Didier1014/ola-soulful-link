@@ -169,6 +169,7 @@ function CheckoutPage() {
       setModal({ status: "processing", id: undefined });
     },
     onSuccess: (r) => {
+      if (r.test_mode && r.gateway_status !== "pending") { setModal(null); toast.info(r.gateway_status === "paid" ? "Teste concluído com sucesso — sem cobrança real ou crédito de saldo." : "Teste de falha concluído — sem cobrança real."); return; }
       if ((r as any).checkout_url && r.status !== "paid") { window.location.href = (r as any).checkout_url; return; }
       if (r.status === "paid") {
         setModal({ status: "paid", id: r.id, delivery_url: r.delivery_url ?? null });
@@ -201,7 +202,8 @@ function CheckoutPage() {
       try {
         const result = await checkTransactionStatus({ data: { transaction_id: modal.id! } });
         if (stopped) return;
-        if (result.status === "paid") {
+        if (result.test_mode && result.gateway_status !== "pending") { cleanup(); setModal(null); toast.info(result.gateway_status === "paid" ? "Teste concluído com sucesso — sem crédito de saldo." : "Teste de falha concluído."); }
+        else if (result.status === "paid") {
           cleanup();
           toast.success("Pagamento confirmado!");
           setModal({ status: "paid", id: modal.id, delivery_url: result.delivery_url ?? null });
@@ -233,7 +235,7 @@ function CheckoutPage() {
         return;
       }
       check();
-    }, 3000);
+    }, 12000);
 
     window.addEventListener("focus", check);
     document.addEventListener("visibilitychange", onVisible);

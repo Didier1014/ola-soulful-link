@@ -920,6 +920,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      settle_pagar_payment: {
+        Args: { p_event_id: string; p_transaction_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user"

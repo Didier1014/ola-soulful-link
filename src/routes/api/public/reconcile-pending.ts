@@ -29,6 +29,7 @@ async function run() {
     let paid = 0, failed = 0, still = 0;
 
     for (const tx of pend ?? []) {
+      if ((tx.metadata as any)?.gateway !== "pagar" || (tx.metadata as any)?.test_mode) { still++; continue; }
       const st = await netshopCheck(String(tx.external_ref));
       if (st === "paid") {
         const { data: changed } = await supabaseAdmin
