@@ -1,5 +1,7 @@
 import type { ComponentType } from 'react'
 import { template as saleConfirmationTemplate } from './sale-confirmation'
+import { template as withdrawalStatusTemplate } from './withdrawal-status'
+import { template as productApprovalTemplate } from './product-approval'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -12,4 +14,6 @@ export interface TemplateEntry {
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'sale-confirmation': saleConfirmationTemplate,
+  'withdrawal-status': withdrawalStatusTemplate,
+  'product-approval': productApprovalTemplate,
 }
