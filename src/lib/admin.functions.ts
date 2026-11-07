@@ -154,6 +154,16 @@ export const approveWithdrawal = createServerFn({ method: "POST" })
         user_id: wd.user_id, type: "withdrawal_paid",
         title: "Saque pago", message: `O seu saque de ${fmt} MT foi processado.`,
       });
+      const { sendAppEmail, getUserEmail } = await import("@/lib/email.server");
+      const email = await getUserEmail(supabaseAdmin, wd.user_id);
+      if (email) {
+        await sendAppEmail(supabaseAdmin, {
+          templateName: "withdrawal-status",
+          recipientEmail: email,
+          idempotencyKey: `withdrawal-paid-${data.id}`,
+          templateData: { amount: `${fmt} MZN`, status: "paid", date: new Date().toLocaleString("pt-MZ") },
+        });
+      }
     } catch {}
     return { ok: true, balance_mzn: newBal };
   });
@@ -178,6 +188,16 @@ export const rejectWithdrawal = createServerFn({ method: "POST" })
           user_id: wd.user_id, type: "withdrawal_rejected",
           title: "Saque rejeitado", message: `O seu pedido de ${fmt} MT foi rejeitado.`,
         });
+        const { sendAppEmail, getUserEmail } = await import("@/lib/email.server");
+        const email = await getUserEmail(supabaseAdmin, wd.user_id);
+        if (email) {
+          await sendAppEmail(supabaseAdmin, {
+            templateName: "withdrawal-status",
+            recipientEmail: email,
+            idempotencyKey: `withdrawal-rejected-${data.id}`,
+            templateData: { amount: `${fmt} MZN`, status: "rejected", date: new Date().toLocaleString("pt-MZ") },
+          });
+        }
       }
     } catch {}
     return { ok: true };
@@ -392,6 +412,20 @@ export const setProductApproval = createServerFn({ method: "POST" })
         user_id: prod.user_id, type: "product_approval_result", title, message: msg,
         data: { product_id: prod.id, slug: prod.slug, status: data.status },
       });
+      if (data.status !== "pending") {
+        try {
+          const { sendAppEmail, getUserEmail } = await import("@/lib/email.server");
+          const email = await getUserEmail(supabaseAdmin, prod.user_id);
+          if (email) {
+            await sendAppEmail(supabaseAdmin, {
+              templateName: "product-approval",
+              recipientEmail: email,
+              idempotencyKey: `product-${data.status}-${prod.id}`,
+              templateData: { productName: prod.name, status: data.status, reason: data.reason ?? "" },
+            });
+          }
+        } catch {}
+      }
     }
     return { ok: true };
   });

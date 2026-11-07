@@ -138,11 +138,15 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
   // Read merchant preferences
   let currency = "MZN";
   let notificationsEnabled = true;
+  let sellerEmail: string | null = null;
+  let sellerName = "Produtor";
   try {
     const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
     const meta = user?.user?.user_metadata ?? {};
     if (meta.currency) currency = String(meta.currency);
     if (meta.notifications_enabled === false) notificationsEnabled = false;
+    sellerEmail = user?.user?.email ?? null;
+    sellerName = (meta.full_name as string) || (meta.name as string) || sellerName;
   } catch {}
 
   // Read merchant integration bundle
@@ -280,6 +284,40 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
       const err = String((e as any)?.message ?? e);
       await logIntegrationCall(supabaseAdmin, { userId, txId: tx.id, provider: "webpush", ok: false, payload: { title, body }, error: err });
       console.log(`[sale:${tx.id}][webpush] error`, e);
+    }
+
+    // E-mail de confirmação de venda para o vendedor
+    try {
+      if (sellerEmail) {
+        if (await hasSuccessfulIntegration(supabaseAdmin, userId, tx.id, "email")) {
+          console.log(`[sale:${tx.id}][email] already sent — skipping`);
+        } else {
+          const { sendAppEmail } = await import("@/lib/email.server");
+          const r = await sendAppEmail(supabaseAdmin, {
+            templateName: "sale-confirmation",
+            recipientEmail: sellerEmail,
+            idempotencyKey: `sale-email-${tx.id}`,
+            templateData: {
+              producerName: sellerName,
+              customerName: tx.customer_name ?? "Cliente",
+              customerPhone: tx.customer_phone ?? "",
+              productName: productName ?? "",
+              amount: formattedAmount,
+              netAmount: Number(tx.net_mzn || 0).toLocaleString("pt-MZ", { style: "currency", currency: "MZN" }),
+              transactionId: String(tx.id),
+              date: new Date().toLocaleString("pt-MZ"),
+            },
+          });
+          await logIntegrationCall(supabaseAdmin, {
+            userId, txId: tx.id, provider: "email",
+            ok: r.ok, payload: { to: sellerEmail, template: "sale-confirmation" },
+            error: r.ok ? null : r.reason ?? "email_failed",
+          });
+        }
+      }
+    } catch (e) {
+      await logIntegrationCall(supabaseAdmin, { userId, txId: tx.id, provider: "email", ok: false, error: String((e as any)?.message ?? e) });
+      console.log(`[sale:${tx.id}][email] error`, e);
     }
 
     // PUSHcut
