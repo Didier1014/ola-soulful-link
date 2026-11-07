@@ -46,6 +46,7 @@ import { Route as ApiPublicPagajaWebhookRouteImport } from './routes/api/public/
 import { Route as ApiPublicPagarWebhookRouteImport } from './routes/api/public/pagar-webhook'
 import { Route as ApiPublicReconcilePendingRouteImport } from './routes/api/public/reconcile-pending'
 import { Route as ApiPublicVpayWebhookRouteImport } from './routes/api/public/vpay-webhook'
+import { Route as LovableEmailEventsRouteImport } from './routes/lovable/email/events'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedDashboardAdminProdutosRouteImport } from './routes/_authenticated/dashboard.admin.produtos'
 import { Route as AuthenticatedDashboardAdminUsuariosRouteImport } from './routes/_authenticated/dashboard.admin.usuarios'
@@ -264,6 +265,11 @@ const ApiPublicVpayWebhookRoute = ApiPublicVpayWebhookRouteImport.update({
   path: '/api/public/vpay-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailEventsRoute = LovableEmailEventsRouteImport.update({
+  id: '/lovable/email/events',
+  path: '/lovable/email/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -363,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/api/public/vpay-webhook': typeof ApiPublicVpayWebhookRoute
+  '/lovable/email/events': typeof LovableEmailEventsRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
@@ -412,6 +419,7 @@ export interface FileRoutesByTo {
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/api/public/vpay-webhook': typeof ApiPublicVpayWebhookRoute
+  '/lovable/email/events': typeof LovableEmailEventsRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
@@ -463,6 +471,7 @@ export interface FileRoutesById {
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/api/public/vpay-webhook': typeof ApiPublicVpayWebhookRoute
+  '/lovable/email/events': typeof LovableEmailEventsRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/admin/produtos': typeof AuthenticatedDashboardAdminProdutosRoute
@@ -514,6 +523,7 @@ export interface FileRouteTypes {
     | '/api/public/pagar-webhook'
     | '/api/public/reconcile-pending'
     | '/api/public/vpay-webhook'
+    | '/lovable/email/events'
     | '/lovable/email/suppression'
     | '/dashboard/'
     | '/dashboard/admin/produtos'
@@ -563,6 +573,7 @@ export interface FileRouteTypes {
     | '/api/public/pagar-webhook'
     | '/api/public/reconcile-pending'
     | '/api/public/vpay-webhook'
+    | '/lovable/email/events'
     | '/lovable/email/suppression'
     | '/dashboard'
     | '/dashboard/admin/produtos'
@@ -613,6 +624,7 @@ export interface FileRouteTypes {
     | '/api/public/pagar-webhook'
     | '/api/public/reconcile-pending'
     | '/api/public/vpay-webhook'
+    | '/lovable/email/events'
     | '/lovable/email/suppression'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/admin/produtos'
@@ -646,6 +658,7 @@ export interface RootRouteChildren {
   ApiPublicPagarWebhookRoute: typeof ApiPublicPagarWebhookRoute
   ApiPublicReconcilePendingRoute: typeof ApiPublicReconcilePendingRoute
   ApiPublicVpayWebhookRoute: typeof ApiPublicVpayWebhookRoute
+  LovableEmailEventsRoute: typeof LovableEmailEventsRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicEmbedScriptRoute: typeof ApiPublicEmbedScriptRoute
   ApiPublicNotificationsPollRoute: typeof ApiPublicNotificationsPollRoute
@@ -917,6 +930,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVpayWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/events': {
+      id: '/lovable/email/events'
+      path: '/lovable/email/events'
+      fullPath: '/lovable/email/events'
+      preLoaderRoute: typeof LovableEmailEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -1106,6 +1126,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPagarWebhookRoute: ApiPublicPagarWebhookRoute,
   ApiPublicReconcilePendingRoute: ApiPublicReconcilePendingRoute,
   ApiPublicVpayWebhookRoute: ApiPublicVpayWebhookRoute,
+  LovableEmailEventsRoute: LovableEmailEventsRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicEmbedScriptRoute: ApiPublicEmbedScriptRoute,
   ApiPublicNotificationsPollRoute: ApiPublicNotificationsPollRoute,
