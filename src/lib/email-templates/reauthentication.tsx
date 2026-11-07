@@ -9,25 +9,23 @@ import {
   Preview,
   Text,
 } from '@react-email/components'
-import { EmailLogo } from './_logo'
 
 interface ReauthenticationEmailProps {
   token: string
 }
 
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
-  <Html lang="pt" dir="ltr">
+  <Html lang="en" dir="ltr">
     <Head />
-    <Preview>O seu código de verificação</Preview>
+    <Preview>Your verification code</Preview>
     <Body style={main}>
       <Container style={container}>
-        <EmailLogo />
-        <Heading style={h1}>Confirmar reautenticação</Heading>
-        <Text style={text}>Use o código abaixo para confirmar a sua identidade:</Text>
+        <Heading style={h1}>Confirm reauthentication</Heading>
+        <Text style={text}>Use the code below to confirm your identity:</Text>
         <Text style={codeStyle}>{token}</Text>
         <Text style={footer}>
-          Este código irá expirar em breve. Se não fez este pedido, pode
-          ignorar este email com segurança.
+          This code will expire shortly. If you didn't request this, you can
+          safely ignore this email.
         </Text>
       </Container>
     </Body>
