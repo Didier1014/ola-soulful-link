@@ -27,6 +27,6 @@
 
 - [x] Inventory legacy senders, auth branding and existing audit writes.
 - [x] Replace auth and app sending with managed helpers and preserve notification audit records.
-- [ ] Verify signed outcome recording and delivery-result handling, then remove replaced legacy files.
-- [ ] Confirm compilation and leave the update unpublished for review.
+- [x] Verify delivery-result audit handling, reject unsigned events and remove replaced legacy files; seven tests pass.
+- [x] Confirm compilation, render all nine email previews and leave the update unpublished for review; no real email delivery claimed.
 - [ ] Sending remains blocked until the configured sender domain is DNS-verified; no shared Lovable sender is available.
