@@ -22,3 +22,11 @@
 - [ ] Complete end-to-end payment tests; the current client and an independent copy of the official signing example both return API_SIGNATURE_INVALID after the LIVE update (request IDs req-epoh and req-epoo). Blocked on Pagar accepting a matching signing secret for this LIVE app; no real charge was triggered.
 - [x] Pass local test-mode credit guards and webhook signature tests; validate preview compilation.
 - [x] New LIVE credentials saved via secure form: signed POST /payments now returns 202 with environment LIVE (previously 401 API_SIGNATURE_INVALID).
+
+# Email update
+
+- [x] Inventory legacy senders, auth branding and existing audit writes.
+- [x] Replace auth and app sending with managed helpers and preserve notification audit records.
+- [ ] Verify signed outcome recording and delivery-result handling, then remove replaced legacy files.
+- [ ] Confirm compilation and leave the update unpublished for review.
+- [ ] Sending remains blocked until the configured sender domain is DNS-verified; no shared Lovable sender is available.
