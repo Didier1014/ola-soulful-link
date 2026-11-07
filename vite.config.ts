@@ -6,9 +6,16 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import path from 'node:path';
+import { loadEnv } from 'vite';
 
 export default defineConfig({
   vite: {
+    plugins: [{
+      name: 'email-server-env',
+      config(_config, { mode }) {
+        Object.assign(process.env, loadEnv(mode, process.cwd(), ''));
+      },
+    }],
     resolve: {
       alias: {
         'entities/lib/decode.js': path.resolve('node_modules/entities/lib/decode.js'),

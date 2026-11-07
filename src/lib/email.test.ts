@@ -33,7 +33,7 @@ test('managed notification sends synchronously, preserves idempotency and audits
         requestBody = JSON.parse(String(init?.body))
         return outcome === 'sent'
           ? Response.json({ success: true })
-          : Response.json({ code: outcome === 'suppressed' ? 'recipient_suppressed' : 'domain_not_verified', message: 'fixture' }, { status: 403 })
+          : Response.json({ type: outcome === 'suppressed' ? 'recipient_suppressed' : 'domain_not_verified', message: 'fixture' }, { status: 403 })
       }
       const { client, writes } = auditClient()
       const result = await sendAppEmail(client, {
