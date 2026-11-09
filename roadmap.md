@@ -34,7 +34,7 @@
 # VendusPay replacement
 
 - [x] Review the official documentation and uploaded WooCommerce plugin.
-- [ ] Securely connect VendusPay and verify credentials without creating a charge (401/403 invalid; any other status valid; key stored only server-side).
+- [x] Securely connect VendusPay and verify credentials without creating a charge (401/403 invalid; any other status valid; key stored only server-side).
 - [ ] Replace new checkout, payment-link and merchant payments while preserving prices, fees and pending Pagar reconciliation.
 - [ ] Add signed VendusPay callbacks and verified, atomic settlement; test M-Pesa and e-Mola request contracts.
 - [ ] Verify the public checkout flow; real phone authorization requires a buyer's payment confirmation.
