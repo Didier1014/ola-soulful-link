@@ -107,7 +107,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             metadata: {
               source: "merchant_api",
               webhook_url,
-              gateway: "pagar",
+              gateway: charge.gateway ?? "venduspay",
               gateway_status: charge.status,
               test_mode: charge.test_mode,
               taxa_gateway,

@@ -80,7 +80,7 @@ export const payLink = createServerFn({ method: "POST" })
       testMode = r.test_mode;
       gatewayStatus = r.status;
       await supabaseAdmin.from("transactions").update({ external_ref: r.reference,
-        metadata: { ...(tx.metadata as Record<string, unknown> ?? {}), gateway: "pagar", test_mode: r.test_mode, gateway_status: r.status },
+        metadata: { ...(tx.metadata as Record<string, unknown> ?? {}), gateway: r.gateway ?? "venduspay", test_mode: r.test_mode, gateway_status: r.status },
         ...(r.test_mode && r.status !== "pending" ? { status: "failed" } : {}),
       }).eq("id", tx.id);
       await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);
