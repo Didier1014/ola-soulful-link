@@ -3,7 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/public/venduspay-webhook")({
   server: { handlers: { POST: async ({ request }) => {
     const raw = await request.text();
-    const secret = process.env["VENDUSPAY_WEBHOOK_SECRET"];
+    // Prefer the dedicated secret; fall back to the one the user saved as STRIPE_WEBHOOK_SECRET.
+    const secret = process.env["VENDUSPAY_WEBHOOK_SECRET"] || process.env["STRIPE_WEBHOOK_SECRET"];
     const { validVendusWebhook, vendusStatus } = await import("@/lib/venduspay.server");
     if (!secret) return new Response("not configured", { status: 500 });
     if (!validVendusWebhook(raw, request.headers.get("X-Webhook-Timestamp") || "", request.headers.get("X-Webhook-Signature") || "", secret)) {
