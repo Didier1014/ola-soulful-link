@@ -87,6 +87,7 @@ export const createProduct = createServerFn({ method: "POST" })
       })
       .select().single();
     if (error) throw new Error(error.message);
+    if (row.approval_status === "approved") return row;
     // Notify admins for approval (in-app + web push)
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
