@@ -29,22 +29,11 @@ async function run() {
     let paid = 0, failed = 0, still = 0;
 
     for (const tx of pend ?? []) {
-      if ((tx.metadata as any)?.gateway !== "pagar" || (tx.metadata as any)?.test_mode) { still++; continue; }
+      if (!["pagar", "venduspay"].includes((tx.metadata as any)?.gateway) || (tx.metadata as any)?.test_mode) { still++; continue; }
       const st = await netshopCheck(String(tx.external_ref));
       if (st === "paid") {
-        const { data: changed } = await supabaseAdmin
-          .from("transactions")
-          .update({ status: "paid" })
-          .eq("id", tx.id)
-          .eq("status", "pending")
-          .select("id")
-          .maybeSingle();
+        const { data: changed } = await supabaseAdmin.rpc("settle_pagar_payment", { p_transaction_id: tx.id, p_event_id: `reconcile:${tx.id}` });
         if (changed) {
-          const { data: prof } = await supabaseAdmin
-            .from("profiles").select("balance_mzn").eq("id", tx.user_id).maybeSingle();
-          await supabaseAdmin.from("profiles")
-            .update({ balance_mzn: Number(prof?.balance_mzn ?? 0) + Number(tx.net_mzn) })
-            .eq("id", tx.user_id);
           try {
             const { notifyNewSale } = await import("@/lib/sale-notify.server");
             await notifyNewSale(supabaseAdmin, tx.id);
