@@ -196,6 +196,20 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
         }
       } catch (e) { console.log("[checkTransactionStatus] netshopCheck error", e); }
     }
+    if (tx.metadata?.gateway === "venduspay" && tx.status === "pending" && tx.external_ref) {
+      try {
+        const { vendusStatus } = await import("@/lib/venduspay.server");
+        const st = await vendusStatus(String(tx.external_ref));
+        if (st === "failed") {
+          await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id).eq("status", "pending");
+          tx.status = "failed";
+        }
+        if (st === "paid") {
+          await creditSellerIfPending(supabaseAdmin, tx.id, tx.user_id, Number(tx.net_mzn), {});
+          tx.status = "paid";
+        }
+      } catch (e) { console.log("[checkTransactionStatus] venduspay error", e); }
+    }
 
     if (tx.status === "paid" && tx.product_id) {
       const { data: prod } = await supabaseAdmin
