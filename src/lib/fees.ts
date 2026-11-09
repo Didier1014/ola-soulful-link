@@ -1,7 +1,7 @@
 // Cálculo central de taxas RedoxPay.
-// - Taxa cobrada ao vendedor (cliente RedoxPay): 15% (sem valor fixo)
+// - Taxa cobrada ao vendedor (cliente RedoxPay): 8% (sem valor fixo)
 
-export const SELLER_FEE_PCT = 0.15;
+export const SELLER_FEE_PCT = 0.08;
 export const SELLER_FEE_FIXED = 0;
 
 const r2 = (n: number) => Math.round(n * 100) / 100;

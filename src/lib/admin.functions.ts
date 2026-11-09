@@ -47,11 +47,11 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     ]);
 
     const totalVolume = (vol ?? []).reduce((a: number, r: any) => a + Number(r.amount_mzn || 0), 0);
-    // Lucro estimado = seller_fee (15%+15) - custo processador (~10%+10).
+    // Lucro estimado = seller_fee (8%) - custo processador (~10%+10).
     // Modo simulação — sem custo externo de processamento.
     const totalProfit = (fees ?? []).reduce((a: number, r: any) => {
       const amt = Number(r.amount_mzn || 0);
-      const sellerFee = Math.round(amt * 0.15 * 100) / 100;
+      const sellerFee = Math.round(amt * 0.08 * 100) / 100;
       const providerCost = Math.round((amt * 0.10 + 10) * 100) / 100;
       return a + (sellerFee - providerCost);
     }, 0);
@@ -73,7 +73,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       const day = new Date(t.created_at).toISOString().slice(0, 10);
       if (t.status === "paid") {
         const amt = Number(t.amount_mzn || 0);
-        const sellerFee = Math.round(amt * 0.15 * 100) / 100;
+        const sellerFee = Math.round(amt * 0.08 * 100) / 100;
         const providerCost = Math.round((amt * 0.10 + 10) * 100) / 100;
         revenueGrowth[day] = (revenueGrowth[day] || 0) + (sellerFee - providerCost);
       }

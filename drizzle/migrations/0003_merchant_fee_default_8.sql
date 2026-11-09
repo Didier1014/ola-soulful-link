@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ALTER COLUMN merchant_fee_percent SET DEFAULT 8;
