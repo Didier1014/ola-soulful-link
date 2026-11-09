@@ -35,6 +35,7 @@
 
 - [x] Review the official documentation and uploaded WooCommerce plugin.
 - [x] Securely connect VendusPay and verify credentials without creating a charge (401/403 invalid; any other status valid; key stored only server-side).
-- [ ] Replace new checkout, payment-link and merchant payments while preserving prices, fees and pending Pagar reconciliation.
-- [ ] Add signed VendusPay callbacks and verified, atomic settlement; test M-Pesa and e-Mola request contracts.
+- [x] Replace new checkout, payment-link and merchant payments while preserving prices, fees and pending Pagar reconciliation.
+- [x] Add signed VendusPay callbacks and verified, atomic settlement.
+- [ ] Activate callbacks: needs VendusPay webhook secret and VendusPay registering the URL (polling works meanwhile).
 - [ ] Verify the public checkout flow; real phone authorization requires a buyer's payment confirmation.
