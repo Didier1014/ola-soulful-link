@@ -30,3 +30,11 @@
 - [x] Verify delivery-result audit handling, reject unsigned events and remove replaced legacy files; seven tests pass.
 - [x] Confirm compilation, render all nine email previews and leave the update unpublished for review; no real email delivery claimed.
 - [ ] Sending remains blocked until the configured sender domain is DNS-verified; no shared Lovable sender is available.
+
+# VendusPay replacement
+
+- [x] Review the official documentation and uploaded WooCommerce plugin.
+- [ ] Securely connect VendusPay and verify credentials without creating a charge.
+- [ ] Replace new checkout, payment-link and merchant payments while preserving prices, fees and pending Pagar reconciliation.
+- [ ] Add signed VendusPay callbacks and verified, atomic settlement; test M-Pesa and e-Mola request contracts.
+- [ ] Verify the public checkout flow; real phone authorization requires a buyer's payment confirmation.
