@@ -41,10 +41,10 @@ const checkoutSchema = z.object({
   }).partial().optional(),
 });
 
-// Taxa cobrada ao vendedor: 15%.
+// Taxa cobrada ao vendedor: 8%.
 // Aplicada para calcular o líquido a creditar ao vendedor.
 function calcFee(amount: number) {
-  const seller_fee = Math.round(amount * 0.15 * 100) / 100;
+  const seller_fee = Math.round(amount * 0.08 * 100) / 100;
   const seller_net = Math.round((amount - seller_fee) * 100) / 100;
   return { seller_fee, seller_net };
 }

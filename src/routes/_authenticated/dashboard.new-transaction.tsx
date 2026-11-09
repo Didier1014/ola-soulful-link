@@ -104,8 +104,8 @@ function NewTransactionPage() {
             <span className="font-semibold">{fmtMT(displayAmount)}</span>
           </div>
           <div className="flex justify-between text-sm text-muted-foreground">
-            <span>Taxa (15%)</span>
-            <span>{fmtMT(Math.round(displayAmount * 0.15 * 100) / 100)}</span>
+            <span>Taxa (8%)</span>
+            <span>{fmtMT(Math.round(displayAmount * 0.08 * 100) / 100)}</span>
           </div>
           <div className="flex justify-between text-sm border-t border-border mt-2 pt-2">
             <span>Líquido para o vendedor</span>
