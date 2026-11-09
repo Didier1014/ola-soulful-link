@@ -47,7 +47,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     ]);
 
     const totalVolume = (vol ?? []).reduce((a: number, r: any) => a + Number(r.amount_mzn || 0), 0);
-    // Lucro estimado = seller_fee (15%+15) - custo processador (~10%+10).
+    // Lucro estimado = seller_fee (8%) - custo processador (~10%+10).
     // Modo simulação — sem custo externo de processamento.
     const totalProfit = (fees ?? []).reduce((a: number, r: any) => {
       const amt = Number(r.amount_mzn || 0);
