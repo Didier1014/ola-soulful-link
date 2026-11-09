@@ -15,3 +15,23 @@ for (const s of [200, 400, 404, 422]) {
     assert.equal(classifyVendusStatus(s, "x").connected, true);
   });
 }
+
+import { createHmac } from "node:crypto";
+import { vendusState, validVendusWebhook } from "./venduspay.server";
+
+test("only SUCCESS counts as paid", () => {
+  assert.equal(vendusState("SUCCESS"), "paid");
+  assert.equal(vendusState("PENDING"), "pending");
+  assert.equal(vendusState("FAILED"), "failed");
+  assert.equal(vendusState("EXPIRED"), "failed");
+});
+
+test("webhook signature over timestamp.raw is accepted; tampered or stale rejected", () => {
+  const raw = '{"type":"PAYMENT.SUCCESS"}';
+  const ts = "1791418083";
+  const sig = "sha256=" + createHmac("sha256", "whsec_x").update(`${ts}.${raw}`).digest("hex");
+  const now = 1791418083 * 1000;
+  assert.equal(validVendusWebhook(raw, ts, sig, "whsec_x", now), true);
+  assert.equal(validVendusWebhook(raw + " ", ts, sig, "whsec_x", now), false);
+  assert.equal(validVendusWebhook(raw, ts, sig, "whsec_x", now + 301_000), false);
+});
