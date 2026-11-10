@@ -35,6 +35,6 @@ export const sendSms = createServerFn({ method: "POST" })
       })
       .select().single();
     if (error) throw new Error(error.message);
-    if (!r.ok) throw new Error(r.error || "Falha ao enviar SMS via Hexmo");
+    if (!r.ok) throw new Error(r.error || "Falha ao enviar SMS via MozeSMS");
     return row;
   });
