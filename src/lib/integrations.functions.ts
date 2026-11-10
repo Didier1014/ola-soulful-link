@@ -2,6 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { canEditPaymentSms, FIXED_SMS_TEMPLATE } from "@/lib/sms-template";
 
 /* ============== Legacy multi-row settings (kept for back-compat) ============== */
 export const getIntegrationSettings = createServerFn({ method: "GET" })
@@ -54,12 +55,17 @@ const BUNDLE_KEY = "_bundle";
 export const getIntegrationsBundle = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const { data: roles, error: roleError } = await context.supabase
+      .from("user_roles").select("role").eq("user_id", context.userId);
+    if (roleError) throw new Error(roleError.message);
+    const canEditSms = canEditPaymentSms((roles ?? []).map((row) => row.role));
     const { data } = await context.supabase
       .from("integration_settings")
       .select("push_custom, pushcut, utmify, mozesms")
+      .eq("user_id", context.userId)
       .eq("integration_key", BUNDLE_KEY)
       .maybeSingle();
-    return data ?? { push_custom: {}, pushcut: {}, utmify: {}, mozesms: {} };
+    return { ...(data ?? { push_custom: {}, pushcut: {}, utmify: {}, mozesms: {} }), canEditSms };
   });
 
 const bundleSchema = z.object({
@@ -91,6 +97,21 @@ export const saveIntegrationsBundle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => bundleSchema.parse(d))
   .handler(async ({ data, context }) => {
+    const { data: roles, error: roleError } = await context.supabase
+      .from("user_roles").select("role").eq("user_id", context.userId);
+    if (roleError) throw new Error(roleError.message);
+    if (!canEditPaymentSms((roles ?? []).map((row) => row.role)) && data.mozesms) {
+      const { data: previous, error: previousError } = await context.supabase
+        .from("integration_settings").select("mozesms")
+        .eq("user_id", context.userId).eq("integration_key", BUNDLE_KEY).maybeSingle();
+      if (previousError) throw new Error(previousError.message);
+      const previousTemplate = previous?.mozesms?.template || "";
+      const submitted = data.mozesms.template || "";
+      if (submitted !== previousTemplate && submitted !== FIXED_SMS_TEMPLATE && submitted !== "") {
+        throw new Error("Apenas administradores e utilizadores premium podem editar o SMS pós-pagamento.");
+      }
+      data.mozesms.template = previousTemplate;
+    }
     const { error } = await context.supabase
       .from("integration_settings")
       .upsert({
@@ -100,7 +121,7 @@ export const saveIntegrationsBundle = createServerFn({ method: "POST" })
         push_custom: data.push_custom || {},
         pushcut: data.pushcut || {},
         utmify: data.utmify || {},
-        mozesms: data.mozesms || {},
+        mozesms: { ...(data.mozesms || {}), sender_id: "ESHOP" },
       }, { onConflict: "user_id,integration_key" });
     if (error) throw new Error(error.message);
     return { ok: true };
