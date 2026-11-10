@@ -13,6 +13,7 @@
 
 # Shared SaaS visual system
 
+- [ ] Apply full desktop workspace width to all internal pages and verify authenticated desktop/mobile navigation without changing public checkouts.
 - [x] Extend the reference-led shell, icons and surfaces to all authenticated areas.
 - [x] Match mobile menus, forms and dialogs to the shared system without touching checkouts.
 - [x] Verify transactions, products, customers, links and other internal pages.

@@ -65,8 +65,7 @@ function AuthedShell() {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const path = useRouterState({ select: (state) => state.location.pathname });
-  const isOverview = path === "/dashboard" || path === "/dashboard/";
-  const contentWidth = isOverview ? "w-full max-w-7xl lg:max-w-none" : "w-full max-w-7xl";
+  const contentWidth = "w-full max-w-7xl lg:max-w-none";
   const activeItem = navItems.find(item => item.exact ? path === item.to || path === `${item.to}/` : path.startsWith(item.to));
   const ActiveIcon = activeItem?.icon ?? LayoutDashboard;
   useEffect(() => {
@@ -101,7 +100,7 @@ function AuthedShell() {
             <div className="flex items-center gap-2 shrink-0"><ThemeToggle minimal /><NotificationBell /></div>
           </div>
         </header>
-        <main className={`saas-content ${contentWidth} mx-auto min-w-0 px-5 sm:px-8 ${isOverview ? "lg:px-8" : "lg:px-10"} py-7 lg:py-9 pb-16`}><Outlet /></main>
+        <main className={`saas-content ${contentWidth} mx-auto min-w-0 px-5 sm:px-8 lg:px-8 py-7 lg:py-9 pb-16`}><Outlet /></main>
         <FloatingSaleNotification />
       </div>
     </div>
