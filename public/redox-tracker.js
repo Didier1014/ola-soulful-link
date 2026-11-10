@@ -40,7 +40,7 @@
     } catch (_) {} finally { busy=false; }
     if (pending.length && enabled) setTimeout(flush,1500);
   }
-  function pageView() { if (lastPath === path()) return; lastPath=path(); scrollMarks.clear(); activeSeconds=0; pageStart=Date.now(); event('page_view'); }
+  function pageView() { if (!enabled || lastPath === path()) return; lastPath=path(); scrollMarks.clear(); activeSeconds=0; pageStart=Date.now(); event('page_view'); }
   function hookVideos() {
     document.querySelectorAll('video').forEach(function (video, index) {
       if (videoState.has(video)) return;
@@ -52,7 +52,7 @@
   }
   function start() {
     if (enabled || navigator.globalPrivacyControl || navigator.doNotTrack === '1') return;
-    enabled=true; visitorId=visitor();
+    enabled=true; storage(key+':consent','yes'); visitorId=visitor();
     try { var saved=JSON.parse(storage(key)||'null'); if(saved && saved.expires>Date.now()) session=saved; } catch (_) {}
     lastPath=''; pageView(); hookVideos();
     if(running) return; running=true;
@@ -76,6 +76,6 @@
     window.addEventListener('pagehide',flush);
     new MutationObserver(hookVideos).observe(document.documentElement,{childList:true,subtree:true});
   }
-  window.RedoxTrack={event:event,consent:function(allowed){if(allowed)start();else{enabled=false;pending=[];session=null;storage(key,'');try{localStorage.removeItem(key+':visitor');}catch(_){}}},page:pageView};
-  if(!consentRequired) start();
+  window.RedoxTrack={event:event,consent:function(allowed){if(allowed)start();else{enabled=false;pending=[];session=null;storage(key,'');storage(key+':consent','');try{localStorage.removeItem(key+':visitor');}catch(_){}}},page:pageView};
+  if(!consentRequired || storage(key+':consent')==='yes') start();
 })();
