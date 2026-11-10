@@ -22,6 +22,7 @@ export type Database = {
           created_at: string
           device: string
           error_at: string | null
+          funnel_session_id: string | null
           id: string
           last_seen_at: string
           payment_link_id: string | null
@@ -39,6 +40,7 @@ export type Database = {
           created_at?: string
           device?: string
           error_at?: string | null
+          funnel_session_id?: string | null
           id?: string
           last_seen_at?: string
           payment_link_id?: string | null
@@ -56,6 +58,7 @@ export type Database = {
           created_at?: string
           device?: string
           error_at?: string | null
+          funnel_session_id?: string | null
           id?: string
           last_seen_at?: string
           payment_link_id?: string | null
@@ -67,6 +70,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "checkout_sessions_funnel_session_id_fkey"
+            columns: ["funnel_session_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "checkout_sessions_payment_link_id_fkey"
             columns: ["payment_link_id"]
@@ -215,6 +225,94 @@ export type Database = {
           used_at?: string | null
         }
         Relationships: []
+      }
+      funnel_events: {
+        Row: {
+          created_at: string
+          event: string
+          event_id: string
+          id: string
+          label: string
+          path: string
+          session_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          event_id: string
+          id?: string
+          label?: string
+          path: string
+          session_id: string
+          value?: number
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          event_id?: string
+          id?: string
+          label?: string
+          path?: string
+          session_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "funnel_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funnel_sessions: {
+        Row: {
+          campaign: string
+          created_at: string
+          device: string
+          funnel_id: string
+          id: string
+          last_seen_at: string
+          medium: string
+          source: string
+          token_hash: string
+          visitor_id: string
+        }
+        Insert: {
+          campaign?: string
+          created_at?: string
+          device?: string
+          funnel_id: string
+          id?: string
+          last_seen_at?: string
+          medium?: string
+          source?: string
+          token_hash: string
+          visitor_id: string
+        }
+        Update: {
+          campaign?: string
+          created_at?: string
+          device?: string
+          funnel_id?: string
+          id?: string
+          last_seen_at?: string
+          medium?: string
+          source?: string
+          token_hash?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_sessions_funnel_id_fkey"
+            columns: ["funnel_id"]
+            isOneToOne: false
+            referencedRelation: "operation_funnels"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       integration_logs: {
         Row: {
@@ -374,6 +472,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      operation_funnels: {
+        Row: {
+          active: boolean
+          consent_required: boolean
+          created_at: string
+          id: string
+          name: string
+          origin: string
+          steps: Json
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          consent_required?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          origin: string
+          steps?: Json
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          consent_required?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          origin?: string
+          steps?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_funnels_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_links: {
         Row: {
@@ -961,6 +1100,10 @@ export type Database = {
       gen_api_key: { Args: never; Returns: string }
       get_checkout_operation: {
         Args: { p_hours?: number; p_resource?: string }
+        Returns: Json
+      }
+      get_external_funnel_report: {
+        Args: { p_funnel: string; p_hours?: number }
         Returns: Json
       }
       has_role: {

@@ -19,6 +19,14 @@ export const Route = createFileRoute("/api/public/checkout-events")({
     const table = input.kind === "product" ? "products" : "payment_links";
     const { data: resource } = await supabaseAdmin.from(table).select("id,user_id,active").eq("slug", input.slug).maybeSingle();
     if (!resource?.active) return new Response(null, { status: 404 });
+    let funnelSessionId: string | undefined;
+    if (input.funnel_session_id && input.funnel_token) {
+      const { data: external } = await supabaseAdmin.from("funnel_sessions").select("id,funnel_id,created_at").eq("id", input.funnel_session_id).eq("token_hash", await hash(input.funnel_token)).maybeSingle();
+      if (external && Date.now() - new Date(external.created_at).getTime() < 86400000) {
+        const { data: owned } = await supabaseAdmin.from("operation_funnels").select("id").eq("id", external.funnel_id).eq("user_id", resource.user_id).eq("active", true).maybeSingle();
+        if (owned) funnelSessionId = external.id;
+      }
+    }
     const headers = { "Cache-Control": "no-store" };
     if (!input.session_id || !input.token) {
       if (input.event !== "visited") return new Response(null, { status: 400 });
@@ -33,6 +41,7 @@ export const Route = createFileRoute("/api/public/checkout-events")({
         user_id: resource.user_id, product_id: input.kind === "product" ? resource.id : null,
         payment_link_id: input.kind === "link" ? resource.id : null, token_hash: await hash(token), request_hash: requestHash,
         source: input.source || "Direto", campaign: input.campaign, device: input.device,
+        funnel_session_id: funnelSessionId,
       }).select("id").single();
       if (error || !session) return new Response(null, { status: 503 });
       return Response.json({ session_id: session.id, token }, { headers });
@@ -41,7 +50,7 @@ export const Route = createFileRoute("/api/public/checkout-events")({
     const { data: session } = await supabaseAdmin.from("checkout_sessions").select("id,created_at,started_at,completed_at,attempted_at,error_at").eq("id", input.session_id).eq("token_hash", await hash(input.token)).eq(input.kind === "product" ? "product_id" : "payment_link_id", resource.id).maybeSingle();
     if (!session || Date.now() - new Date(session.created_at).getTime() > 86400000) return new Response(null, { status: 403 });
     const now = new Date().toISOString();
-    const patch: { last_seen_at: string; started_at?: string; completed_at?: string; attempted_at?: string; error_at?: string } = { last_seen_at: now };
+    const patch: { last_seen_at: string; started_at?: string; completed_at?: string; attempted_at?: string; error_at?: string; funnel_session_id?: string } = { last_seen_at: now, ...(funnelSessionId ? { funnel_session_id: funnelSessionId } : {}) };
     if (["started", "completed", "attempted"].includes(input.event) && !session.started_at) patch.started_at = now;
     if (["completed", "attempted"].includes(input.event) && !session.completed_at) patch.completed_at = now;
     if (input.event === "attempted" && !session.attempted_at) patch.attempted_at = now;

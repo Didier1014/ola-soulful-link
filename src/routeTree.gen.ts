@@ -43,6 +43,7 @@ import { Route as AuthenticatedDashboardWithdrawalsRouteImport } from './routes/
 import { Route as ApiPublicCheckPaymentStatusRouteImport } from './routes/api/public/check-payment-status'
 import { Route as ApiPublicCheckoutEventsRouteImport } from './routes/api/public/checkout-events'
 import { Route as ApiPublicCreateMerchantPaymentRouteImport } from './routes/api/public/create-merchant-payment'
+import { Route as ApiPublicFunnelEventsRouteImport } from './routes/api/public/funnel-events'
 import { Route as ApiPublicPagajaWebhookRouteImport } from './routes/api/public/pagaja-webhook'
 import { Route as ApiPublicPagarWebhookRouteImport } from './routes/api/public/pagar-webhook'
 import { Route as ApiPublicReconcilePendingRouteImport } from './routes/api/public/reconcile-pending'
@@ -249,6 +250,11 @@ const ApiPublicCreateMerchantPaymentRoute =
     path: '/api/public/create-merchant-payment',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicFunnelEventsRoute = ApiPublicFunnelEventsRouteImport.update({
+  id: '/api/public/funnel-events',
+  path: '/api/public/funnel-events',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPagajaWebhookRoute = ApiPublicPagajaWebhookRouteImport.update({
   id: '/api/public/pagaja-webhook',
   path: '/api/public/pagaja-webhook',
@@ -360,6 +366,7 @@ export interface FileRoutesByFullPath {
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/checkout-events': typeof ApiPublicCheckoutEventsRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
+  '/api/public/funnel-events': typeof ApiPublicFunnelEventsRoute
   '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
@@ -409,6 +416,7 @@ export interface FileRoutesByTo {
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/checkout-events': typeof ApiPublicCheckoutEventsRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
+  '/api/public/funnel-events': typeof ApiPublicFunnelEventsRoute
   '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
@@ -460,6 +468,7 @@ export interface FileRoutesById {
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
   '/api/public/checkout-events': typeof ApiPublicCheckoutEventsRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
+  '/api/public/funnel-events': typeof ApiPublicFunnelEventsRoute
   '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
@@ -511,6 +520,7 @@ export interface FileRouteTypes {
     | '/api/public/check-payment-status'
     | '/api/public/checkout-events'
     | '/api/public/create-merchant-payment'
+    | '/api/public/funnel-events'
     | '/api/public/pagaja-webhook'
     | '/api/public/pagar-webhook'
     | '/api/public/reconcile-pending'
@@ -560,6 +570,7 @@ export interface FileRouteTypes {
     | '/api/public/check-payment-status'
     | '/api/public/checkout-events'
     | '/api/public/create-merchant-payment'
+    | '/api/public/funnel-events'
     | '/api/public/pagaja-webhook'
     | '/api/public/pagar-webhook'
     | '/api/public/reconcile-pending'
@@ -610,6 +621,7 @@ export interface FileRouteTypes {
     | '/api/public/check-payment-status'
     | '/api/public/checkout-events'
     | '/api/public/create-merchant-payment'
+    | '/api/public/funnel-events'
     | '/api/public/pagaja-webhook'
     | '/api/public/pagar-webhook'
     | '/api/public/reconcile-pending'
@@ -642,6 +654,7 @@ export interface RootRouteChildren {
   ApiPublicCheckPaymentStatusRoute: typeof ApiPublicCheckPaymentStatusRoute
   ApiPublicCheckoutEventsRoute: typeof ApiPublicCheckoutEventsRoute
   ApiPublicCreateMerchantPaymentRoute: typeof ApiPublicCreateMerchantPaymentRoute
+  ApiPublicFunnelEventsRoute: typeof ApiPublicFunnelEventsRoute
   ApiPublicPagajaWebhookRoute: typeof ApiPublicPagajaWebhookRoute
   ApiPublicPagarWebhookRoute: typeof ApiPublicPagarWebhookRoute
   ApiPublicReconcilePendingRoute: typeof ApiPublicReconcilePendingRoute
@@ -895,6 +908,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCreateMerchantPaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/funnel-events': {
+      id: '/api/public/funnel-events'
+      path: '/api/public/funnel-events'
+      fullPath: '/api/public/funnel-events'
+      preLoaderRoute: typeof ApiPublicFunnelEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/pagaja-webhook': {
       id: '/api/public/pagaja-webhook'
       path: '/api/public/pagaja-webhook'
@@ -1103,6 +1123,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCheckPaymentStatusRoute: ApiPublicCheckPaymentStatusRoute,
   ApiPublicCheckoutEventsRoute: ApiPublicCheckoutEventsRoute,
   ApiPublicCreateMerchantPaymentRoute: ApiPublicCreateMerchantPaymentRoute,
+  ApiPublicFunnelEventsRoute: ApiPublicFunnelEventsRoute,
   ApiPublicPagajaWebhookRoute: ApiPublicPagajaWebhookRoute,
   ApiPublicPagarWebhookRoute: ApiPublicPagarWebhookRoute,
   ApiPublicReconcilePendingRoute: ApiPublicReconcilePendingRoute,

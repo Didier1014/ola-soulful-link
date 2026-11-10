@@ -36,6 +36,13 @@
       "when": 1794279859215,
       "tag": "0004_checkout_operation_monitoring",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794281532716,
+      "tag": "0005_external_funnel_tracking",
+      "breakpoints": true
     }
   ]
 }

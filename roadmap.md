@@ -1,5 +1,8 @@
 # Checkout operation monitoring
 
+- [x] Add seller-owned external funnels, installation code, anonymous event collection and private reports.
+- [x] Track navigation, page completion, quiz, HTML5 VSL milestones, engagement and checkout attribution without collecting field contents.
+- [x] Installed script on a separate origin: consent, two-page journey, quiz and actual HTML5 video playback read back in authenticated UI; custom checkout attribution confirmed without payment. Eleven tests pass, domain/payment claims rejected, desktop/mobile checked. Validation funnels paused; production installation requires publishing.
 - [x] Add private seller checkout funnel, hourly traffic, source/product filters and recent activity.
 - [x] Track anonymous milestones on all public checkouts without changing payment logic or collecting field contents.
 - [x] Verify tracking and aggregation through an actual checkout visit and completed form read back in the authenticated seller view; owner-only RLS and five tests pass; desktop/mobile have no overflow or runtime errors. No charge triggered.
