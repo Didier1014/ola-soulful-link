@@ -65,6 +65,8 @@ function AuthedShell() {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const path = useRouterState({ select: (state) => state.location.pathname });
+  const isOverview = path === "/dashboard" || path === "/dashboard/";
+  const contentWidth = isOverview ? "w-full max-w-7xl lg:max-w-none" : "w-full max-w-7xl";
   const activeItem = navItems.find(item => item.exact ? path === item.to || path === `${item.to}/` : path.startsWith(item.to));
   const ActiveIcon = activeItem?.icon ?? LayoutDashboard;
   useEffect(() => {
@@ -87,7 +89,7 @@ function AuthedShell() {
       </aside>
       <div className="dash-workspace relative z-10 min-h-screen">
         <header className="dash-topbar sticky top-0 z-40 border-b border-border">
-          <div className="max-w-7xl mx-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 lg:px-10 h-14">
+          <div className={`${contentWidth} mx-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 sm:px-8 lg:px-8 h-14`}>
             <div className="flex items-center gap-3 min-w-0">
               <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild><Button variant="outline" size="icon" aria-label="Abrir menu" className="lg:hidden rounded-md size-8 shrink-0 bg-secondary border-border text-foreground"><Menu className="size-4" /></Button></SheetTrigger>
@@ -99,7 +101,7 @@ function AuthedShell() {
             <div className="flex items-center gap-2 shrink-0"><ThemeToggle minimal /><NotificationBell /></div>
           </div>
         </header>
-        <main className="saas-content max-w-7xl mx-auto min-w-0 px-5 sm:px-8 lg:px-10 py-7 lg:py-9 pb-16"><Outlet /></main>
+        <main className={`saas-content ${contentWidth} mx-auto min-w-0 px-5 sm:px-8 ${isOverview ? "lg:px-8" : "lg:px-10"} py-7 lg:py-9 pb-16`}><Outlet /></main>
         <FloatingSaleNotification />
       </div>
     </div>

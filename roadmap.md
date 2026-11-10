@@ -6,6 +6,7 @@
 
 # Dashboard redesign
 
+- [x] Expand the desktop overview to fill the workspace; authenticated checks at 1920px, 1440px and 390px, sidebar collapse and period filter pass without overflow or runtime errors.
 - [x] Restyle financial overview and navigation to match the supplied reference.
 - [x] Preserve existing financial views and controls.
 - [x] Verify desktop, mobile, theme switching and navigation.
