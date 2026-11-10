@@ -16,6 +16,8 @@ export const Route = createFileRoute("/txuna-emola")({
   component: TxunaEmolaCheckout,
   validateSearch: (search: Record<string, unknown>) => ({
     p: typeof search.p === "string" && search.p ? search.p : undefined,
+    rxf_session: typeof search.rxf_session === "string" ? search.rxf_session : undefined,
+    rxf_token: typeof search.rxf_token === "string" ? search.rxf_token : undefined,
   }),
   head: () => ({
     meta: [

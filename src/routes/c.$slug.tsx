@@ -25,9 +25,9 @@ export const Route = createFileRoute("/c/$slug")({
     { property: "og:title", content: "Checkout seguro | Redox Pay" }, { property: "og:description", content: "Pagamento seguro de produtos via Redox Pay." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
   ] }),
-  beforeLoad: ({ params }) => {
+  beforeLoad: ({ params, location }) => {
     const target = CUSTOM_CHECKOUTS[params.slug];
-    if (target) throw redirect({ to: target, search: { p: params.slug } });
+    if (target) throw redirect({ to: target, search: { ...location.search, p: params.slug } });
   },
   component: CheckoutPage,
 });

@@ -20,6 +20,7 @@
     if (allowed.indexOf(name) < 0) return;
     pending.push({ event_id: crypto.randomUUID(), event: name, path: path(), label: clean(options.label), value: Math.max(0, Math.min(86400, Math.round(Number(options.value) || 0))) });
     if (pending.length > 100) pending.shift();
+    storage(key+':pending',JSON.stringify(pending));
     flush();
   }
   async function flush() {
@@ -35,7 +36,7 @@
         var result = await response.json();
         if (!enabled) return;
         session = {session_id:result.session_id,token:result.token,expires:Date.now()+30*60*1000};
-        storage(key,JSON.stringify(session)); pending.splice(0,batch.length);
+        storage(key,JSON.stringify(session)); pending.splice(0,batch.length); storage(key+':pending',JSON.stringify(pending));
       } else if (response.status === 403) { session=null; storage(key,''); pending=[]; }
     } catch (_) {} finally { busy=false; }
     if (pending.length && enabled) setTimeout(flush,1500);
@@ -63,7 +64,7 @@
       else event('click',{label:target.tagName==='A'?'Link':'Botao'});
       if(target.tagName==='A') {
         try { var url=new URL(target.href,location.href); if(url.origin!==location.origin || url.pathname!==location.pathname) event('page_complete');
-          if((url.hostname==='www.redoxpay.site' || url.hostname==='redoxpay.lovable.app' || url.origin===base) && /^\/(c\/|p\/|txuna-)/.test(url.pathname)) {event('checkout_click'); if(session) {url.searchParams.set('rxf_session',session.session_id);url.searchParams.set('rxf_token',session.token);target.href=url.href;}}
+          if((url.hostname==='www.redoxpay.site' || url.hostname==='redoxpay.lovable.app' || url.origin===base) && /^\/(c\/|l\/|txuna-)/.test(url.pathname)) {event('checkout_click'); if(session) {url.searchParams.set('rxf_session',session.session_id);url.searchParams.set('rxf_token',session.token);target.href=url.href;}}
         } catch (_) {}
       }
     },true);
@@ -73,9 +74,9 @@
     setInterval(function(){if(enabled&&document.visibilityState==='visible'){activeSeconds+=15;event('engagement',{value:15});}if(enabled){pageView();hookVideos();}},15000);
     window.addEventListener('popstate',pageView);
     ['pushState','replaceState'].forEach(function(name){var original=history[name];history[name]=function(){var result=original.apply(this,arguments);pageView();return result;};});
-    window.addEventListener('pagehide',flush);
+    window.addEventListener('pagehide',function(){ if(enabled && session && pending.length) navigator.sendBeacon(base+'/api/public/funnel-events',new Blob([JSON.stringify({funnel_id:funnel,session_id:session.session_id,token:session.token,events:pending.slice(0,20)})],{type:'text/plain'})); });
     new MutationObserver(hookVideos).observe(document.documentElement,{childList:true,subtree:true});
   }
-  window.RedoxTrack={event:event,consent:function(allowed){if(allowed)start();else{enabled=false;pending=[];session=null;storage(key,'');storage(key+':consent','');try{localStorage.removeItem(key+':visitor');}catch(_){}}},page:pageView};
+  window.RedoxTrack={event:event,consent:function(allowed){if(allowed)start();else{enabled=false;pending=[];session=null;storage(key,'');storage(key+':pending','');storage(key+':consent','');try{localStorage.removeItem(key+':visitor');}catch(_){}}},page:pageView};
   if(!consentRequired || storage(key+':consent')==='yes') start();
 })();

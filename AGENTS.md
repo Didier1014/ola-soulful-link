@@ -9,3 +9,4 @@
 - App notifications send synchronously through the managed template helper; kept email tables are audit-only, and signed outcome events preserve their legacy status contract without gating sends.
 - Premium product approval is enforced by a database trigger using protected user_roles entries, never editable profile fields; automatically approved products do not request admin approval.
 - Checkout operation uses anonymous capability-protected sessions and owner-only RLS aggregates; payment outcomes come from existing non-test transactions, not browser claims, to preserve financial truth and seller privacy.
+- External funnel analytics use a public domain-scoped installation identifier and hashed session capabilities; owner-only reports link to same-owner checkout sessions, never infer sales from browser events, and do not collect form contents.
