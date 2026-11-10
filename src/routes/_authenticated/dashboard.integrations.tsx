@@ -22,8 +22,17 @@ import { usePushNotifications } from "@/components/push-setup";
 import { PushReactivateBanner } from "@/components/push-reactivate-banner";
 import { sendTestNotification } from "@/lib/notifications.functions";
 import utmifyLogo from "@/assets/utmify-logo.png.asset.json";
+import { FIXED_SMS_TEMPLATE, buildFixedSmsTemplate } from "@/lib/sms-template";
 
 export const Route = createFileRoute("/_authenticated/dashboard/integrations")({
+  head: () => ({ meta: [
+    { title: "Integrações e SMS | RedoxPay" },
+    { name: "description", content: "Configure as integrações de vendas e o SMS pós-pagamento da sua conta RedoxPay." },
+    { property: "og:title", content: "Integrações e SMS | RedoxPay" },
+    { property: "og:description", content: "Configurações de integrações e mensagens pós-pagamento RedoxPay." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: IntegrationsPage,
 });
 
@@ -38,7 +47,7 @@ const DEFAULT_BUNDLE: Bundle = {
   push_custom: { title: "💰 Nova venda aprovada!", body: "{valor}", currency: "MZN" },
   pushcut: { enabled: false, webhook_url: "" },
   utmify: { enabled: false, api_token: "", currency: "BRL" },
-  mozesms: { enabled: false, sender_id: "RedoxPay", template: "Olá {nome}, recebemos o seu pagamento de {valor} para {produto}. Suporte: {suporte} / {suporte2}", test_number: "", support_phone: "", support_phone2: "" },
+  mozesms: { enabled: false, sender_id: "ESHOP", template: "", test_number: "", support_phone: "", support_phone2: "" },
 };
 
 function IntegrationsPage() {
@@ -326,17 +335,21 @@ function IntegrationsPage() {
         onToggle={(v) => setB({ ...b, mozesms: { ...b.mozesms, enabled: v } })}
       >
         <Label>Nome do Remetente (Sender ID)</Label>
-        <Input value={b.mozesms.sender_id || ""}
-          onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, sender_id: e.target.value } })}
-          maxLength={11} placeholder="RedoxPay" />
-        <div className="rounded-lg border border-border/40 bg-muted/40 p-3 space-y-1">
-          <p className="text-xs font-medium text-muted-foreground">Modelo de mensagem (fixo — igual para todos)</p>
-          <pre className="text-xs whitespace-pre-wrap font-mono leading-relaxed">{`{nome}, pagamento recebido com sucesso de {valor} para {produto}, se nao conseguiu acessa aqui esta o link {link}
-SUPORTE ou Reclamações: {suporte1} , {suporte2}
-{suporte3}`}</pre>
-          <p className="text-xs text-muted-foreground pt-1">
-            <b>{"{suporte1}"}</b> e <b>{"{suporte2}"}</b> são os seus números (edite abaixo ou em <a href="/dashboard/profile" className="underline text-primary">Perfil</a>). <b>{"{suporte3}"}</b> é o número do admin (usado caso não atenda).
-          </p>
+        <Input value="ESHOP" readOnly />
+        <Label htmlFor="payment-sms-template">Mensagem SMS pós-pagamento</Label>
+        {data?.canEditSms ? <>
+          <Textarea id="payment-sms-template" rows={5} maxLength={500}
+            value={b.mozesms.template || ""} placeholder={FIXED_SMS_TEMPLATE}
+            onChange={(e) => setB({ ...b, mozesms: { ...b.mozesms, template: e.target.value } })} />
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-muted-foreground">{(b.mozesms.template || "").length}/500</span>
+            <Button variant="ghost" size="sm" onClick={() => setB({ ...b, mozesms: { ...b.mozesms, template: "" } })}>Restaurar padrão</Button>
+          </div>
+          <p className="text-xs text-muted-foreground font-mono break-words">{"{nome} · {produto} · {valor} · {link} · {suporte1} · {suporte2} · {suporte3}"}</p>
+        </> : <p className="text-xs text-muted-foreground">Personalização disponível para administradores e utilizadores premium.</p>}
+        <div className="border-l-2 border-primary pl-3 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground">Pré-visualização</p>
+          <p className="text-sm whitespace-pre-wrap break-words">{buildFixedSmsTemplate({ nome: "Cliente", produto: "Produto", valor: "300 MT", link: "https://exemplo.com/produto", suporte1: b.mozesms.support_phone || "Suporte 1", suporte2: b.mozesms.support_phone2 || "Suporte 2", suporte3: "Suporte admin" }, data?.canEditSms ? b.mozesms.template?.trim() || FIXED_SMS_TEMPLATE : FIXED_SMS_TEMPLATE)}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -375,7 +388,6 @@ SUPORTE ou Reclamações: {suporte1} , {suporte2}
           disabled={!b.mozesms.test_number}
           onClick={async () => {
             try {
-              const { buildFixedSmsTemplate } = await import("@/lib/sms-template");
               const message = buildFixedSmsTemplate({
                 nome: "Teste",
                 produto: "Produto Teste",
@@ -384,7 +396,7 @@ SUPORTE ou Reclamações: {suporte1} , {suporte2}
                 suporte1: b.mozesms.support_phone || "",
                 suporte2: b.mozesms.support_phone2 || "",
                 suporte3: "(número do admin)",
-              });
+              }, data?.canEditSms ? b.mozesms.template?.trim() || FIXED_SMS_TEMPLATE : FIXED_SMS_TEMPLATE);
               await tSms({ data: {
                 sender_id: b.mozesms.sender_id || "RedoxPay",
                 message,

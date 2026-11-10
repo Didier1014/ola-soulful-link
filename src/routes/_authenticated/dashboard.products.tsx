@@ -602,13 +602,11 @@ function FormStep({
         <div className="space-y-3">
           <div className="space-y-2">
             <Label>Sender ID (Remetente SMS)</Label>
-            <Input value={form.sms_sender_id} onChange={(e) => setForm({ ...form, sms_sender_id: e.target.value })} maxLength={11} />
-            <p className="text-xs text-muted-foreground">Aparecerá no SMS enviado ao cliente.</p>
+            <Input value="ESHOP" readOnly />
           </div>
           <div className="space-y-2">
-            <Label>Modelo de Mensagem SMS</Label>
-            <Textarea rows={3} value={form.sms_template} onChange={(e) => setForm({ ...form, sms_template: e.target.value })} />
-            <p className="text-xs text-muted-foreground">Variáveis: {"{nome}"}, {"{produto}"}, {"{valor}"}, {"{email}"}</p>
+            <Label>Mensagem SMS pós-pagamento</Label>
+            <p className="text-xs text-muted-foreground">A mensagem é configurada na sua conta, em Integrações → MozeSMS.</p>
           </div>
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
             <div className="space-y-2"><Label>Pixel ID (Meta)</Label><Input value={form.pixel_id} onChange={(e) => setForm({ ...form, pixel_id: e.target.value })} /></div>

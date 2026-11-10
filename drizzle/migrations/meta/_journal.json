@@ -43,6 +43,13 @@
       "when": 1794281532716,
       "tag": "0005_external_funnel_tracking",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794312780017,
+      "tag": "0006_guard_payment_sms_template_editing",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,8 @@
 # MozeSMS update
 
+- [x] Allow premium and admin sellers to edit automatic post-payment SMS; server and database guard roles, delivery uses authorized templates, six tests pass, authenticated save/reload/restore and mobile verified without sending SMS.
 - [x] Securely linked MozeSMS and replaced all shared SMS delivery with sender ESHOP; authentication succeeds and adapter tests/build pass.
-- [ ] Confirm real SMS delivery; awaiting the user's chosen test recipient (no message sent to an inferred number).
+- [x] Confirm real SMS delivery; the requested “Teste concluído” SMS was accepted by MozeSMS for the user's chosen recipient.
 
 # Checkout operation monitoring
 

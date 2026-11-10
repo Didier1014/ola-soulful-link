@@ -3,7 +3,7 @@
 // in-app notification + web push + Utmify + LowTrack.
 // Called from createCheckout/payLink e pelo
 // safety-net em listMyTransactions/checkTransactionStatus.
-import { buildFixedSmsTemplate } from "@/lib/sms-template";
+import { buildFixedSmsTemplate, selectPaymentSmsTemplate } from "@/lib/sms-template";
 
 
 async function logIntegrationCall(
@@ -348,13 +348,16 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
         const suporte1 = profile?.support_phone || sms.support_phone || "";
         const suporte2 = profile?.support_phone2 || sms.support_phone2 || "";
         const suporte3 = process.env.ADMIN_SUPPORT_PHONE || "";
+        const { data: roles } = await supabaseAdmin
+          .from("user_roles").select("role").eq("user_id", userId);
+        const template = selectPaymentSmsTemplate(sms.template, (roles ?? []).map((row) => row.role));
         const message = buildFixedSmsTemplate({
           nome: tx.customer_name || "Cliente",
           produto: productName || "",
           valor: formatted,
           link: productLink,
           suporte1, suporte2, suporte3,
-        });
+        }, template);
 
         const { hexmoSendSms } = await import("@/lib/hexmo.server");
         const r = await hexmoSendSms({

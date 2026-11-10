@@ -1,6 +1,7 @@
 # Architecture rules
 
 - All SMS callers share the legacy SMS adapter routed through the linked MozeSMS gateway connection; credentials remain server-only and the approved sender is enforced centrally to avoid rejected custom senders.
+- Post-payment SMS templates are account-wide in integration_settings.mozesms; saving and delivery consult protected user_roles, with default fallback after privilege revocation, so product legacy fields cannot override authorized settings.
 
 - Scope the professional SaaS visual system to the authenticated shell and its portals; public checkouts must remain visually isolated.
 - Dashboard visualizations consume existing transaction and stats functions; presentation changes must not alter payment or balance logic.
