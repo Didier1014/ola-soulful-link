@@ -14,6 +14,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      checkout_sessions: {
+        Row: {
+          attempted_at: string | null
+          campaign: string
+          completed_at: string | null
+          created_at: string
+          device: string
+          error_at: string | null
+          id: string
+          last_seen_at: string
+          payment_link_id: string | null
+          product_id: string | null
+          request_hash: string
+          source: string
+          started_at: string | null
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string | null
+          campaign?: string
+          completed_at?: string | null
+          created_at?: string
+          device?: string
+          error_at?: string | null
+          id?: string
+          last_seen_at?: string
+          payment_link_id?: string | null
+          product_id?: string | null
+          request_hash: string
+          source?: string
+          started_at?: string | null
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string | null
+          campaign?: string
+          completed_at?: string | null
+          created_at?: string
+          device?: string
+          error_at?: string | null
+          id?: string
+          last_seen_at?: string
+          payment_link_id?: string | null
+          product_id?: string | null
+          request_hash?: string
+          source?: string
+          started_at?: string | null
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_sessions_payment_link_id_fkey"
+            columns: ["payment_link_id"]
+            isOneToOne: false
+            referencedRelation: "payment_links"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkout_sessions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkout_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           created_at: string
@@ -883,6 +959,10 @@ export type Database = {
     Functions: {
       expire_stuck_pending_transactions: { Args: never; Returns: number }
       gen_api_key: { Args: never; Returns: string }
+      get_checkout_operation: {
+        Args: { p_hours?: number; p_resource?: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
