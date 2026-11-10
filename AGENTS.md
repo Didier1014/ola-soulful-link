@@ -1,5 +1,7 @@
 # Architecture rules
 
+- All SMS callers share the legacy SMS adapter routed through the linked MozeSMS gateway connection; credentials remain server-only and the approved sender is enforced centrally to avoid rejected custom senders.
+
 - Scope the professional SaaS visual system to the authenticated shell and its portals; public checkouts must remain visually isolated.
 - Dashboard visualizations consume existing transaction and stats functions; presentation changes must not alter payment or balance logic.
 - All authenticated pages use the full desktop workspace width through the shared shell and page-wrapper CSS, with aligned header gutters; modal and individual control widths remain independent.

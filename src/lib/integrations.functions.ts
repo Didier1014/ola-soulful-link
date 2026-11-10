@@ -183,6 +183,6 @@ export const sendTestSms = createServerFn({ method: "POST" })
       message: `[${data.sender_id}] ${data.message}`,
       status: r.ok ? "sent" : "failed",
     } as any);
-    if (!r.ok) throw new Error(r.error || "Falha ao enviar SMS via Hexmo");
-    return { ok: true, provider: "hexmo", raw: r.raw };
+    if (!r.ok) throw new Error(r.error || "Falha ao enviar SMS via MozeSMS");
+    return { ok: true, provider: "mozesms", raw: r.raw };
   });

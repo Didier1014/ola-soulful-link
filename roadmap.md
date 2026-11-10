@@ -1,7 +1,7 @@
 # MozeSMS update
 
-- [ ] Securely link MozeSMS credentials and replace active SMS delivery with sender ESHOP.
-- [ ] Verify authentication and SMS delivery without exposing credentials.
+- [x] Securely linked MozeSMS and replaced all shared SMS delivery with sender ESHOP; authentication succeeds and adapter tests/build pass.
+- [ ] Confirm real SMS delivery; awaiting the user's chosen test recipient (no message sent to an inferred number).
 
 # Checkout operation monitoring
 
