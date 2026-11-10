@@ -31,6 +31,7 @@ export const payLink = createServerFn({ method: "POST" })
     customer_phone: z.string().trim().regex(/^\+?\d{8,15}$/, "Telefone inválido"),
     method: z.enum(["mpesa", "emola"]),
     tracking: z.object({
+      operation_session_id: z.string().uuid().optional(),
       src: z.string().max(200).optional(),
       sck: z.string().max(200).optional(),
       utm_source: z.string().max(200).optional(),
