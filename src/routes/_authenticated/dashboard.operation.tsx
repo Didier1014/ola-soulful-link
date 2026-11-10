@@ -6,15 +6,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Activity, Users, MousePointer2, FileCheck2, CreditCard, AlertTriangle, RefreshCw, Download, Radio, ArrowDown, Globe, TrendingUp } from "lucide-react";
 import { AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useState } from "react";
+import { FunnelOperation, funnelsQuery } from "@/components/funnel-operation";
 
 const operationQuery = (hours = 24, resource?: string) => queryOptions({ queryKey: ["operation", hours, resource], queryFn: () => getOperation({ data: { hours: hours as 24 | 168 | 720, resource } }), refetchInterval: 30000 });
 export const Route = createFileRoute("/_authenticated/dashboard/operation")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(operationQuery()),
+  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(operationQuery()), context.queryClient.ensureQueryData(funnelsQuery())]),
   head: () => ({ meta: [
-    { title: "Operação — Monitorização de checkouts | Redox Pay" },
-    { name: "description", content: "Acompanhe o funil, as origens dos leads e os pagamentos da sua operação na Redox Pay." },
+    { title: "Operação — Funis e checkouts | Redox Pay" },
+    { name: "description", content: "Acompanhe visitas, páginas, quiz, VSL, origens dos leads e pagamentos da sua operação na Redox Pay." },
     { property: "og:title", content: "Operação | Redox Pay" },
-    { property: "og:description", content: "Fluxo de leads, conversão e atividade dos seus checkouts." },
+    { property: "og:description", content: "Rastreamento de funis externos, quiz, VSL e conversão dos seus checkouts." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
   ] }),
   component: OperationPage,
@@ -68,5 +69,6 @@ function OperationPage() {
       <section><h2 className="font-semibold mb-5 flex items-center gap-2"><Globe className="size-4 text-primary-glow" />Origens dos leads</h2><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-xs text-muted-foreground border-b border-border"><th className="text-left py-3 font-normal">Origem</th><th className="text-right font-normal">Leads</th><th className="text-right font-normal">Pagos</th><th className="text-right font-normal">Conversão</th></tr></thead><tbody>{data.sources.map(s => <tr key={s.source} className="border-b border-border"><td className="py-4 break-all pr-3">{s.source}</td><td className="text-right tabular-nums">{count(s.leads)}</td><td className="text-right tabular-nums text-success">{count(s.paid)}</td><td className="text-right tabular-nums">{percent(s.paid, s.leads)}</td></tr>)}</tbody></table></div>{!data.sources.length && <p className="text-muted-foreground text-sm py-8">Sem origens neste período.</p>}</section>
     </div>
     <section className="border-t border-border pt-6"><h2 className="font-semibold mb-5">Atividade recente</h2><div className="overflow-x-auto"><table className="w-full text-sm min-w-[660px]"><thead><tr className="text-xs text-muted-foreground border-b border-border">{["Lead", "Checkout", "Origem / campanha", "Dispositivo", "Etapa", "Última atividade"].map(label => <th key={label} className="text-left py-3 pr-4 font-normal">{label}</th>)}</tr></thead><tbody>{data.recent.map(r => <tr key={r.id} className="border-b border-border"><td className="py-4 pr-4 font-mono text-xs text-muted-foreground">{r.id.slice(0, 8)}</td><td className="pr-4 max-w-48 break-words">{r.resource_name}</td><td className="pr-4 max-w-48 break-words">{r.source}{r.campaign && <p className="text-xs text-muted-foreground mt-1">{r.campaign}</p>}</td><td className="pr-4 text-xs text-muted-foreground">{r.device === "mobile" ? "Telemóvel" : r.device === "tablet" ? "Tablet" : "Computador"}</td><td className={`pr-4 text-xs ${r.stage === "paid" ? "text-success" : ["failed", "error"].includes(r.stage) ? "text-destructive" : "text-foreground"}`}>{stageLabels[r.stage]}</td><td className="text-xs text-muted-foreground">{new Date(r.last_seen_at).toLocaleTimeString("pt-MZ", { timeZone: "Africa/Maputo", hour: "2-digit", minute: "2-digit" })}</td></tr>)}</tbody></table></div>{!data.recent.length && <p className="text-sm text-muted-foreground py-8">Nenhuma atividade registada.</p>}<p className="text-xs text-muted-foreground mt-5">Leads anónimos · Sem guardar o conteúdo dos campos · Pagamentos de teste excluídos das vendas</p></section>
+    <FunnelOperation hours={hours} />
   </div>;
 }
