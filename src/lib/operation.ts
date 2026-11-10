@@ -5,6 +5,8 @@ export const operationEventSchema = z.object({
   slug: z.string().min(1).max(80).regex(/^[a-zA-Z0-9-]+$/),
   session_id: z.string().uuid().optional(),
   token: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  funnel_session_id: z.string().uuid().optional(),
+  funnel_token: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   event: z.enum(["visited", "started", "completed", "attempted", "error", "heartbeat"]),
   source: z.string().max(100).regex(/^[\p{L}\p{N} ._\/-]*$/u).default("Direto"),
   campaign: z.string().max(100).regex(/^[\p{L}\p{N} ._\/-]*$/u).default(""),
