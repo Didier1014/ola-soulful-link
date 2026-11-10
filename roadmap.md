@@ -13,6 +13,7 @@
 
 # Shared SaaS visual system
 
+- [x] Apply full desktop workspace width to all internal pages; 17 authenticated pages verified at 1920px and 390px without horizontal overflow. Public checkouts unchanged. Existing live-update subscription errors surfaced on notifications/withdrawals, unrelated to layout.
 - [x] Extend the reference-led shell, icons and surfaces to all authenticated areas.
 - [x] Match mobile menus, forms and dialogs to the shared system without touching checkouts.
 - [x] Verify transactions, products, customers, links and other internal pages.
