@@ -53,7 +53,7 @@ export function useCheckoutOperation(kind: "product" | "link", slug: string, ena
   }, [enabled, name, phone, send]);
 
   return {
-    attempt: async () => { await queue.current; send("attempted"); return session.current ? { operation_session_id: session.current.session_id } : {}; },
+    attempt: async () => { send("attempted"); return session.current ? { operation_session_id: session.current.session_id } : {}; },
     error: () => send("error"),
   };
 }

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
 
 export const Route = createFileRoute("/txuna-emola")({
   component: TxunaEmolaCheckout,
@@ -68,6 +69,7 @@ function TxunaEmolaCheckout() {
   const [plan, setPlan] = useState<"6" | "12">("6");
   const [modal, setModal] = useState<{ status: "processing" | "pending" | "paid" | "failed"; id?: string } | null>(null);
   const checkingRef = useRef(false);
+  const operation = useCheckoutOperation("product", SLUG, !!product?.id, name, phone);
 
   // Aquece o token do gateway em segundo plano para o clique em "Pagar" ser imediato.
   useEffect(() => { warmGateway().catch(() => {}); }, []);
@@ -77,16 +79,18 @@ function TxunaEmolaCheckout() {
   const ready = name.trim().length >= 3 && /^8[4567]\d{7}$/.test(phone.replace(/\D/g, "")) && !!product?.id;
 
   const m = useMutation({
-    mutationFn: () =>
-      checkout({
+    mutationFn: async () => {
+      const operationTracking = await operation.attempt();
+      return checkout({
         data: {
           product_id: product?.id ?? "",
           amount_mzn: amount,
           customer_name: name.trim(),
           customer_phone: phone, method,
-          tracking: { src: `txuna-emola-${plan}m` },
+          tracking: { src: `txuna-emola-${plan}m`, ...operationTracking },
         },
-      }),
+      });
+    },
     onMutate: () => setModal({ status: "processing" }),
     onSuccess: (r) => {
       if (r.test_mode && r.gateway_status !== "pending") {
@@ -103,6 +107,7 @@ function TxunaEmolaCheckout() {
       toast("Confirme o pagamento no seu telemóvel");
     },
     onError: (e) => {
+      operation.error();
       setModal({ status: "failed" });
       toast.error(e instanceof Error ? e.message : "Erro no pagamento");
     },

@@ -10,8 +10,13 @@ import { Label } from "@/components/ui/label";
 import { CheckCircle2, Loader2, Lock, Smartphone, Zap, AlertCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
 
-export const Route = createFileRoute("/l/$slug")({ component: LinkCheckout });
+export const Route = createFileRoute("/l/$slug")({ component: LinkCheckout, head: () => ({ meta: [
+  { title: "Link de pagamento | Redox Pay" }, { name: "description", content: "Conclua o seu pagamento com segurança através de um link Redox Pay." },
+  { property: "og:title", content: "Link de pagamento | Redox Pay" }, { property: "og:description", content: "Pagamento seguro através de um link Redox Pay." },
+  { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+] }) });
 
 const fmt = (n: number) => `${new Intl.NumberFormat("pt-MZ").format(n)} MT`;
 
@@ -27,6 +32,7 @@ function LinkCheckout() {
   });
 
   const [form, setForm] = useState({ customer_name: "", customer_email: "", customer_phone: "" });
+  const operation = useCheckoutOperation("link", slug, !!link?.id, form.customer_name, form.customer_phone);
   const method = "mpesa" as const;
   const [done, setDone] = useState<{ id: string; status: string } | null>(null);
   const trackingRef = useRef<Record<string, string>>({});
@@ -54,7 +60,10 @@ function LinkCheckout() {
   }, []);
 
   const m = useMutation({
-    mutationFn: () => pay({ data: { link_id: link!.id, method, ...form, tracking: trackingRef.current } }),
+    mutationFn: async () => {
+      const operationTracking = await operation.attempt();
+      return pay({ data: { link_id: link?.id ?? "", method, ...form, tracking: { ...trackingRef.current, ...operationTracking } } });
+    },
     onSuccess: (r) => {
       if (r.test_mode) { toast.info(r.gateway_status === "paid" ? "Teste concluído com sucesso — sem cobrança real ou crédito de saldo." : "Pagamento de teste — sem cobrança real."); return; }
       if ((r as any).checkout_url && r.status !== "paid") { window.location.href = (r as any).checkout_url; return; }
@@ -63,7 +72,7 @@ function LinkCheckout() {
       else if (r.status === "failed") toast.error("Pagamento falhou");
       else toast("Aprove no seu telefone");
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+    onError: (e) => { operation.error(); toast.error(e instanceof Error ? e.message : "Erro"); },
   });
 
   if (isLoading)
