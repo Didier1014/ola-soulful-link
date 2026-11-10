@@ -1,3 +1,8 @@
+# MozeSMS update
+
+- [ ] Securely link MozeSMS credentials and replace active SMS delivery with sender ESHOP.
+- [ ] Verify authentication and SMS delivery without exposing credentials.
+
 # Checkout operation monitoring
 
 - [x] Add seller-owned external funnels, installation code, anonymous event collection and private reports.
