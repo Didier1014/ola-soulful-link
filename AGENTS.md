@@ -7,3 +7,4 @@
 - Pagar webhooks prefer the dedicated webhook secret and fall back to the previously saved PagAja webhook secret, preserving signature validation without copying secret values.
 - App notifications send synchronously through the managed template helper; kept email tables are audit-only, and signed outcome events preserve their legacy status contract without gating sends.
 - Premium product approval is enforced by a database trigger using protected user_roles entries, never editable profile fields; automatically approved products do not request admin approval.
+- Checkout operation uses anonymous capability-protected sessions and owner-only RLS aggregates; payment outcomes come from existing non-test transactions, not browser claims, to preserve financial truth and seller privacy.

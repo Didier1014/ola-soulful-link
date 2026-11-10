@@ -29,6 +29,13 @@
       "when": 1794253753585,
       "tag": "0003_merchant_fee_default_8",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794279859215,
+      "tag": "0004_checkout_operation_monitoring",
+      "breakpoints": true
     }
   ]
 }

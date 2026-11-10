@@ -1,3 +1,9 @@
+# Checkout operation monitoring
+
+- [x] Add private seller checkout funnel, hourly traffic, source/product filters and recent activity.
+- [x] Track anonymous milestones on all public checkouts without changing payment logic or collecting field contents.
+- [x] Verify tracking and aggregation through an actual checkout visit and completed form read back in the authenticated seller view; owner-only RLS and five tests pass; desktop/mobile have no overflow or runtime errors. No charge triggered.
+
 # Dashboard redesign
 
 - [x] Restyle financial overview and navigation to match the supplied reference.

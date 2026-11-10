@@ -30,6 +30,7 @@ import { Route as AuthenticatedDashboardIntegrationLogsRouteImport } from './rou
 import { Route as AuthenticatedDashboardIntegrationsRouteImport } from './routes/_authenticated/dashboard.integrations'
 import { Route as AuthenticatedDashboardNewTransactionRouteImport } from './routes/_authenticated/dashboard.new-transaction'
 import { Route as AuthenticatedDashboardNotificationsRouteImport } from './routes/_authenticated/dashboard.notifications'
+import { Route as AuthenticatedDashboardOperationRouteImport } from './routes/_authenticated/dashboard.operation'
 import { Route as AuthenticatedDashboardPaymentLinksRouteImport } from './routes/_authenticated/dashboard.payment-links'
 import { Route as AuthenticatedDashboardProductsRouteImport } from './routes/_authenticated/dashboard.products'
 import { Route as AuthenticatedDashboardProfileRouteImport } from './routes/_authenticated/dashboard.profile'
@@ -40,6 +41,7 @@ import { Route as AuthenticatedDashboardSubscriptionsRouteImport } from './route
 import { Route as AuthenticatedDashboardTransactionsRouteImport } from './routes/_authenticated/dashboard.transactions'
 import { Route as AuthenticatedDashboardWithdrawalsRouteImport } from './routes/_authenticated/dashboard.withdrawals'
 import { Route as ApiPublicCheckPaymentStatusRouteImport } from './routes/api/public/check-payment-status'
+import { Route as ApiPublicCheckoutEventsRouteImport } from './routes/api/public/checkout-events'
 import { Route as ApiPublicCreateMerchantPaymentRouteImport } from './routes/api/public/create-merchant-payment'
 import { Route as ApiPublicPagajaWebhookRouteImport } from './routes/api/public/pagaja-webhook'
 import { Route as ApiPublicPagarWebhookRouteImport } from './routes/api/public/pagar-webhook'
@@ -170,6 +172,12 @@ const AuthenticatedDashboardNotificationsRoute =
     path: '/dashboard/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardOperationRoute =
+  AuthenticatedDashboardOperationRouteImport.update({
+    id: '/dashboard/operation',
+    path: '/dashboard/operation',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardPaymentLinksRoute =
   AuthenticatedDashboardPaymentLinksRouteImport.update({
     id: '/dashboard/payment-links',
@@ -230,6 +238,11 @@ const ApiPublicCheckPaymentStatusRoute =
     path: '/api/public/check-payment-status',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCheckoutEventsRoute = ApiPublicCheckoutEventsRouteImport.update({
+  id: '/api/public/checkout-events',
+  path: '/api/public/checkout-events',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCreateMerchantPaymentRoute =
   ApiPublicCreateMerchantPaymentRouteImport.update({
     id: '/api/public/create-merchant-payment',
@@ -334,6 +347,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
   '/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
   '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
+  '/dashboard/operation': typeof AuthenticatedDashboardOperationRoute
   '/dashboard/payment-links': typeof AuthenticatedDashboardPaymentLinksRoute
   '/dashboard/products': typeof AuthenticatedDashboardProductsRoute
   '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
@@ -344,6 +358,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/transactions': typeof AuthenticatedDashboardTransactionsRoute
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
+  '/api/public/checkout-events': typeof ApiPublicCheckoutEventsRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
   '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
@@ -381,6 +396,7 @@ export interface FileRoutesByTo {
   '/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
   '/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
   '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
+  '/dashboard/operation': typeof AuthenticatedDashboardOperationRoute
   '/dashboard/payment-links': typeof AuthenticatedDashboardPaymentLinksRoute
   '/dashboard/products': typeof AuthenticatedDashboardProductsRoute
   '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
@@ -391,6 +407,7 @@ export interface FileRoutesByTo {
   '/dashboard/transactions': typeof AuthenticatedDashboardTransactionsRoute
   '/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
+  '/api/public/checkout-events': typeof ApiPublicCheckoutEventsRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
   '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
@@ -430,6 +447,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/integrations': typeof AuthenticatedDashboardIntegrationsRoute
   '/_authenticated/dashboard/new-transaction': typeof AuthenticatedDashboardNewTransactionRoute
   '/_authenticated/dashboard/notifications': typeof AuthenticatedDashboardNotificationsRouteWithChildren
+  '/_authenticated/dashboard/operation': typeof AuthenticatedDashboardOperationRoute
   '/_authenticated/dashboard/payment-links': typeof AuthenticatedDashboardPaymentLinksRoute
   '/_authenticated/dashboard/products': typeof AuthenticatedDashboardProductsRoute
   '/_authenticated/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
@@ -440,6 +458,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/transactions': typeof AuthenticatedDashboardTransactionsRoute
   '/_authenticated/dashboard/withdrawals': typeof AuthenticatedDashboardWithdrawalsRoute
   '/api/public/check-payment-status': typeof ApiPublicCheckPaymentStatusRoute
+  '/api/public/checkout-events': typeof ApiPublicCheckoutEventsRoute
   '/api/public/create-merchant-payment': typeof ApiPublicCreateMerchantPaymentRoute
   '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
@@ -479,6 +498,7 @@ export interface FileRouteTypes {
     | '/dashboard/integrations'
     | '/dashboard/new-transaction'
     | '/dashboard/notifications'
+    | '/dashboard/operation'
     | '/dashboard/payment-links'
     | '/dashboard/products'
     | '/dashboard/profile'
@@ -489,6 +509,7 @@ export interface FileRouteTypes {
     | '/dashboard/transactions'
     | '/dashboard/withdrawals'
     | '/api/public/check-payment-status'
+    | '/api/public/checkout-events'
     | '/api/public/create-merchant-payment'
     | '/api/public/pagaja-webhook'
     | '/api/public/pagar-webhook'
@@ -526,6 +547,7 @@ export interface FileRouteTypes {
     | '/dashboard/integrations'
     | '/dashboard/new-transaction'
     | '/dashboard/notifications'
+    | '/dashboard/operation'
     | '/dashboard/payment-links'
     | '/dashboard/products'
     | '/dashboard/profile'
@@ -536,6 +558,7 @@ export interface FileRouteTypes {
     | '/dashboard/transactions'
     | '/dashboard/withdrawals'
     | '/api/public/check-payment-status'
+    | '/api/public/checkout-events'
     | '/api/public/create-merchant-payment'
     | '/api/public/pagaja-webhook'
     | '/api/public/pagar-webhook'
@@ -574,6 +597,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/integrations'
     | '/_authenticated/dashboard/new-transaction'
     | '/_authenticated/dashboard/notifications'
+    | '/_authenticated/dashboard/operation'
     | '/_authenticated/dashboard/payment-links'
     | '/_authenticated/dashboard/products'
     | '/_authenticated/dashboard/profile'
@@ -584,6 +608,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/transactions'
     | '/_authenticated/dashboard/withdrawals'
     | '/api/public/check-payment-status'
+    | '/api/public/checkout-events'
     | '/api/public/create-merchant-payment'
     | '/api/public/pagaja-webhook'
     | '/api/public/pagar-webhook'
@@ -615,6 +640,7 @@ export interface RootRouteChildren {
   CSlugRoute: typeof CSlugRoute
   LSlugRoute: typeof LSlugRoute
   ApiPublicCheckPaymentStatusRoute: typeof ApiPublicCheckPaymentStatusRoute
+  ApiPublicCheckoutEventsRoute: typeof ApiPublicCheckoutEventsRoute
   ApiPublicCreateMerchantPaymentRoute: typeof ApiPublicCreateMerchantPaymentRoute
   ApiPublicPagajaWebhookRoute: typeof ApiPublicPagajaWebhookRoute
   ApiPublicPagarWebhookRoute: typeof ApiPublicPagarWebhookRoute
@@ -778,6 +804,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard/operation': {
+      id: '/_authenticated/dashboard/operation'
+      path: '/dashboard/operation'
+      fullPath: '/dashboard/operation'
+      preLoaderRoute: typeof AuthenticatedDashboardOperationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard/payment-links': {
       id: '/_authenticated/dashboard/payment-links'
       path: '/dashboard/payment-links'
@@ -846,6 +879,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/check-payment-status'
       fullPath: '/api/public/check-payment-status'
       preLoaderRoute: typeof ApiPublicCheckPaymentStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/checkout-events': {
+      id: '/api/public/checkout-events'
+      path: '/api/public/checkout-events'
+      fullPath: '/api/public/checkout-events'
+      preLoaderRoute: typeof ApiPublicCheckoutEventsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/create-merchant-payment': {
@@ -999,6 +1039,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardIntegrationsRoute: typeof AuthenticatedDashboardIntegrationsRoute
   AuthenticatedDashboardNewTransactionRoute: typeof AuthenticatedDashboardNewTransactionRoute
   AuthenticatedDashboardNotificationsRoute: typeof AuthenticatedDashboardNotificationsRouteWithChildren
+  AuthenticatedDashboardOperationRoute: typeof AuthenticatedDashboardOperationRoute
   AuthenticatedDashboardPaymentLinksRoute: typeof AuthenticatedDashboardPaymentLinksRoute
   AuthenticatedDashboardProductsRoute: typeof AuthenticatedDashboardProductsRoute
   AuthenticatedDashboardProfileRoute: typeof AuthenticatedDashboardProfileRoute
@@ -1027,6 +1068,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedDashboardNewTransactionRoute,
   AuthenticatedDashboardNotificationsRoute:
     AuthenticatedDashboardNotificationsRouteWithChildren,
+  AuthenticatedDashboardOperationRoute: AuthenticatedDashboardOperationRoute,
   AuthenticatedDashboardPaymentLinksRoute:
     AuthenticatedDashboardPaymentLinksRoute,
   AuthenticatedDashboardProductsRoute: AuthenticatedDashboardProductsRoute,
@@ -1059,6 +1101,7 @@ const rootRouteChildren: RootRouteChildren = {
   CSlugRoute: CSlugRoute,
   LSlugRoute: LSlugRoute,
   ApiPublicCheckPaymentStatusRoute: ApiPublicCheckPaymentStatusRoute,
+  ApiPublicCheckoutEventsRoute: ApiPublicCheckoutEventsRoute,
   ApiPublicCreateMerchantPaymentRoute: ApiPublicCreateMerchantPaymentRoute,
   ApiPublicPagajaWebhookRoute: ApiPublicPagajaWebhookRoute,
   ApiPublicPagarWebhookRoute: ApiPublicPagarWebhookRoute,

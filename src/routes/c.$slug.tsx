@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Lock, ShieldCheck, AlertTriangle, Smartphone } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
 
 // Slugs com checkout personalizado próprio
 const CUSTOM_CHECKOUTS: Record<string, string> = {
@@ -19,6 +20,11 @@ const CUSTOM_CHECKOUTS: Record<string, string> = {
 };
 
 export const Route = createFileRoute("/c/$slug")({
+  head: () => ({ meta: [
+    { title: "Checkout seguro | Redox Pay" }, { name: "description", content: "Pague o seu produto com segurança na Redox Pay." },
+    { property: "og:title", content: "Checkout seguro | Redox Pay" }, { property: "og:description", content: "Pagamento seguro de produtos via Redox Pay." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+  ] }),
   beforeLoad: ({ params }) => {
     const target = CUSTOM_CHECKOUTS[params.slug];
     if (target) throw redirect({ to: target, search: { p: params.slug } });
@@ -79,6 +85,7 @@ function CheckoutPage() {
 
 
   const [form, setForm] = useState({ customer_name: "", customer_phone: "" });
+  const operation = useCheckoutOperation("product", slug, !!product?.id, form.customer_name, form.customer_phone);
   const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [selectedBumps, setSelectedBumps] = useState<Record<string, boolean>>({});
   const [modal, setModal] = useState<{ status: "processing" | "paid" | "failed" | "pending"; id?: string; delivery_url?: string | null } | null>(null);
@@ -144,7 +151,8 @@ function CheckoutPage() {
   }, [product?.pixel_id, product?.id]);
 
   const m = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
+      const operationTracking = await operation.attempt();
       const w = window as any;
       if (product?.pixel_id && w.fbq && !pixelFiredRef.current.init) {
         w.fbq("track", "InitiateCheckout", {
@@ -161,7 +169,7 @@ function CheckoutPage() {
         data: {
           product_id: product!.id, method, ...form, customer_email: "",
           amount_mzn: total,
-          tracking: { ...trackingRef.current, ...(bumpIds.length ? { order_bumps: bumpIds.join(",") } : {}) },
+          tracking: { ...trackingRef.current, ...operationTracking, ...(bumpIds.length ? { order_bumps: bumpIds.join(",") } : {}) },
         },
       });
     },
@@ -185,6 +193,7 @@ function CheckoutPage() {
       toast(r.message || "Pagamento enviado — confirme no seu telefone");
     },
     onError: (e) => {
+      operation.error();
       setModal({ status: "failed", id: undefined });
       toast.error(e instanceof Error ? e.message : "Erro");
     },
