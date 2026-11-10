@@ -1,5 +1,6 @@
 # MozeSMS update
 
+- [ ] Allow premium and admin sellers to edit automatic post-payment SMS; enforce roles, connect delivery and verify saving.
 - [x] Securely linked MozeSMS and replaced all shared SMS delivery with sender ESHOP; authentication succeeds and adapter tests/build pass.
 - [ ] Confirm real SMS delivery; awaiting the user's chosen test recipient (no message sent to an inferred number).
 
