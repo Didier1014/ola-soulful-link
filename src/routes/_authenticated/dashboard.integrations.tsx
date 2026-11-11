@@ -104,6 +104,15 @@ function IntegrationsPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
   });
 
+  const saveSmsM = useMutation({
+    mutationFn: () => saveBundle({ data: { ...b, push_custom: { ...b.push_custom, body: "{valor}" } } }),
+    onSuccess: () => {
+      toast.success("Mensagem SMS guardada");
+      qc.invalidateQueries({ queryKey: ["bundle"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível guardar a mensagem SMS"),
+  });
+
   async function activatePush() {
     if (typeof window === "undefined" || !("Notification" in window)) {
       toast.error("Notificações não suportadas neste browser"); return;
@@ -331,6 +340,7 @@ function IntegrationsPage() {
         iconBg="from-emerald-500 to-teal-500"
         title="MozeSMS"
         desc="SMS automático para o cliente após pagamento aprovado"
+        alwaysShowSettings
         enabled={!!b.mozesms.enabled}
         onToggle={(v) => setB({ ...b, mozesms: { ...b.mozesms, enabled: v } })}
       >
@@ -346,6 +356,9 @@ function IntegrationsPage() {
             <Button variant="ghost" size="sm" onClick={() => setB({ ...b, mozesms: { ...b.mozesms, template: "" } })}>Restaurar padrão</Button>
           </div>
           <p className="text-xs text-muted-foreground font-mono break-words">{"{nome} · {produto} · {valor} · {link} · {suporte1} · {suporte2} · {suporte3}"}</p>
+          <Button disabled={saveSmsM.isPending || saveM.isPending} onClick={() => saveSmsM.mutate()}>
+            <Save className="h-4 w-4 mr-2" /> {saveSmsM.isPending ? "A guardar..." : "Guardar mensagem SMS"}
+          </Button>
         </> : <p className="text-xs text-muted-foreground">Personalização disponível para administradores e utilizadores premium.</p>}
         <div className="border-l-2 border-primary pl-3 space-y-1">
           <p className="text-xs font-medium text-muted-foreground">Pré-visualização</p>
@@ -440,9 +453,10 @@ function SectionTitle({ icon, title, desc }: { icon: React.ReactNode; title: str
 }
 
 function IntegrationCard({
-  icon, iconBg, title, desc, enabled, onToggle, children,
+  icon, iconBg, title, desc, enabled, onToggle, children, alwaysShowSettings = false,
 }: {
   icon: React.ReactNode; iconBg: string; title: string; desc: string;
+  alwaysShowSettings?: boolean;
   enabled: boolean; onToggle: (v: boolean) => void; children: React.ReactNode;
 }) {
   const bgClass = iconBg.startsWith("bg-") ? iconBg : `bg-gradient-to-br ${iconBg}`;
@@ -464,7 +478,7 @@ function IntegrationCard({
         </div>
         <Switch checked={enabled} onCheckedChange={onToggle} />
       </div>
-      {enabled && <div className="space-y-2 pt-3 border-t border-border/40">{children}</div>}
+      {(enabled || alwaysShowSettings) && <div className="space-y-2 pt-3 border-t border-border/40">{children}</div>}
     </Card>
   );
 }
