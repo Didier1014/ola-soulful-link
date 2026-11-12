@@ -1,3 +1,8 @@
+# Return to Pagar
+
+- [x] Route new checkout, payment-link and merchant charges to Pagar using existing protected credentials; preserve pending VendusPay reconciliation, prices and fees.
+- [ ] Verify adapter tests, preview and saved Pagar authentication; no real buyer charge without a chosen recipient.
+
 # MozeSMS update
 
 - [x] Keep the SMS editor visible when sending is disabled; dedicated message save/reload verified in the authenticated account, original settings restored without sending SMS; six tests pass.
