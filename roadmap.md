@@ -1,7 +1,8 @@
 # Return to Pagar
 
 - [x] Route new checkout, payment-link and merchant charges to Pagar using existing protected credentials; preserve pending VendusPay reconciliation, prices and fees.
-- [ ] Verify adapter tests, preview and saved Pagar authentication; no real buyer charge without a chosen recipient.
+- [x] Fifteen payment tests pass; saved credentials authenticate as LIVE, signed non-chargeable validation returns 400 VALIDATION_ERROR (not signature rejection), preview checkout renders without runtime errors and unsigned webhook returns 401.
+- [ ] Confirm a real payment and signed callback after publication; requires a buyer-selected phone and authorization, no real charge triggered.
 
 # MozeSMS update
 
@@ -42,7 +43,7 @@
 - [x] Replace active VPay creation with Pagar direct C2B for checkouts, payment links and merchant payments; preserve prices and fees and exclude TEST operations from paid sales and balance credit.
 - [x] Add timestamped Pagar webhook signature verification and atomic LIVE settlement.
 - [x] Reuse the stored PAGAJA_WHSEC for Pagar webhook verification when PAGAR_WEBHOOK_SECRET is absent; provider delivery still needs validation.
-- [ ] Complete end-to-end payment tests; the current client and an independent copy of the official signing example both return API_SIGNATURE_INVALID after the LIVE update (request IDs req-epoh and req-epoo). Blocked on Pagar accepting a matching signing secret for this LIVE app; no real charge was triggered.
+- [ ] Complete end-to-end payment tests; LIVE authentication and signed requests now pass validation, but a real payment requires buyer authorization and a signed callback after publication.
 - [x] Pass local test-mode credit guards and webhook signature tests; validate preview compilation.
 - [x] New LIVE credentials saved via secure form: signed POST /payments now returns 202 with environment LIVE (previously 401 API_SIGNATURE_INVALID).
 
