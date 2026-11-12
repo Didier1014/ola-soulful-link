@@ -98,7 +98,7 @@ export const createCheckout = createServerFn({ method: "POST" })
     }).select().single();
     if (tErr) throw new Error(tErr.message);
 
-    // Inicia cobrança na NetShop (M-Pesa)
+    // Inicia cobrança no gateway ativo (Pagar).
     let gatewayPaid = false;
     let checkoutUrl: string | undefined;
     let testMode = false;
@@ -118,7 +118,7 @@ export const createCheckout = createServerFn({ method: "POST" })
       testMode = r.test_mode;
       gatewayStatus = r.status;
       await supabaseAdmin.from("transactions").update({ external_ref: r.reference,
-        metadata: { ...(tx.metadata ?? {}), gateway: r.gateway ?? "venduspay", test_mode: r.test_mode, gateway_status: r.status },
+        metadata: { ...(tx.metadata ?? {}), gateway: r.gateway ?? "pagar", test_mode: r.test_mode, gateway_status: r.status },
         ...(r.test_mode && r.status !== "pending" ? { status: "failed" } : {}),
       }).eq("id", tx.id);
       gatewayPaid = r.paid;

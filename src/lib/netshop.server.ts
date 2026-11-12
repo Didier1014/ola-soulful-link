@@ -1,6 +1,6 @@
-// Compatibility adapter: new payments use VendusPay push; legacy Pagar refs (pay_) are still reconciled.
-import { pagarPayment, paymentState } from "./pagar.server";
-import { vendusPush, vendusStatus, validateVendusCredentials } from "./venduspay.server";
+// Compatibility adapter: new payments use Pagar; pending VendusPay references remain reconcilable.
+import { pagarPayment, pagarRequest, paymentState } from "./pagar.server";
+import { vendusStatus } from "./venduspay.server";
 export type NetshopMethod = "mpesa" | "emola" | "mkesh" | "card";
 export function normalizePhone(raw: string) {
   let n = String(raw || "").replace(/\D/g, "");
@@ -25,10 +25,22 @@ export async function netshopCharge(input: NetshopChargeInput): Promise<NetshopC
   if (method !== "mpesa" && method !== "emola") throw new Error("Pagamentos aceites: M-Pesa e e-Mola");
   if (method === "mpesa" && !/^8[45]\d{7}$/.test(phone)) throw new Error("Para M-Pesa use um número 84 ou 85 (9 dígitos)");
   if (method === "emola" && !/^8[67]\d{7}$/.test(phone)) throw new Error("Para e-Mola use um número 86 ou 87 (9 dígitos)");
-  if (!(input.amount >= 10) || input.amount > 1_000_000) throw new Error("Valor mínimo é 10 MT");
-  const r = await vendusPush({ amount: input.amount, method, phone });
-  return { reference: r.reference, status: r.status, test_mode: false, paid: r.status === "paid",
-    gateway: "venduspay", failed_reason: "Pagamento não concluído" };
+  if (!Number.isInteger(input.amount) || input.amount < 20 || input.amount > 40_000) throw new Error("A Pagar aceita valores inteiros entre 20 e 40 000 MT");
+  if (input.currency && input.currency !== "MZN") throw new Error("A Pagar aceita pagamentos em MZN");
+  const operationKey = input.idempotencyKey || crypto.randomUUID();
+  const result = await pagarRequest("/payments", {
+    reference: operationKey,
+    title: input.description || "Pagamento RedoxPay",
+    description: input.description || "Pagamento RedoxPay",
+    amountMzn: input.amount,
+    method: method.toUpperCase(),
+    payerPhone: phone,
+  }, operationKey);
+  const payment = result.payment;
+  if (!payment?.id || !/^pay_[A-Za-z0-9_-]+$/.test(payment.id) || !["LIVE", "TEST"].includes(payment.environment) || Number(payment.amountMzn) !== input.amount || typeof payment.status !== "string") throw new Error("Resposta inválida da Pagar");
+  const state = paymentState(payment);
+  return { reference: payment.id, status: state.status, test_mode: state.test_mode, paid: state.canCredit,
+    gateway: "pagar", failed_reason: payment.safeMessage || "Pagamento não concluído" };
 }
 export async function netshopCheck(reference: string): Promise<"paid" | "pending" | "failed"> {
   try {
@@ -41,10 +53,11 @@ export async function netshopCheck(reference: string): Promise<"paid" | "pending
 }
 export async function netshopStatus() {
   const t0 = Date.now();
-  const key = process.env.VENDUSPAY_API_KEY;
-  if (!key) return { ok: false, configured: false, latency_ms: 0, message: "VendusPay não configurada" };
+  const key = process.env.PAGAR_API_KEY;
+  const secret = process.env.PAGAR_SIGNING_SECRET;
+  if (!key || !secret) return { ok: false, configured: false, latency_ms: 0, message: "Pagar não configurada" };
   try {
-    const v = await validateVendusCredentials(key, process.env.VENDUSPAY_CLIENT_ID);
-    return { ok: v.connected, configured: true, environment: "LIVE", latency_ms: Date.now() - t0, message: v.message };
-  } catch { return { ok: false, configured: true, latency_ms: Date.now() - t0, message: "Não foi possível contactar a VendusPay" }; }
+    const wallet = await pagarRequest("/wallet");
+    return { ok: true, configured: true, environment: wallet.environment ?? wallet.wallet?.environment, latency_ms: Date.now() - t0, message: "Pagar ligada" };
+  } catch { return { ok: false, configured: true, latency_ms: Date.now() - t0, message: "Não foi possível contactar a Pagar" }; }
 }
