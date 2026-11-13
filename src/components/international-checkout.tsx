@@ -82,7 +82,7 @@ export function InternationalCheckout({ product }: { product: Product }) {
         <div className="flex justify-center gap-4 items-center mb-6"><span className="international-card-brand font-bold italic">VISA</span><span className="international-card-brand font-semibold">Mastercard</span></div>
         <div className="grid grid-cols-2 gap-4 text-muted-foreground text-sm"><div><ShieldCheck className="size-5 text-success mx-auto mb-2" />{t.secure}</div><div><Lock className="size-5 text-primary mx-auto mb-2" />{t.encrypted}</div></div>
       </section>
-      <footer className="flex justify-center items-center gap-2 text-muted-foreground text-sm pt-8"><Lock className="size-4" />Checkout por <strong className="text-foreground">Redox Pay</strong></footer>
+      <footer className="flex justify-center items-center gap-2 text-muted-foreground text-sm pt-8"><Lock className="size-4" />{t.checkoutBy} <strong className="text-foreground">Redox Pay</strong></footer>
     </div>
   </div>;
 }
