@@ -1,3 +1,9 @@
+# Bug review and email verification
+
+- [x] All 55 regression tests pass using their appropriate runners; authenticated overview, transactions, products and Operation load without runtime errors. MT/ZAR/USD switching and actual 10 ZAR sale read back; mobile has no overflow. All nine email templates render HTTP 200 and preview build is OK. No application bug reproduced in the checked flows.
+- [x] Enable managed project emails; sender domain remains verifying DNS.
+- [ ] Test actual app-email delivery after sender verification; blocked by pending DNS verification, not an application queue.
+
 # Multi-currency SaaS and international checkout
 
 - [x] Add product checkout language (Portuguese, English, Spanish, French and automatic) and approximate edge visitor country, shown in Operation; no currency or price changes.
