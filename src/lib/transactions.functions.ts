@@ -2,6 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireNationalProduct } from "./checkout-currency";
 
 export const checkApiStatus = createServerFn({ method: "GET" }).handler(async () => {
   const { netshopStatus } = await import("@/lib/netshop.server");
@@ -70,10 +71,11 @@ export const createCheckout = createServerFn({ method: "POST" })
 
     const { data: product, error: pErr } = await supabaseAdmin
       .from("products")
-      .select("id,user_id,price_mzn,active,name,delivery_url")
+      .select("id,user_id,price_mzn,active,name,delivery_url,checkout_provider")
       .eq("id", data.product_id).maybeSingle();
     if (pErr) throw new Error(pErr.message);
     if (!product || !product.active) throw new Error("Produto indisponível");
+    requireNationalProduct(product);
 
     const amount = data.amount_mzn ?? Number(product.price_mzn);
     if (amount < 50) throw new Error("Valor mínimo é 50 MT");
