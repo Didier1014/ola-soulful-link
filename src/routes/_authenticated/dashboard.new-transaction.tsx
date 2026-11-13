@@ -1,3 +1,5 @@
+import { pageHead } from "@/lib/page-head";
+import { NationalOnly } from "@/components/workspace-currency";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -11,7 +13,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard/new-transaction")({
-  component: NewTransactionPage,
+  head: () => pageHead('Nova transação', 'Consulte nova transação na Redox Pay com segurança.'),
+  component: () => <NationalOnly label="Cobranças nacionais"><NewTransactionPage /></NationalOnly>,
 });
 
 function fmtMT(n: number) {
@@ -22,8 +25,9 @@ function NewTransactionPage() {
   const router = useRouter();
   const fetchList = useServerFn(listMyProducts);
   const charge = useServerFn(createCheckout);
-  const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: () => fetchList() });
+  const { data: allProducts = [] } = useQuery({ queryKey: ["products"], queryFn: () => fetchList() });
 
+  const products = allProducts.filter(product => (product.currency ?? "MZN") === "MZN");
   const method = "mpesa" as const;
   const [phone, setPhone] = useState("258");
   const [name, setName] = useState("");
@@ -110,7 +114,7 @@ function NewTransactionPage() {
           <div className="flex justify-between text-sm border-t border-border mt-2 pt-2">
             <span>Líquido para o vendedor</span>
             <span className="font-semibold text-emerald-400">
-              {fmtMT(Math.round(displayAmount * 0.85 * 100) / 100)}
+              {fmtMT(Math.round(displayAmount * 0.92 * 100) / 100)}
             </span>
           </div>
         </Card>

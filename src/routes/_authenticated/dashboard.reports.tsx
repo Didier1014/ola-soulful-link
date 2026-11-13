@@ -1,7 +1,10 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { getDashboardStats, listMyTransactions } from "@/lib/transactions.functions";
+import { useWorkspaceCurrency, useWorkspaceFinance } from "@/components/workspace-currency";
+import { currencyLabel } from "@/lib/workspace-currency";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useMemo, useState } from "react";
 import {
@@ -14,6 +17,7 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/dashboard/reports")({
+  head: () => pageHead('Relatórios por moeda', 'Consulte relatórios por moeda na Redox Pay com segurança.'),
   component: ReportsPage,
 });
 
@@ -30,17 +34,17 @@ const PERIODS = [
 
 type PeriodId = typeof PERIODS[number]["id"];
 
-const MPESA_COLOR = "hsl(158 76% 45%)";
-const EMOLA_COLOR = "hsl(38 95% 55%)";
+const MPESA_COLOR = "var(--success)";
+const EMOLA_COLOR = "var(--dash-amber)";
 
 function ReportsPage() {
-  const fetchStats = useServerFn(getDashboardStats);
-  const fetchTx = useServerFn(listMyTransactions);
-  const { data: stats } = useQuery({ queryKey: ["stats"], queryFn: () => fetchStats() });
-  const { data: txs = [] } = useQuery({ queryKey: ["tx"], queryFn: () => fetchTx() });
+  const { currency } = useWorkspaceCurrency();
+  const unit = currencyLabel(currency);
+  const { data: finance } = useWorkspaceFinance();
+  const txs = (finance?.payments ?? []).map(row => ({ ...row, amount_mzn: row.amount, net_mzn: row.net }));
   const [period, setPeriod] = useState<PeriodId>("30");
 
-  const days = PERIODS.find((p) => p.id === period)!.days;
+  const days = (PERIODS.find((p) => p.id === period)?.days ?? 30);
 
   const filtered = useMemo(() => {
     const cutoff = Date.now() - days * 86400_000;
@@ -52,7 +56,7 @@ function ReportsPage() {
   const liquid = paid.reduce((s, t) => s + Number(t.net_mzn ?? t.amount_mzn), 0);
   const conv = filtered.length ? Math.round((paid.length / filtered.length) * 1000) / 10 : 0;
   const ticket = paid.length ? Math.round(totalVol / paid.length) : 0;
-  const mpesa = paid.filter((t) => t.method === "mpesa");
+  const mpesa = paid.filter((t) => (t.method === "mpesa" || t.method === "card"));
   const emola = paid.filter((t) => t.method === "emola");
   const mpesaSum = mpesa.reduce((s, t) => s + Number(t.amount_mzn), 0);
   const emolaSum = emola.reduce((s, t) => s + Number(t.amount_mzn), 0);
@@ -78,7 +82,7 @@ function ReportsPage() {
       <div className="flex items-end justify-between px-1">
         <div>
           <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground flex items-center gap-2 font-mono">
-            <span className="neo-live-dot" /> RELATÓRIOS · {PERIODS.find((p) => p.id === period)!.label}
+            <span className="neo-live-dot" /> RELATÓRIOS · {PERIODS.find((p) => p.id === period)?.label}
           </p>
           <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mt-1.5">
             <span className="text-muted-foreground font-mono text-sm mr-2">//</span>Análise
@@ -89,7 +93,7 @@ function ReportsPage() {
       {/* Period selector */}
       <Card className="rounded-2xl neo-card p-2 flex items-center gap-1.5 flex-wrap">
         {PERIODS.map((p) => (
-          <button
+          <Button
             key={p.id}
             onClick={() => setPeriod(p.id)}
             className={`shrink-0 px-4 h-9 rounded-xl text-xs font-mono uppercase tracking-wider transition-all ${
@@ -99,19 +103,19 @@ function ReportsPage() {
             }`}
           >
             {p.label}
-          </button>
+          </Button>
         ))}
-        <button className="ml-auto shrink-0 px-3 h-9 rounded-xl text-xs font-mono border border-white/10 bg-white/5 hover:bg-white/10 flex items-center gap-1.5">
+        <Button onClick={() => { const csv = ["referencia;moeda;valor;taxa;liquido;estado;data", ...filtered.map(t => [t.external_ref || t.id, currency, t.amount, t.fee, t.net, t.status, t.created_at].join(";"))].join("\n"); const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); const link = document.createElement("a"); link.href = url; link.download = `redox-${currency}-relatorio.csv`; link.click(); URL.revokeObjectURL(url); }} className="ml-auto shrink-0 px-3 h-9 rounded-xl text-xs font-mono border border-white/10 bg-white/5 hover:bg-white/10 flex items-center gap-1.5">
           <Download className="h-3.5 w-3.5" /> EXPORT
-        </button>
+        </Button>
       </Card>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard icon={CircleDollarSign} label="Volume" value={`${fmt(totalVol)} MT`} delta={deltaVol} />
-        <StatCard icon={ShoppingBag} label="Receita líq." value={`${fmt(liquid)} MT`} delta={deltaLiq} />
+        <StatCard icon={CircleDollarSign} label="Volume" value={`${fmt(totalVol)} ${unit}`} delta={deltaVol} />
+        <StatCard icon={ShoppingBag} label={currency === "MZN" ? "Receita líq." : "Líquido contabilístico"} value={`${liquid.toFixed(2)} ${unit}`} delta={deltaLiq} />
         <StatCard icon={CheckCircle2} label="Conversão" value={`${conv}%`} delta={deltaConv} />
-        <StatCard icon={Tag} label="Ticket médio" value={`${fmt(ticket)} MT`} delta={deltaTicket} />
+        <StatCard icon={Tag} label="Ticket médio" value={`${fmt(ticket)} ${unit}`} delta={deltaTicket} />
       </div>
 
       {/* Main chart */}
@@ -127,11 +131,11 @@ function ReportsPage() {
           <div className="flex items-center gap-4 text-xs font-mono">
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full" style={{ background: MPESA_COLOR, boxShadow: `0 0 8px ${MPESA_COLOR}` }} />
-              M-PESA
+              {currency === "MZN" ? "M-PESA" : "CARTÃO"}
             </span>
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full" style={{ background: EMOLA_COLOR, boxShadow: `0 0 8px ${EMOLA_COLOR}` }} />
-              E-MOLA
+              {currency === "MZN" ? "E-MOLA" : ""}
             </span>
           </div>
         </div>
@@ -151,7 +155,7 @@ function ReportsPage() {
               <CartesianGrid stroke="hsl(var(--border))" strokeOpacity={0.15} vertical={false} />
               <XAxis dataKey="label" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "monospace" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "monospace" }} axisLine={false} tickLine={false} width={50} tickFormatter={(v) => fmt(v)} />
-              <Tooltip content={<HudTooltip />} />
+              <Tooltip content={<HudTooltip suffix={unit} />} />
               <Area type="monotone" dataKey="mpesa" stroke={MPESA_COLOR} strokeWidth={2} fill="url(#gMpesa)" />
               <Area type="monotone" dataKey="emola" stroke={EMOLA_COLOR} strokeWidth={2} fill="url(#gEmola)" />
             </AreaChart>
@@ -168,7 +172,7 @@ function ReportsPage() {
               <ResponsiveContainer>
                 <PieChart>
                   <Pie data={[
-                    { name: "M-Pesa", value: mpesaSum },
+                    { name: currency === "MZN" ? "M-Pesa" : "Cartão", value: mpesaSum },
                     { name: "e-Mola", value: emolaSum },
                   ]} innerRadius={58} outerRadius={82} paddingAngle={2} dataKey="value" stroke="none">
                     <Cell fill={MPESA_COLOR} />
@@ -179,12 +183,12 @@ function ReportsPage() {
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">Volume</p>
                 <p className="text-xl font-semibold tabular-nums text-neo-glow">{fmt(mpesaSum + emolaSum)}</p>
-                <p className="text-[9px] font-mono text-muted-foreground">MZN</p>
+                <p className="text-[9px] font-mono text-muted-foreground">{unit}</p>
               </div>
             </div>
             <div className="flex-1 space-y-3 text-sm">
-              <LegendRow color={MPESA_COLOR} label="M-Pesa" value={mpesaSum} total={mpesaSum + emolaSum} count={mpesa.length} />
-              <LegendRow color={EMOLA_COLOR} label="e-Mola" value={emolaSum} total={mpesaSum + emolaSum} count={emola.length} />
+              <LegendRow color={MPESA_COLOR} label={currency === "MZN" ? "M-Pesa" : "Cartão"} value={mpesaSum} total={mpesaSum + emolaSum} count={mpesa.length} />
+              <LegendRow color={EMOLA_COLOR} label={currency === "MZN" ? "e-Mola" : "Outros"} value={emolaSum} total={mpesaSum + emolaSum} count={emola.length} />
             </div>
           </div>
         </Card>
@@ -294,7 +298,7 @@ function buildSeries(paid: { created_at: string; amount_mzn: number; method: str
         : pd.toDateString() === d.toDateString();
     });
 
-    const mp = inBucket.filter((p) => p.method === "mpesa");
+    const mp = inBucket.filter((p) => (p.method === "mpesa" || p.method === "card"));
     const em = inBucket.filter((p) => p.method === "emola");
     out.push({
       label,

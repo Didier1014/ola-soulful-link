@@ -12,10 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Code, Copy, Pencil, RefreshCw, Download, Globe, Users, Play, FileCheck } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { toast } from "sonner";
+import { useWorkspaceCurrency } from "@/components/workspace-currency";
+import type { WorkspaceCurrency } from "@/lib/workspace-currency";
 
 export const funnelsQuery = () => queryOptions({ queryKey: ["external-funnels"], queryFn: () => listFunnels() });
 type Funnel = Awaited<ReturnType<typeof listFunnels>>[number];
-const reportQuery = (id: string, hours: number) => queryOptions({ queryKey: ["funnel-report", id, hours], queryFn: () => getFunnelReport({ data: { id, hours: hours as 24 | 168 | 720 } }), refetchInterval: 30000 });
+const reportQuery = (id: string, hours: number, currency: WorkspaceCurrency) => queryOptions({ queryKey: ["funnel-report", id, hours, currency], queryFn: () => getFunnelReport({ data: { id, hours: hours as 24 | 168 | 720, currency } }), refetchInterval: 30000 });
 export function FunnelOperation({ hours }: { hours: number }) {
   const { data: funnels } = useSuspenseQuery(funnelsQuery());
   const [selected, setSelected] = useState("");
@@ -43,7 +45,8 @@ export function FunnelOperation({ hours }: { hours: number }) {
 }
 function Snippet({text}:{text:string}) {return <div className="relative min-w-0"><pre className="bg-secondary border border-border rounded-md p-4 pr-12 text-xs overflow-x-auto whitespace-pre-wrap break-all">{text}</pre><Button variant="ghost" size="icon" className="absolute top-1 right-1" aria-label="Copiar código" title="Copiar código" onClick={async()=>{try{await navigator.clipboard.writeText(text);toast.success("Código copiado.");}catch{toast.error("Não foi possível copiar.");}}}><Copy className="size-4"/></Button></div>;}
 function FunnelResults({funnel,hours}:{funnel:Funnel;hours:number}) {
-  const {data,refetch,isFetching}=useSuspenseQuery(reportQuery(funnel.id,hours));
+  const { currency } = useWorkspaceCurrency();
+  const {data,refetch,isFetching}=useSuspenseQuery(reportQuery(funnel.id,hours,currency));
   const n=(event:string)=>data.counts.find(c=>c.event===event)?.leads || 0;
   const steps=(funnel.steps as {name:string;path:string}[]) || [];
   function exportCsv(){const esc=(v:unknown)=>`"${String(v).replace(/^[=+@-]/,"'").replaceAll('"','""')}"`;const rows=[["Sessão","Evento","Página","Etiqueta","Valor","Origem","Data"],...data.recent.map(e=>[e.session_id,e.event,e.path,e.label,e.value,e.source,e.created_at])];const url=URL.createObjectURL(new Blob(["\uFEFF"+rows.map(r=>r.map(esc).join(";")).join("\n")],{type:"text/csv"}));const a=document.createElement("a");a.href=url;a.download="redox-funil.csv";a.click();URL.revokeObjectURL(url);}

@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -24,8 +25,11 @@ import {
   Radar, Globe, Link2,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useWorkspaceCurrency } from "@/components/workspace-currency";
+import { InternationalFinance } from "@/components/international-finance";
 
-export const Route = createFileRoute("/_authenticated/dashboard/admin")({ component: AdminPage });
+export const Route = createFileRoute("/_authenticated/dashboard/admin")({
+  head: () => pageHead('Administração', 'Consulte administração na Redox Pay com segurança.'), component: AdminPage });
 
 const fmt = (n: number) => new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(n);
 const fmtMT = (n: number) => `${fmt(n)} MT`;
@@ -35,6 +39,7 @@ const RUBY = "#e11d48";
 type Tab = "overview" | "users" | "transactions" | "withdrawals" | "products" | "approvals" | "monitor" | "merchants";
 
 function AdminPage() {
+  const { currency } = useWorkspaceCurrency();
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("overview");
   const [search, setSearch] = useState("");
@@ -193,6 +198,7 @@ function AdminPage() {
   }
 
   const d = overview.data;
+  if (currency !== "MZN") return <InternationalFinance admin />;
 
   return (
     <div className="flex flex-col lg:flex-row gap-4">

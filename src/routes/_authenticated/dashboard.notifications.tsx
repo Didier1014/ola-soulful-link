@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { pageHead } from "@/lib/page-head";
 import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -11,6 +12,7 @@ import { CheckCheck, Settings2, Bell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard/notifications")({
+  head: () => pageHead('Notificações', 'Consulte notificações na Redox Pay com segurança.'),
   component: NotificationsPage,
 });
 

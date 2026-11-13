@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/dashboard/integration-logs")({
+  head: () => pageHead('Registos de integrações', 'Consulte registos de integrações na Redox Pay com segurança.'),
   component: IntegrationLogsPage,
   errorComponent: ({ error }) => <div className="p-6 text-sm text-red-500">{String(error)}</div>,
   notFoundComponent: () => <div className="p-6">Not found</div>,

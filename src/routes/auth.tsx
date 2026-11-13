@@ -13,6 +13,10 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { title: "Entrar — Redox Pay" },
       { name: "description", content: "Acesse o seu painel Redox Pay." },
+      { property: "og:title", content: "Entrar — Redox Pay" },
+      { property: "og:description", content: "Acesse o seu painel Redox Pay." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,

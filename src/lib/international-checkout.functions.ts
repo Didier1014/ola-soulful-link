@@ -5,7 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { internationalAmounts, verifiedInternationalState } from "./checkout-currency";
 
 export const initializeInternationalCheckout = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => z.object({ product_id: z.string().uuid(), name: z.string().trim().min(2).max(120), email: z.string().trim().email().max(160) }).parse(input))
+  .inputValidator((input: unknown) => z.object({ product_id: z.string().uuid(), name: z.string().trim().min(2).max(120), email: z.string().trim().email().max(160), operation_session_id: z.string().uuid().optional(), operation_token: z.string().regex(/^[a-f0-9]{64}$/).optional() }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { paystackRequest, capabilityHash } = await import("./paystack.server");
@@ -15,7 +15,12 @@ export const initializeInternationalCheckout = createServerFn({ method: "POST" }
     const amounts = internationalAmounts(Number(product.price_amount));
     const reference = `rdx-${crypto.randomUUID()}`;
     const capability = `${crypto.randomUUID()}${crypto.randomUUID()}`;
-    const { error: insertError } = await supabaseAdmin.from("international_payments").insert({ user_id: product.user_id, product_id: product.id, reference, capability_hash: await capabilityHash(capability), currency: "ZAR", amount_minor: amounts.amount_minor, fee_minor: amounts.fee_minor });
+    let checkoutSessionId: string | null = null;
+    if (data.operation_session_id && data.operation_token) {
+      const { data: session } = await supabaseAdmin.from("checkout_sessions").select("id").eq("id", data.operation_session_id).eq("user_id", product.user_id).eq("product_id", product.id).eq("token_hash", await capabilityHash(data.operation_token)).maybeSingle();
+      checkoutSessionId = session?.id ?? null;
+    }
+    const { error: insertError } = await supabaseAdmin.from("international_payments").insert({ user_id: product.user_id, product_id: product.id, reference, capability_hash: await capabilityHash(capability), currency: "ZAR", amount_minor: amounts.amount_minor, fee_minor: amounts.fee_minor, customer_name: data.name, customer_email: data.email, checkout_session_id: checkoutSessionId });
     if (insertError) throw new Error(insertError.message);
     const origin = new URL(getRequest().url).origin;
     let initialized;

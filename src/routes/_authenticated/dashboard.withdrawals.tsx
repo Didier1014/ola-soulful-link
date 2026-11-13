@@ -1,4 +1,6 @@
 // @ts-nocheck
+import { pageHead } from "@/lib/page-head";
+import { NationalOnly } from "@/components/workspace-currency";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -14,7 +16,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Wallet, Clock, CheckCircle2, XCircle, Loader2, History } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/withdrawals")({
-  component: WdPage,
+  head: () => pageHead('Saques em MT', 'Consulte saques em mt na Redox Pay com segurança.'),
+  component: () => <NationalOnly label="Saques"><WdPage /></NationalOnly>,
 });
 
 const fmt = (n: number) => `${new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(n)} MT`;

@@ -1,3 +1,10 @@
+# Multi-currency SaaS and international checkout
+
+- [x] Add persistent workspace currency selection and separate financial views for MT, ZAR, USD and EUR without conversion or balance mixing; Stripe stays unavailable.
+- [x] Include international payments in overview, transactions, reports, products, customers, links and admin; scope operation and funnel checkout conversions by currency and keep national-only operations isolated.
+- [x] Match the supplied Velqo checkout reference with Redox identity while preserving hosted secure card entry.
+- [x] Verify actual confirmed 10 ZAR sale in authenticated views, currency switching, and desktop/mobile checkout without a new charge; 16 tests pass. Existing withdrawals live-update warning remains unrelated; delivery emails deferred by the user.
+
 # International product checkouts
 
 - [x] Apply the approved global Paystack split to every new initialization; eleven tests pass and actual server adapter initialization is accepted without charging a card. The verified LIVE ZAR split allocates 100% to its recipient, as explicitly approved.

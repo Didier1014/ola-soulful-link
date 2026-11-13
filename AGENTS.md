@@ -5,6 +5,8 @@
 
 - Scope the professional SaaS visual system to the authenticated shell and its portals; public checkouts must remain visually isolated.
 - Dashboard visualizations consume existing transaction and stats functions; presentation changes must not alter payment or balance logic.
+- Workspace currency selection scopes read-only finance and activity views to one ledger currency; never converts or mixes amounts, and international provider receipts must not be presented as a withdrawable national balance. Privileged finance reads verify protected roles before loading the admin client.
+- International checkout analytics link payments only to matching owner/product sessions with verified capabilities; anonymous analytics never receive buyer field contents. Leaf routes own page metadata through a shared helper.
 - All authenticated pages use the full desktop workspace width through the shared shell and page-wrapper CSS, with aligned header gutters; modal and individual control widths remain independent.
 - Active payments use the Pagar server-only client through the legacy adapter; pending VendusPay references stay reconcilable and TEST operations never settle as real sales.
 - Product checkout currency/provider combinations are validated centrally; international products have zero legacy MZN price to prevent national callers from charging foreign prices as MT.

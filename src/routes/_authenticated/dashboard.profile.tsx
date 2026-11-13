@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +14,8 @@ import { toast } from "sonner";
 import { useRouter } from "@tanstack/react-router";
 import { getCurrencyPref, updateUserPreferences, type Currency } from "@/lib/notifications.functions";
 
-export const Route = createFileRoute("/_authenticated/dashboard/profile")({ component: Page });
+export const Route = createFileRoute("/_authenticated/dashboard/profile")({
+  head: () => pageHead('Meu perfil', 'Consulte meu perfil na Redox Pay com segurança.'), component: Page });
 
 function Page() {
   const router = useRouter();
