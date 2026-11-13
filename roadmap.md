@@ -1,8 +1,8 @@
 # Reference checkout style
 
-- [ ] Add a selectable reference-inspired checkout style while preserving normal checkouts and payment verification.
-- [ ] Apply the style only to the requested owner/product, preserving its photo and 599 ZAR price.
-- [ ] Verify public desktop/mobile checkout and saved product style in the authenticated editor without a charge.
+- [x] Add selectable normal/offer checkout styles with isolated black/gold presentation and existing national/international payment verification.
+- [x] Apply offer style only to front-q6b for the specified owner; original photo, English language and 599 ZAR price preserved.
+- [x] Desktop/mobile photo, price and valid form verified without charging; authenticated style selection saved/read back using a temporary product, then removed. Fifteen style/language/currency tests pass; build OK. Publication required; no real purchase performed.
 
 # Paystack credential replacement
 
