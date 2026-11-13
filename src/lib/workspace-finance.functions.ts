@@ -21,7 +21,7 @@ export const getWorkspaceFinance = createServerFn({ method: "GET" })
       for (let offset = 0; ; offset += 1000) { const result = await query.range(offset, offset + 999); if (result.error) throw new Error("Não foi possível carregar o histórico financeiro"); rows.push(...(result.data ?? [])); if ((result.data?.length ?? 0) < 1000) break; }
       return { data: rows, error: null };
     }
-    let withdrawalQuery = client.from("withdrawals").select("id,amount_mzn,status,created_at").eq("status", "approved");
+    let withdrawalQuery = client.from("withdrawals").select("id,amount_mzn,status,created_at").eq("status", "paid");
     if (!data.admin) withdrawalQuery = withdrawalQuery.eq("user_id", context.userId);
     const [national, international, profile, withdrawals] = await Promise.all([
       data.currency === "MZN" ? readAll(nationalQuery.order("created_at", { ascending: false }).order("id")) : Promise.resolve({ data: [], error: null }),

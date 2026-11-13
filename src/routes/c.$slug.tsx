@@ -11,6 +11,7 @@ import { Loader2, Lock, ShieldCheck, AlertTriangle, Smartphone } from "lucide-re
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
+import { useCheckoutLanguage } from "@/hooks/use-checkout-language";
 import { InternationalCheckout } from "@/components/international-checkout";
 
 // Slugs com checkout personalizado próprio
@@ -73,6 +74,7 @@ function CheckoutPage() {
     retry: false,
   });
 
+  const { language, copy: t } = useCheckoutLanguage(product?.config?.checkout, product?.visitor_country);
   const clickedRef = useRef(false);
   useEffect(() => {
     if (!product?.id || clickedRef.current) return;
@@ -182,16 +184,16 @@ function CheckoutPage() {
       if ((r as any).checkout_url && r.status !== "paid") { window.location.href = (r as any).checkout_url; return; }
       if (r.status === "paid") {
         setModal({ status: "paid", id: r.id, delivery_url: r.delivery_url ?? null });
-        toast.success("Pagamento confirmado!");
+        toast.success(t.confirmed);
         return;
       }
       if (r.status === "failed") {
         setModal({ status: "failed", id: r.id });
-        toast.error(r.message ?? "Pagamento rejeitado pelo gateway");
+        toast.error(r.message ?? t.rejected);
         return;
       }
       setModal({ status: "pending", id: r.id, delivery_url: undefined });
-      toast(r.message || "Pagamento enviado — confirme no seu telefone");
+      toast(r.message || t.sent);
     },
     onError: (e) => {
       operation.error();
@@ -215,12 +217,12 @@ function CheckoutPage() {
         if (result.test_mode && result.gateway_status !== "pending") { cleanup(); setModal(null); toast.info(result.gateway_status === "paid" ? "Teste concluído com sucesso — sem crédito de saldo." : "Teste de falha concluído."); }
         else if (result.status === "paid") {
           cleanup();
-          toast.success("Pagamento confirmado!");
+          toast.success(t.confirmed);
           setModal({ status: "paid", id: modal.id, delivery_url: result.delivery_url ?? null });
         } else if (result.status === "failed") {
           cleanup();
           setModal({ status: "failed", id: modal.id });
-          toast.error("Pagamento falhou");
+          toast.error(t.failed);
         }
       } catch { /* retry */ }
       checkingRef.current = false;
@@ -292,7 +294,7 @@ function CheckoutPage() {
           />
         ))}
       </div>
-      <p className="text-sm font-medium text-gray-400">A preparar o seu checkout...</p>
+      <p className="text-sm font-medium text-gray-400">{t.preparing}</p>
       <style>{`@keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}`}</style>
     </div>
   );
@@ -300,8 +302,8 @@ function CheckoutPage() {
   if (error || !product) return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" style={{ background: "linear-gradient(135deg, #f9fafc 0%, #f1f5f9 100%)" }}>
       <AlertTriangle className="h-12 w-12 text-gray-300" />
-      <h1 className="text-xl font-bold text-gray-900">Produto não encontrado</h1>
-      <p className="text-sm text-gray-400">O link pode estar incorreto ou o produto foi desactivado.</p>
+      <h1 className="text-xl font-bold text-gray-900">{t.missing}</h1>
+      <p className="text-sm text-gray-400">{t.missingHint}</p>
     </div>
   );
 
@@ -315,7 +317,7 @@ function CheckoutPage() {
   const methodGradient = method === "emola" ? "linear-gradient(135deg, #0ea5e9, #0284c7)" : "linear-gradient(135deg, #ef4444, #dc2626)";
 
   return (
-    <div className="min-h-screen app-light" style={{ background: "linear-gradient(135deg, #f9fafc 0%, #f1f5f9 100%)" }}>
+    <div lang={language} className="min-h-screen app-light" style={{ background: "linear-gradient(135deg, #f9fafc 0%, #f1f5f9 100%)" }}>
       <style>{`
         @keyframes fadeSlideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
         @keyframes urgencySpin{0%,100%{transform:rotate(0deg)}25%{transform:rotate(12deg)}75%{transform:rotate(-12deg)}}
@@ -341,15 +343,15 @@ function CheckoutPage() {
                   style={{ background: "rgba(255,51,51,0.12)" }}>
                   <Loader2 className="h-7 w-7" style={{ color: "#ff3333", animation: "spin 0.7s linear infinite" }} />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">A processar pagamento</h2>
-                <p className="text-sm text-gray-400">Aguardando confirmação do pagamento...</p>
+                <h2 className="text-xl font-bold text-gray-900">{t.processing}</h2>
+                <p className="text-sm text-gray-400">{t.confirmation}</p>
               </div>
             ) : (
               <div className="relative space-y-4">
                 <AlertTriangle className="h-14 w-14 text-red-400 mx-auto" />
-                <h2 className="text-xl font-bold text-gray-900">Pagamento falhou</h2>
-                <p className="text-sm text-gray-400">Tente novamente ou use outro método de pagamento.</p>
-                <Button className="w-full mt-4 rounded-xl" onClick={() => setModal(null)}>Tentar novamente</Button>
+                <h2 className="text-xl font-bold text-gray-900">{t.failed}</h2>
+                <p className="text-sm text-gray-400">{t.retryHint}</p>
+                <Button className="w-full mt-4 rounded-xl" onClick={() => setModal(null)}>{t.retry}</Button>
               </div>
             )}
           </div>
@@ -360,7 +362,7 @@ function CheckoutPage() {
       <div className="sticky top-0 z-40 w-full py-2.5 px-4 flex items-center justify-center gap-2.5 text-sm font-medium"
         style={{ background: "linear-gradient(135deg, #8b0000, #a00000)", color: "#fff", boxShadow: "0 2px 16px rgba(139,0,0,0.3)" }}>
         <span className="urgency-banner" style={{ display: "inline-block" }}>⚡</span>
-        <span>Oferta por tempo limitado — expira em <Countdown /></span>
+        <span>{t.limited} <Countdown /></span>
       </div>
 
       <div className="max-w-md mx-auto px-4 py-4" ref={cardRef} style={{ minHeight: "calc(100vh - 48px)" }}>
@@ -384,7 +386,7 @@ function CheckoutPage() {
 
             {bumps.length > 0 && (
               <div className="space-y-2">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 flex items-center gap-1">🎁 Ofertas especiais — adicionar</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 flex items-center gap-1">🎁 {t.offers}</p>
                 {bumps.map((b) => {
                   const on = !!selectedBumps[b.id];
                   return (
@@ -401,7 +403,7 @@ function CheckoutPage() {
                         : <div className="h-11 w-11 rounded-lg bg-amber-100 shrink-0" />}
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-bold text-gray-900 truncate">{b.name}</p>
-                        <p className="text-[11px] text-amber-700 font-semibold">✓ Adicionar à compra</p>
+                        <p className="text-[11px] text-amber-700 font-semibold">✓ {t.add}</p>
                       </div>
                       <span className="text-sm font-black text-gray-900 shrink-0">+ {fmt(Number(b.price_mzn))}</span>
                     </label>
@@ -411,19 +413,19 @@ function CheckoutPage() {
             )}
 
             <div className="rounded-lg px-3.5 py-2.5 flex items-center justify-between" style={{ background: "linear-gradient(135deg, rgba(34,197,94,0.04), rgba(34,197,94,0.08))" }}>
-              <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Total a pagar</span>
+              <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{t.total}</span>
               <span className="text-xl font-black tracking-tight text-gray-900">{fmt(total)}</span>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Nome completo *</Label>
+              <Label className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">{t.name} *</Label>
               <Input value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
-                maxLength={120} placeholder="Seu nome"
+                maxLength={120} placeholder={t.yourName}
                 className="border-[1.5px] border-gray-200 rounded-xl py-2.5 px-3 text-sm font-medium placeholder:text-gray-300 focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/10 transition-all" />
             </div>
 
             <div className="space-y-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Deseja pagar com:</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">{t.payWith}</p>
               <div className="grid grid-cols-2 gap-2">
                 {([
                   { id: "mpesa" as const, label: "M-Pesa", logo: "/brands/mpesa.png", color: "#ef4444", bg: "#fef2f2", text: "#dc2626" },
@@ -453,7 +455,7 @@ function CheckoutPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Número de {method === "emola" ? "e-Mola" : "M-Pesa"} *</Label>
+              <Label className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">{t.number} {method === "emola" ? "e-Mola" : "M-Pesa"} *</Label>
               <div className="flex rounded-xl overflow-hidden border-[1.5px] border-gray-200 focus-within:border-blue-500 focus-within:ring-[3px] focus-within:ring-blue-500/10 transition-all">
                 <div className="flex items-center px-3 text-sm font-medium text-gray-500 bg-gray-50 border-r border-gray-200">+258</div>
                 <input value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
@@ -469,8 +471,8 @@ function CheckoutPage() {
                   <div className="w-6 h-6 rounded-full border-2" style={{ borderColor: `${methodColor}40`, borderTopColor: methodColor, animation: "spin 0.8s linear infinite" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-900">A aguardar confirmação...</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Confirme o pagamento no seu telefone ({form.customer_phone}) introduzindo o PIN do M-Pesa.</p>
+                  <p className="text-sm font-bold text-gray-900">{t.waiting}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t.pin} {method === "emola" ? "e-Mola" : "M-Pesa"} ({form.customer_phone}).</p>
                   {modal.id && <p className="text-[10px] text-gray-300 mt-1">Ref: {modal.id}</p>}
                 </div>
               </div>
@@ -484,8 +486,8 @@ function CheckoutPage() {
                     <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-green-700">Pagamento confirmado!</p>
-                    <p className="text-xs text-gray-600 mt-0.5">Obrigado pela sua compra. Já pode aceder ao seu produto.</p>
+                    <p className="text-sm font-bold text-green-700">{t.confirmed}</p>
+                    <p className="text-xs text-gray-600 mt-0.5">{t.thanks}</p>
                   </div>
                 </div>
                 <button
@@ -497,7 +499,7 @@ function CheckoutPage() {
                   style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", boxShadow: "0 8px 24px rgba(34,197,94,0.35)" }}
                   onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
                   onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}>
-                  Acesse o produto
+                  {t.access}
                 </button>
               </div>
             ) : (
@@ -512,10 +514,10 @@ function CheckoutPage() {
                 {m.isPending || modal?.status === "pending" ? (
                   <div className="flex items-center justify-center gap-2">
                     <div className="w-[18px] h-[18px] rounded-full border-2 border-white/25 border-t-white" style={{ animation: "spin 0.8s linear infinite" }} />
-                    {modal?.status === "pending" ? "A aguardar confirmação..." : "A processar..."}
+                    {modal?.status === "pending" ? t.waiting : t.processing}
                   </div>
                 ) : (
-                  `Pagar ${fmt(total)}`
+                  `${t.pay} ${fmt(total)}`
                 )}
               </button>
             )}
@@ -526,8 +528,8 @@ function CheckoutPage() {
             </div>
 
             <div className="flex items-center justify-center gap-4 text-[10px] font-medium text-gray-400">
-              <span className="flex items-center gap-1"><Lock className="h-2.5 w-2.5" /> Pagamento seguro</span>
-              <span className="flex items-center gap-1"><ShieldCheck className="h-2.5 w-2.5" /> Dados protegidos</span>
+              <span className="flex items-center gap-1"><Lock className="h-2.5 w-2.5" /> {t.secure}</span>
+              <span className="flex items-center gap-1"><ShieldCheck className="h-2.5 w-2.5" /> {t.protected}</span>
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { visitorCountry } from "@/lib/visitor-country";
 import { operationEventSchema } from "@/lib/operation";
 
 async function hash(value: string) {
@@ -41,7 +42,7 @@ export const Route = createFileRoute("/api/public/checkout-events")({
         user_id: resource.user_id, product_id: input.kind === "product" ? resource.id : null,
         payment_link_id: input.kind === "link" ? resource.id : null, token_hash: await hash(token), request_hash: requestHash,
         source: input.source || "Direto", campaign: input.campaign, device: input.device,
-        funnel_session_id: funnelSessionId,
+        funnel_session_id: funnelSessionId, country_code: visitorCountry(request),
       }).select("id").single();
       if (error || !session) return new Response(null, { status: 503 });
       return Response.json({ session_id: session.id, token }, { headers });
