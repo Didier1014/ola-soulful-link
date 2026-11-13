@@ -111,7 +111,7 @@ function ReportsPage() {
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard icon={CircleDollarSign} label="Volume" value={`${fmt(totalVol)} ${unit}`} delta={deltaVol} />
-        <StatCard icon={ShoppingBag} label={currency === "MZN" ? "Receita líq." : "Líquido contabilístico"} value={`${fmt(liquid)} ${unit}`} delta={deltaLiq} />
+        <StatCard icon={ShoppingBag} label={currency === "MZN" ? "Receita líq." : "Líquido contabilístico"} value={`${liquid.toFixed(2)} ${unit}`} delta={deltaLiq} />
         <StatCard icon={CheckCircle2} label="Conversão" value={`${conv}%`} delta={deltaConv} />
         <StatCard icon={Tag} label="Ticket médio" value={`${fmt(ticket)} ${unit}`} delta={deltaTicket} />
       </div>
@@ -133,7 +133,7 @@ function ReportsPage() {
             </span>
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full" style={{ background: EMOLA_COLOR, boxShadow: `0 0 8px ${EMOLA_COLOR}` }} />
-              E-MOLA
+              {currency === "MZN" ? "E-MOLA" : ""}
             </span>
           </div>
         </div>
@@ -186,7 +186,7 @@ function ReportsPage() {
             </div>
             <div className="flex-1 space-y-3 text-sm">
               <LegendRow color={MPESA_COLOR} label={currency === "MZN" ? "M-Pesa" : "Cartão"} value={mpesaSum} total={mpesaSum + emolaSum} count={mpesa.length} />
-              <LegendRow color={EMOLA_COLOR} label="e-Mola" value={emolaSum} total={mpesaSum + emolaSum} count={emola.length} />
+              <LegendRow color={EMOLA_COLOR} label={currency === "MZN" ? "e-Mola" : "Outros"} value={emolaSum} total={mpesaSum + emolaSum} count={emola.length} />
             </div>
           </div>
         </Card>
