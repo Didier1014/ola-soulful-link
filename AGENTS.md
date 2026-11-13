@@ -1,6 +1,6 @@
 # Architecture rules
 
-- Checkout style is stored in product config independently of currency/provider; opted-in offer checkouts share a scoped presentation shell and reuse existing payment/capability flows so changing style cannot change financial behavior.
+- Checkout style is stored in product config independently of currency/provider; opted-in offer checkouts share a scoped presentation shell and reuse existing payment/capability flows so changing style cannot change financial behavior. Optional international buyer phone goes only to payment metadata, never anonymous analytics.
 
 - All SMS callers share the legacy SMS adapter routed through the linked MozeSMS gateway connection; credentials remain server-only and the approved sender is enforced centrally to avoid rejected custom senders.
 - Post-payment SMS templates are account-wide in integration_settings.mozesms; saving and delivery consult protected user_roles, with default fallback after privilege revocation, so product legacy fields cannot override authorized settings.

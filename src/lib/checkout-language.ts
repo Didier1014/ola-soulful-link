@@ -1,5 +1,10 @@
 export const checkoutLanguages = ["pt", "en", "es", "fr"] as const;
 export type CheckoutLanguage = typeof checkoutLanguages[number];
+export function checkoutLanguageConfig(config: unknown, currency?: string): unknown {
+  const preference = (config as { language?: unknown } | null)?.language;
+  if (currency === "ZAR" && !preference) return { ...(config as object ?? {}), language: "en" };
+  return config;
+}
 export const languageNames = { pt: "Português", en: "English", es: "Español", fr: "Français" };
 export function resolveCheckoutLanguage(config: unknown, country?: string | null, browserLanguage?: string): CheckoutLanguage {
   const preference = (config as { language?: unknown } | null)?.language;

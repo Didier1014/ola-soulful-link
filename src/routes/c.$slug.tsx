@@ -296,7 +296,7 @@ function CheckoutPage() {
           />
         ))}
       </div>
-      <p className="text-sm font-medium text-gray-400">{t.preparing}</p>
+      <Loader2 role="status" aria-label="Loading" className="size-5 animate-spin text-muted-foreground" />
       <style>{`@keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}`}</style>
     </div>
   );
