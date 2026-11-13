@@ -11,6 +11,7 @@ import { PAYSTACK_PUBLIC_KEY } from "@/lib/paystack-config";
 import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
 import { OfferCheckout } from "@/components/offer-checkout";
 import { resolveCheckoutStyle } from "@/lib/checkout-style";
+import { checkoutLanguageConfig } from "@/lib/checkout-language";
 
 type Product = { id: string; slug?: string; name: string; description?: string | null; price_mzn: number; price_amount?: number | null; currency?: string; checkout_provider?: string; cover_url?: string | null; config?: { checkout?: { language?: string; style?: string } }; visitor_country?: string | null };
 
@@ -30,10 +31,11 @@ async function openPaystack(accessCode: string, onSuccess: () => void, onCancel:
 }
 
 export function InternationalCheckout({ product }: { product: Product }) {
-  const { language, copy: t } = useCheckoutLanguage(product.config?.checkout ?? (product.currency === "ZAR" ? { language: "en" } : undefined), product.visitor_country);
+  const { language, copy: t } = useCheckoutLanguage(checkoutLanguageConfig(product.config?.checkout, product.currency), product.visitor_country);
   const initialize = useServerFn(initializeInternationalCheckout);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [resume, setResume] = useState<{ access_code: string; authorization_url: string } | null>(null);
@@ -46,7 +48,7 @@ export function InternationalCheckout({ product }: { product: Product }) {
     setBusy(true); setError("");
     try {
       const tracking = await operation.internationalAttempt();
-      const result = await initialize({ data: { product_id: product.id, name, email, ...tracking } });
+      const result = await initialize({ data: { product_id: product.id, name, email, phone: phone || undefined, ...tracking } });
       sessionStorage.setItem(`rdx-paystack:${result.reference}`, result.capability);
       setResume(result);
       await openPaystack(result.access_code, () => { window.location.assign(`/international-return?reference=${encodeURIComponent(result.reference)}`); }, () => { setBusy(false); setError(t.interrupted); }, t.startError);
@@ -63,6 +65,7 @@ export function InternationalCheckout({ product }: { product: Product }) {
       <h2 className="border-l-4 border-primary pl-4 text-xl font-bold">{language === "en" ? "Your Information" : t.details}</h2>
       <div className="space-y-2"><Label htmlFor="international-name">{t.name}</Label><Input id="international-name" autoComplete="name" placeholder={t.yourName} required minLength={2} maxLength={120} value={name} onChange={event => setName(event.target.value)} /></div>
       <div className="space-y-2"><Label htmlFor="international-email">{t.email}</Label><Input id="international-email" type="email" autoComplete="email" placeholder="you@example.com" required maxLength={160} value={email} onChange={event => setEmail(event.target.value)} /></div>
+      <div className="space-y-2"><Label htmlFor="international-phone">{language === "en" ? "Phone Number" : t.number}</Label><div className="flex rounded-lg border border-border overflow-hidden"><span className="bg-secondary px-4 flex items-center text-muted-foreground text-sm">+27</span><Input id="international-phone" type="tel" autoComplete="tel-national" placeholder="82 123 4567" maxLength={15} value={phone} onChange={event => setPhone(event.target.value)} className="border-0 rounded-none min-w-0 flex-1" /></div></div>
       </section>
       <section className="offer-panel rounded-lg p-5 sm:p-8 space-y-5">
       <h2 className="text-xl font-bold">{t.summary}</h2>

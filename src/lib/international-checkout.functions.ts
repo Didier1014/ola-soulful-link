@@ -5,7 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { internationalAmounts, verifiedInternationalState } from "./checkout-currency";
 
 export const initializeInternationalCheckout = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => z.object({ product_id: z.string().uuid(), name: z.string().trim().min(2).max(120), email: z.string().trim().email().max(160), operation_session_id: z.string().uuid().optional(), operation_token: z.string().regex(/^[a-f0-9]{64}$/).optional() }).parse(input))
+  .inputValidator((input: unknown) => z.object({ product_id: z.string().uuid(), name: z.string().trim().min(2).max(120), email: z.string().trim().email().max(160), phone: z.string().trim().max(15).regex(/^[+\d ()-]*$/).optional(), operation_session_id: z.string().uuid().optional(), operation_token: z.string().regex(/^[a-f0-9]{64}$/).optional() }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { paystackRequest, capabilityHash } = await import("./paystack.server");
@@ -25,7 +25,7 @@ export const initializeInternationalCheckout = createServerFn({ method: "POST" }
     const origin = new URL(getRequest().url).origin;
     let initialized;
     try {
-      initialized = await paystackRequest("/transaction/initialize", { email: data.email, amount: String(amounts.amount_minor), currency: "ZAR", reference, callback_url: `${origin}/international-return`, metadata: { product_id: product.id, customer_name: data.name }, channels: ["card", "eft", "capitec_pay"] });
+      initialized = await paystackRequest("/transaction/initialize", { email: data.email, amount: String(amounts.amount_minor), currency: "ZAR", reference, callback_url: `${origin}/international-return`, metadata: { product_id: product.id, customer_name: data.name, ...(data.phone ? { customer_phone: data.phone } : {}) }, channels: ["card", "eft", "capitec_pay"] });
       const url = new URL(initialized.authorization_url);
       if (url.protocol !== "https:" || !["checkout.paystack.com", "paystack.com"].includes(url.hostname)) throw new Error("Endereço de pagamento inválido");
     } catch (e) {
