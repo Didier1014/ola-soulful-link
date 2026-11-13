@@ -12,7 +12,7 @@ test('verified international purchase emails buyer delivery and seller in origin
   const sends: Record<string, any>[] = [];
   const signing: Array<[string, number]> = [];
   const fixtures: Record<string, unknown> = {
-    international_payments: { reference: 'payment-123', status: 'paid', user_id: 'seller-123', product_id: 'product-123', currency: 'ZAR', amount_minor: 1000, customer_email: 'buyer@example.test', customer_name: 'Buyer' },
+    international_payments: { reference: 'payment-123', status: 'paid', created_at: '2026-11-13T12:00:00Z', user_id: 'seller-123', product_id: 'product-123', currency: 'ZAR', amount_minor: 1000, customer_email: 'buyer@example.test', customer_name: 'Buyer' },
     products: { name: 'Digital course', product_type: 'digital', digital_file_path: 'seller-123/course.pdf', config: { checkout: { language: 'en' } } },
     profiles: { support_phone: '840000000', support_phone2: '850000000' },
   };
@@ -27,6 +27,9 @@ test('verified international purchase emails buyer delivery and seller in origin
   try {
     globalThis.fetch = async (_input, init) => { sends.push(JSON.parse(String(init?.body))); return Response.json({ success: true }); };
     await sendPurchaseEmails(client, 'international', 'payment-123');
+    assert.equal(sends.length, 2);
+    fixtures.international_payments = { status: 'paid', created_at: '2026-06-01T12:00:00Z' };
+    await sendPurchaseEmails(client, 'international', 'historical-sale');
     assert.equal(sends.length, 2);
     assert.equal(sends[0]?.to, 'buyer@example.test');
     assert.equal(sends[0]?.idempotency_key, 'product-delivery-international-payment-123');

@@ -1,14 +1,14 @@
 # Complete email flows
 
-- [ ] Wire buyer receipts and product delivery to verified national/international payments; preserve auth and operational emails.
-- [ ] Add confirmed-account welcome and self-addressed email test; collect buyer email on national checkouts.
-- [ ] Test email decisions, live sending, authenticated controls and checkout rendering without making a charge.
+- [x] Wire buyer receipts and product delivery to verified national/international payments; preserve auth and operational emails. Historical sales are excluded from automatic delivery.
+- [x] Add welcome on first authenticated access for new confirmed accounts and self-addressed email test; collect optional buyer email on national checkouts.
+- [x] Six email tests and twelve currency/language tests pass; real self-addressed test accepted and managed sent event recorded; authenticated button and mobile checkout verified without charge. New purchase and real recovery-link completion await buyer/account actions; no real purchase or password change performed.
 
 # Bug review and email verification
 
 - [x] All 55 regression tests pass using their appropriate runners; authenticated overview, transactions, products and Operation load without runtime errors. MT/ZAR/USD switching and actual 10 ZAR sale read back; mobile has no overflow. All nine email templates render HTTP 200 and preview build is OK. No application bug reproduced in the checked flows.
 - [x] Enable managed project emails; sender domain remains verifying DNS.
-- [ ] Test actual app-email delivery after sender verification; blocked by pending DNS verification, not an application queue.
+- [x] Test actual app-email sending after verification: authenticated test accepted and managed sent event recorded for the requesting account on 13 November 2026; inbox receipt is not observable.
 
 # Multi-currency SaaS and international checkout
 
