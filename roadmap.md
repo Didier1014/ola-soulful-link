@@ -1,5 +1,9 @@
 # Multi-currency SaaS and international checkout
 
+- [ ] Add product checkout language and automatic visitor country identification without changing currency or prices.
+- [ ] Place currency controls below dashboard period filters and inside Transactions; include yesterday and accurate incoming/outgoing views.
+- [ ] Verify saved language, checkout localization, currency filters and mobile layout without charging.
+
 - [x] Restore only the pre-redesign international checkout presentation with reference Manrope/Sora typography; desktop/mobile fonts and form verified without charging, no overflow or runtime errors, build OK. Workspace currencies, analytics and payment logic preserved.
 - [x] Add persistent workspace currency selection and separate financial views for MT, ZAR, USD and EUR without conversion or balance mixing; Stripe stays unavailable.
 - [x] Include international payments in overview, transactions, reports, products, customers, links and admin; scope operation and funnel checkout conversions by currency and keep national-only operations isolated.
