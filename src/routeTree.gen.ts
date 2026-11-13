@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as InternationalReturnRouteImport } from './routes/international-return'
 import { Route as ObrigadoRouteImport } from './routes/obrigado'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TxunaEmolaRouteImport } from './routes/txuna-emola'
@@ -71,6 +72,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InternationalReturnRoute = InternationalReturnRouteImport.update({
+  id: '/international-return',
+  path: '/international-return',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ObrigadoRoute = ObrigadoRouteImport.update({
@@ -336,6 +342,7 @@ const LovableEmailTransactionalPreviewRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/international-return': typeof InternationalReturnRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/txuna-emola': typeof TxunaEmolaRoute
@@ -386,6 +393,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/international-return': typeof InternationalReturnRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/txuna-emola': typeof TxunaEmolaRoute
@@ -438,6 +446,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/international-return': typeof InternationalReturnRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/txuna-emola': typeof TxunaEmolaRoute
@@ -490,6 +499,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/international-return'
     | '/obrigado'
     | '/reset-password'
     | '/txuna-emola'
@@ -540,6 +550,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/international-return'
     | '/obrigado'
     | '/reset-password'
     | '/txuna-emola'
@@ -591,6 +602,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/international-return'
     | '/obrigado'
     | '/reset-password'
     | '/txuna-emola'
@@ -643,6 +655,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  InternationalReturnRoute: typeof InternationalReturnRoute
   ObrigadoRoute: typeof ObrigadoRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TxunaEmolaRoute: typeof TxunaEmolaRoute
@@ -689,6 +702,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/international-return': {
+      id: '/international-return'
+      path: '/international-return'
+      fullPath: '/international-return'
+      preLoaderRoute: typeof InternationalReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/obrigado': {
@@ -1112,6 +1132,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  InternationalReturnRoute: InternationalReturnRoute,
   ObrigadoRoute: ObrigadoRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TxunaEmolaRoute: TxunaEmolaRoute,
