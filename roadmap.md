@@ -1,3 +1,9 @@
+# Reference checkout style
+
+- [ ] Add a selectable reference-inspired checkout style while preserving normal checkouts and payment verification.
+- [ ] Apply the style only to the requested owner/product, preserving its photo and 599 ZAR price.
+- [ ] Verify public desktop/mobile checkout and saved product style in the authenticated editor without a charge.
+
 # Paystack credential replacement
 
 - [x] Replace publishable key and global split; use builder-designated saved secret for both provider API and callback signatures, without fallback to the previous connection.
