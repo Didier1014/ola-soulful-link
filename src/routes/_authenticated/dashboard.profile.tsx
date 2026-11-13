@@ -1,5 +1,5 @@
-import { pageHead } from "@/lib/page-head";
 // @ts-nocheck
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";

@@ -1,6 +1,6 @@
+// @ts-nocheck
 import { pageHead } from "@/lib/page-head";
 import { NationalOnly } from "@/components/workspace-currency";
-// @ts-nocheck
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

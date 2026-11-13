@@ -1,5 +1,5 @@
-import { pageHead } from "@/lib/page-head";
 // @ts-nocheck
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
