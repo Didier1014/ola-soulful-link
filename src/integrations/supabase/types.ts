@@ -397,8 +397,11 @@ export type Database = {
           amount_minor: number
           authorization_url: string | null
           capability_hash: string
+          checkout_session_id: string | null
           created_at: string
           currency: string
+          customer_email: string | null
+          customer_name: string | null
           fee_minor: number
           id: string
           paid_at: string | null
@@ -412,8 +415,11 @@ export type Database = {
           amount_minor: number
           authorization_url?: string | null
           capability_hash: string
+          checkout_session_id?: string | null
           created_at?: string
           currency: string
+          customer_email?: string | null
+          customer_name?: string | null
           fee_minor: number
           id?: string
           paid_at?: string | null
@@ -427,8 +433,11 @@ export type Database = {
           amount_minor?: number
           authorization_url?: string | null
           capability_hash?: string
+          checkout_session_id?: string | null
           created_at?: string
           currency?: string
+          customer_email?: string | null
+          customer_name?: string | null
           fee_minor?: number
           id?: string
           paid_at?: string | null
@@ -439,6 +448,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "international_payments_checkout_session_id_fkey"
+            columns: ["checkout_session_id"]
+            isOneToOne: false
+            referencedRelation: "checkout_sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "international_payments_product_id_fkey"
             columns: ["product_id"]
@@ -1165,6 +1181,10 @@ export type Database = {
       gen_api_key: { Args: never; Returns: string }
       get_checkout_operation: {
         Args: { p_hours?: number; p_resource?: string }
+        Returns: Json
+      }
+      get_checkout_operation_currency: {
+        Args: { p_currency?: string; p_hours?: number; p_resource?: string }
         Returns: Json
       }
       get_external_funnel_report: {
