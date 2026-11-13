@@ -1,3 +1,9 @@
+# Complete email flows
+
+- [ ] Wire buyer receipts and product delivery to verified national/international payments; preserve auth and operational emails.
+- [ ] Add confirmed-account welcome and self-addressed email test; collect buyer email on national checkouts.
+- [ ] Test email decisions, live sending, authenticated controls and checkout rendering without making a charge.
+
 # Bug review and email verification
 
 - [x] All 55 regression tests pass using their appropriate runners; authenticated overview, transactions, products and Operation load without runtime errors. MT/ZAR/USD switching and actual 10 ZAR sale read back; mobile has no overflow. All nine email templates render HTTP 200 and preview build is OK. No application bug reproduced in the checked flows.
@@ -84,7 +90,7 @@
 - [x] Replace auth and app sending with managed helpers and preserve notification audit records.
 - [x] Verify delivery-result audit handling, reject unsigned events and remove replaced legacy files; seven tests pass.
 - [x] Confirm compilation, render all nine email previews and leave the update unpublished for review; no real email delivery claimed.
-- [ ] Sending remains blocked until the configured sender domain is DNS-verified; no shared Lovable sender is available.
+- [x] Sender domain verified and active on 13 November 2026; managed sending is available.
 
 # VendusPay replacement
 
