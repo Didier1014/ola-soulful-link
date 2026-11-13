@@ -1,5 +1,6 @@
 # International product checkouts
 
+- [ ] Apply the approved global Paystack split to every new initialization; validate outgoing requests and provider acceptance without charging a card.
 - [x] Configure the supplied public key; designated saved LIVE secret exists and callback/webhook URLs provided.
 - [ ] Validate a signed Paystack callback after publication; saved webhook secret is unavailable to local preview and no provider callback has arrived.
 
