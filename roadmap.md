@@ -1,6 +1,6 @@
 # Multi-currency SaaS and international checkout
 
-- [ ] Restore only the pre-redesign international checkout presentation and apply the reference typography; preserve workspace currencies, analytics and payment logic, then verify desktop/mobile without charging.
+- [x] Restore only the pre-redesign international checkout presentation with reference Manrope/Sora typography; desktop/mobile fonts and form verified without charging, no overflow or runtime errors, build OK. Workspace currencies, analytics and payment logic preserved.
 - [x] Add persistent workspace currency selection and separate financial views for MT, ZAR, USD and EUR without conversion or balance mixing; Stripe stays unavailable.
 - [x] Include international payments in overview, transactions, reports, products, customers, links and admin; scope operation and funnel checkout conversions by currency and keep national-only operations isolated.
 - [x] Match the supplied Velqo checkout reference with Redox identity while preserving hosted secure card entry.
