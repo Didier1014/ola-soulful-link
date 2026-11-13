@@ -1,9 +1,9 @@
 # Multi-currency SaaS and international checkout
 
-- [ ] Add persistent workspace currency selection and separate financial views for MT, ZAR, USD and EUR without conversion or balance mixing.
-- [ ] Include international payments in overview, transactions, reports, products and currency-specific activity; keep national-only operations explicitly isolated.
-- [ ] Match the supplied Velqo checkout reference with Redox identity while preserving hosted secure card entry.
-- [ ] Verify authenticated currency switching and public checkout on desktop/mobile; delivery emails are deferred by the user.
+- [x] Add persistent workspace currency selection and separate financial views for MT, ZAR, USD and EUR without conversion or balance mixing; Stripe stays unavailable.
+- [x] Include international payments in overview, transactions, reports, products, customers, links and admin; scope operation and funnel checkout conversions by currency and keep national-only operations isolated.
+- [x] Match the supplied Velqo checkout reference with Redox identity while preserving hosted secure card entry.
+- [x] Verify actual confirmed 10 ZAR sale in authenticated views, currency switching, and desktop/mobile checkout without a new charge; 16 tests pass. Existing withdrawals live-update warning remains unrelated; delivery emails deferred by the user.
 
 # International product checkouts
 
