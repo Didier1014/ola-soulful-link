@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { NationalOnly } from "@/components/workspace-currency";
 // @ts-nocheck
 import { createFileRoute } from "@tanstack/react-router";
@@ -15,6 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Wallet, Clock, CheckCircle2, XCircle, Loader2, History } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/withdrawals")({
+  head: () => pageHead('Saques em MT', 'Consulte saques em mt na Redox Pay com segurança.'),
   component: () => <NationalOnly label="Saques"><WdPage /></NationalOnly>,
 });
 

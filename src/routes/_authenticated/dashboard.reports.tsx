@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/dashboard/reports")({
+  head: () => pageHead('Relatórios por moeda', 'Consulte relatórios por moeda na Redox Pay com segurança.'),
   component: ReportsPage,
 });
 

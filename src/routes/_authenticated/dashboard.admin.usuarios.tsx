@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 // @ts-nocheck
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -11,6 +12,7 @@ import { useMemo, useState } from "react";
 import { Users, Search, ArrowLeft, ExternalLink, Mail, Phone, MapPin, Wallet, Package, Receipt, ArrowUpDown, Bell, Shield, Key, Calendar, Home } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/admin/usuarios")({
+  head: () => pageHead('Utilizadores · Administração', 'Consulte utilizadores · administração na Redox Pay com segurança.'),
   component: AdminUsuariosPage,
 });
 

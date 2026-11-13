@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 // @ts-nocheck
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -9,6 +10,7 @@ import { useMemo, useState } from "react";
 import { Package, Search, ExternalLink, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/admin/produtos")({
+  head: () => pageHead('Produtos · Administração', 'Consulte produtos · administração na Redox Pay com segurança.'),
   component: AdminProdutosPage,
 });
 

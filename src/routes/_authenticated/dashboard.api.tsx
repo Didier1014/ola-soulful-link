@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 
-export const Route = createFileRoute("/_authenticated/dashboard/api")({ component: Page });
+export const Route = createFileRoute("/_authenticated/dashboard/api")({
+  head: () => pageHead('API merchant', 'Consulte api merchant na Redox Pay com segurança.'), component: Page });
 
 function maskKey(key: string) {
   if (key.length <= 12) return key;

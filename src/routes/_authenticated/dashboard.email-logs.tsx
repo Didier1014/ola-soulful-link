@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Mail, RefreshCw, AlertCircle, CheckCircle2, Clock, Ban, XCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/email-logs")({
+  head: () => pageHead('Histórico de emails', 'Consulte histórico de emails na Redox Pay com segurança.'),
   component: EmailLogsPage,
 });
 

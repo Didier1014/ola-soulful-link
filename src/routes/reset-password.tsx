@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +10,7 @@ import { Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/reset-password")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Nova senha — Redox Pay" }] }),
+  head: () => pageHead('Nova senha', 'Consulte nova senha na Redox Pay com segurança.'),
   component: ResetPassword,
 });
 

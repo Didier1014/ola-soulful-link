@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,7 +12,8 @@ import { MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
-export const Route = createFileRoute("/_authenticated/dashboard/sms")({ component: Page });
+export const Route = createFileRoute("/_authenticated/dashboard/sms")({
+  head: () => pageHead('Mensagens SMS', 'Consulte mensagens sms na Redox Pay com segurança.'), component: Page });
 
 function Page() {
   const qc = useQueryClient();

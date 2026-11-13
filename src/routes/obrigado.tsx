@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { checkTransactionStatus } from "@/lib/transactions.functions";
@@ -7,6 +8,7 @@ import { z } from "zod";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/obrigado")({
+  head: () => pageHead('Confirmação de pagamento', 'Consulte confirmação de pagamento na Redox Pay com segurança.'),
   validateSearch: z.object({ tx_id: z.string().optional(), slug: z.string().optional() }),
   component: ThankYouPage,
 });

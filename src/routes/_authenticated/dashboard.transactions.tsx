@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import { toast } from "sonner";
 import { Search, RefreshCw, Copy, TrendingUp, Activity, CheckCircle2, Clock, XCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/transactions")({
+  head: () => pageHead('Transações por moeda', 'Consulte transações por moeda na Redox Pay com segurança.'),
   component: TxPage,
 });
 

@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 // @ts-nocheck
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -10,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { UserCog, Save } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/dashboard/complete-profile")({ component: Page });
+export const Route = createFileRoute("/_authenticated/dashboard/complete-profile")({
+  head: () => pageHead('Completar perfil', 'Consulte completar perfil na Redox Pay com segurança.'), component: Page });
 
 const PROVINCES = [
   "Maputo Cidade", "Maputo Província", "Gaza", "Inhambane", "Sofala",

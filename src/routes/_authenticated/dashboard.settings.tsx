@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 // @ts-nocheck
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -18,6 +19,7 @@ import { PushReactivateBanner } from "@/components/push-reactivate-banner";
 import { Activity, CheckCircle2, XCircle, Zap, RefreshCw, Copy, Bell, Play, Palette, Volume2, Smartphone } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/settings")({
+  head: () => pageHead('Configurações', 'Consulte configurações na Redox Pay com segurança.'),
   component: SettingsPage,
 });
 

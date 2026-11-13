@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,7 +17,8 @@ import { useWorkspaceCurrency } from "@/components/workspace-currency";
 import { listMyProducts } from "@/lib/products.functions";
 import { formatProductPrice } from "@/lib/checkout-currency";
 
-export const Route = createFileRoute("/_authenticated/dashboard/payment-links")({ component: Page });
+export const Route = createFileRoute("/_authenticated/dashboard/payment-links")({
+  head: () => pageHead('Links de pagamento', 'Consulte links de pagamento na Redox Pay com segurança.'), component: Page });
 
 const fmtMT = (n: number) => `${new Intl.NumberFormat("pt-MZ").format(n)} MT`;
 

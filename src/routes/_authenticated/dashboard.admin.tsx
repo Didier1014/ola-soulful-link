@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 // @ts-nocheck
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -27,7 +28,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useWorkspaceCurrency } from "@/components/workspace-currency";
 import { InternationalFinance } from "@/components/international-finance";
 
-export const Route = createFileRoute("/_authenticated/dashboard/admin")({ component: AdminPage });
+export const Route = createFileRoute("/_authenticated/dashboard/admin")({
+  head: () => pageHead('Administração', 'Consulte administração na Redox Pay com segurança.'), component: AdminPage });
 
 const fmt = (n: number) => new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(n);
 const fmtMT = (n: number) => `${fmt(n)} MT`;

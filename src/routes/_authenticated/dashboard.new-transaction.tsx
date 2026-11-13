@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { NationalOnly } from "@/components/workspace-currency";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -12,6 +13,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard/new-transaction")({
+  head: () => pageHead('Nova transação', 'Consulte nova transação na Redox Pay com segurança.'),
   component: () => <NationalOnly label="Cobranças nacionais"><NewTransactionPage /></NationalOnly>,
 });
 
