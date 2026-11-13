@@ -1,5 +1,9 @@
 # Multi-currency SaaS and international checkout
 
+- [x] Add product checkout language (Portuguese, English, Spanish, French and automatic) and approximate edge visitor country, shown in Operation; no currency or price changes.
+- [x] Place currency controls below dashboard period filters and inside Transactions; include yesterday and paid MT withdrawal outflows. International outflows remain explicitly unavailable, not zero.
+- [x] Nineteen tests pass; saved/reloaded English on approved checkout, restored original language, removed validation product, verified actual 10 ZAR sale in Transactions, USD/MT switching, Operation and desktop/mobile without payment or overflow. Live edge geolocation awaits published traffic; local browser has no country by default.
+
 - [x] Restore only the pre-redesign international checkout presentation with reference Manrope/Sora typography; desktop/mobile fonts and form verified without charging, no overflow or runtime errors, build OK. Workspace currencies, analytics and payment logic preserved.
 - [x] Add persistent workspace currency selection and separate financial views for MT, ZAR, USD and EUR without conversion or balance mixing; Stripe stays unavailable.
 - [x] Include international payments in overview, transactions, reports, products, customers, links and admin; scope operation and funnel checkout conversions by currency and keep national-only operations isolated.

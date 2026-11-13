@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useWorkspaceCurrency, useWorkspaceFinance } from "@/components/workspace-currency";
+import { FinanceCurrencyTabs } from "@/components/finance-currency-tabs";
 import { currencyLabel } from "@/lib/workspace-currency";
 import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
@@ -79,6 +80,8 @@ function TxPage() {
           <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Atualizar
         </Button>
       </div>
+
+      <FinanceCurrencyTabs />
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

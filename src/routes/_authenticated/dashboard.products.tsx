@@ -22,6 +22,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { checkoutLanguages, languageNames } from "@/lib/checkout-language";
+import { Link } from "@tanstack/react-router";
 import { formatProductPrice } from "@/lib/checkout-currency";
 import { useWorkspaceCurrency } from "@/components/workspace-currency";
 import { listInternationalPayments } from "@/lib/international-checkout.functions";
@@ -254,11 +257,7 @@ function ProductsPage() {
         ))}
       </div>
 
-      {!!internationalPayments.filter(p => p.currency === currency).length && <section className="pt-6 space-y-3">
-        <h2 className="font-semibold text-lg">Pagamentos internacionais · {currency}</h2>
-        <p className="text-sm text-muted-foreground">Recebimentos na conta do provedor, separados do saldo em MT. A taxa de 8% é contabilística e não é retida pelo split atual.</p>
-        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left border-b border-border"><th className="py-3">Data</th><th>Valor</th><th>Taxa Redox</th><th>Estado</th></tr></thead><tbody>{internationalPayments.filter(p => p.currency === currency).map(payment => <tr key={payment.reference} className="border-b border-border"><td className="py-3">{new Date(payment.created_at).toLocaleDateString("pt-PT")}</td><td>{(payment.amount_minor / 100).toFixed(2)} {payment.currency}</td><td>{(payment.fee_minor / 100).toFixed(2)} {payment.currency}</td><td>{({ paid: "Confirmado", test_paid: "Teste", pending: "Pendente", failed: "Falhou" })[payment.status]}</td></tr>)}</tbody></table></div>
-      </section>}
+      {currency !== "MZN" && <Button asChild variant="outline"><Link to="/dashboard/transactions"><CreditCard className="size-4" />Ver transações · {currency}</Link></Button>}
 
       <ProductDialog
         open={open} step={step} setStep={setStep}
@@ -570,6 +569,14 @@ function FormStep({
             </div>
             {form.checkout_provider === "stripe" && <div className="space-y-2"><div className="flex gap-2">{(["EUR", "USD"] as const).map(currency => <Button type="button" key={currency} variant={form.currency === currency ? "default" : "outline"} onClick={() => setForm({ ...form, currency })}>{currency}</Button>)}</div><p className="text-xs text-muted-foreground">Stripe: pode preparar o produto, mas os pagamentos só estarão disponíveis após a ligação futura.</p></div>}
           </fieldset>
+
+          <div className="space-y-2">
+            <Label htmlFor="checkout-language">Idioma da página de checkout</Label>
+            <Select value={form.config?.checkout?.language ?? "pt"} onValueChange={language => setForm({ ...form, config: { ...form.config, checkout: { ...form.config?.checkout, language } } })}>
+              <SelectTrigger id="checkout-language" aria-label="Idioma da página de checkout"><SelectValue /></SelectTrigger>
+              <SelectContent><SelectItem value="auto">Automático · país do visitante</SelectItem>{checkoutLanguages.map(language => <SelectItem key={language} value={language}>{languageNames[language]}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
