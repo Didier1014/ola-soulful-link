@@ -1,5 +1,7 @@
 # International product checkouts
 
+- [ ] Configure the supplied Paystack public key, verify the saved LIVE secret reference and provide callback/webhook URLs.
+
 - [ ] Connect Paystack securely and verify account support for ZAR.
 - [ ] Add national MT, Paystack ZAR and future Stripe EUR/USD choices in product creation.
 - [ ] Apply the supplied international checkout design with provider-hosted secure card fields.
