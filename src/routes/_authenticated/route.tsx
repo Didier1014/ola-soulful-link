@@ -10,6 +10,7 @@ import { FloatingSaleNotification } from "@/components/floating-sale-notificatio
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { WorkspaceCurrencyProvider, WorkspaceCurrencySelector } from "@/components/workspace-currency";
 
 
 import { useEffect, useState } from "react";
@@ -79,7 +80,7 @@ function AuthedShell() {
   }
 
   return (
-    <div className={`dash-shell min-h-screen text-foreground ${collapsed ? "dash-collapsed" : ""}`}>
+    <WorkspaceCurrencyProvider><div className={`dash-shell min-h-screen text-foreground ${collapsed ? "dash-collapsed" : ""}`}>
       <aside className="dash-sidebar hidden lg:flex">
         <Link to="/dashboard" className="dash-brand"><span className="dash-brand-symbol">R</span>{!collapsed && <span>REDOX<span className="text-primary-glow"> PAY</span></span>}</Link>
         {!collapsed && <p className="px-4 pt-7 pb-3 text-[10px] text-muted-foreground">ESPAÇO DE TRABALHO</p>}
@@ -97,13 +98,13 @@ function AuthedShell() {
               <Link to="/dashboard" className="font-semibold text-xs flex items-center gap-1 lg:hidden">REDOX <span className="text-primary-glow">PAY</span></Link>
               <span className="hidden lg:flex text-xs text-muted-foreground items-center gap-2 min-w-0"><ActiveIcon className="size-3.5 shrink-0" /><span className="truncate">{activeItem?.label ?? "Redox Pay"}</span></span>
             </div>
-            <div className="flex items-center gap-2 shrink-0"><ThemeToggle minimal /><NotificationBell /></div>
+            <div className="flex items-center gap-2 shrink-0"><WorkspaceCurrencySelector /><ThemeToggle minimal /><NotificationBell /></div>
           </div>
         </header>
         <main className={`saas-content ${contentWidth} mx-auto min-w-0 px-5 sm:px-8 lg:px-8 py-7 lg:py-9 pb-16`}><Outlet /></main>
         <FloatingSaleNotification />
       </div>
-    </div>
+    </div></WorkspaceCurrencyProvider>
   );
 }
 
