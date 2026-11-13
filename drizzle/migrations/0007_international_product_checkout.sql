@@ -1,0 +1,10 @@
+ALTER TABLE public.products ADD COLUMN checkout_provider text NOT NULL DEFAULT 'national', ADD COLUMN currency text NOT NULL DEFAULT 'MZN', ADD COLUMN price_amount numeric(14,2);
+UPDATE public.products SET price_amount = price_mzn WHERE price_amount IS NULL;
+ALTER TABLE public.products ADD CONSTRAINT product_currency_provider CHECK ((checkout_provider = 'national' AND currency = 'MZN') OR (checkout_provider = 'paystack' AND currency = 'ZAR') OR (checkout_provider = 'stripe' AND currency IN ('EUR','USD'))), ADD CONSTRAINT product_international_mzn_guard CHECK (checkout_provider = 'national' OR price_mzn = 0);
+CREATE TABLE public.international_payments (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL, product_id uuid NOT NULL REFERENCES public.products(id), reference text NOT NULL UNIQUE, capability_hash text NOT NULL, provider text NOT NULL DEFAULT 'paystack' CHECK (provider = 'paystack'), currency text NOT NULL CHECK (currency = 'ZAR'), amount_minor bigint NOT NULL CHECK (amount_minor > 0), fee_minor bigint NOT NULL CHECK (fee_minor >= 0), status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','paid','failed','test_paid')), authorization_url text, created_at timestamptz NOT NULL DEFAULT now(), paid_at timestamptz);
+GRANT SELECT ON public.international_payments TO authenticated;
+GRANT ALL ON public.international_payments TO service_role;
+ALTER TABLE public.international_payments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY international_payments_owner ON public.international_payments FOR SELECT TO authenticated USING (user_id = auth.uid());
+CREATE INDEX international_payments_owner_date ON public.international_payments(user_id,created_at DESC);
+COMMENT ON TABLE public.international_payments IS 'Separate ZAR provider ledger; never credits MZN profiles or national transactions. Provider settlement occurs in the linked Paystack account.';

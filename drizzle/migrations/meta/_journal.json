@@ -50,6 +50,13 @@
       "when": 1794312780017,
       "tag": "0006_guard_payment_sms_template_editing",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794541701990,
+      "tag": "0007_international_product_checkout",
+      "breakpoints": true
     }
   ]
 }
