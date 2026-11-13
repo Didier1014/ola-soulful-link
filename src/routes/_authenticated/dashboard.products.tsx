@@ -23,6 +23,7 @@ import {
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { formatProductPrice } from "@/lib/checkout-currency";
+import { useWorkspaceCurrency } from "@/components/workspace-currency";
 import { listInternationalPayments } from "@/lib/international-checkout.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/products")({
@@ -128,6 +129,7 @@ function fromProduct(p: any): Form {
 
 function ProductsPage() {
   const qc = useQueryClient();
+  const { currency } = useWorkspaceCurrency();
   const fetchList = useServerFn(listMyProducts);
   const create = useServerFn(createProduct);
   const update = useServerFn(updateProduct);
@@ -146,7 +148,7 @@ function ProductsPage() {
   const isEditing = editingId !== null;
 
   function openCreate() {
-    setForm(emptyForm); setEditingId(null); setStep("type"); setOpen(true);
+    setForm({ ...emptyForm, currency, checkout_provider: currency === "MZN" ? "national" : currency === "ZAR" ? "paystack" : "stripe" }); setEditingId(null); setStep("type"); setOpen(true);
   }
   function openEdit(p: any) {
     setForm(fromProduct(p)); setEditingId(p.id); setStep("form"); setOpen(true);
@@ -186,12 +188,12 @@ function ProductsPage() {
       </div>
 
       <div className="space-y-2">
-        {!products.length && (
+        {!products.filter(p => (p.currency ?? "MZN") === currency).length && (
           <Card className="rounded-2xl p-10 text-center text-sm text-muted-foreground">
             Sem produtos. Clica em <strong>Novo Produto</strong> para começar.
           </Card>
         )}
-        {products.map((p: any) => (
+        {products.filter(p => (p.currency ?? "MZN") === currency).map((p: any) => (
           <Card key={p.id} className="rounded-2xl overflow-hidden sm:p-3 sm:flex sm:items-center sm:gap-3">
             {/* Mobile: large stacked layout */}
             <div className="sm:hidden">
@@ -252,10 +254,10 @@ function ProductsPage() {
         ))}
       </div>
 
-      {!!internationalPayments.length && <section className="pt-6 space-y-3">
-        <h2 className="font-semibold text-lg">Pagamentos internacionais · ZAR</h2>
-        <p className="text-sm text-muted-foreground">Recebimentos na Paystack, separados do saldo em MT. Taxa Redox: 8%; cobrança da taxa pendente de configuração.</p>
-        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left border-b border-border"><th className="py-3">Data</th><th>Valor</th><th>Taxa Redox</th><th>Estado</th></tr></thead><tbody>{internationalPayments.map(payment => <tr key={payment.reference} className="border-b border-border"><td className="py-3">{new Date(payment.created_at).toLocaleDateString("pt-PT")}</td><td>{(payment.amount_minor / 100).toFixed(2)} ZAR</td><td>{(payment.fee_minor / 100).toFixed(2)} ZAR</td><td>{({ paid: "Confirmado", test_paid: "Teste", pending: "Pendente", failed: "Falhou" })[payment.status]}</td></tr>)}</tbody></table></div>
+      {!!internationalPayments.filter(p => p.currency === currency).length && <section className="pt-6 space-y-3">
+        <h2 className="font-semibold text-lg">Pagamentos internacionais · {currency}</h2>
+        <p className="text-sm text-muted-foreground">Recebimentos na conta do provedor, separados do saldo em MT. A taxa de 8% é contabilística e não é retida pelo split atual.</p>
+        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left border-b border-border"><th className="py-3">Data</th><th>Valor</th><th>Taxa Redox</th><th>Estado</th></tr></thead><tbody>{internationalPayments.filter(p => p.currency === currency).map(payment => <tr key={payment.reference} className="border-b border-border"><td className="py-3">{new Date(payment.created_at).toLocaleDateString("pt-PT")}</td><td>{(payment.amount_minor / 100).toFixed(2)} {payment.currency}</td><td>{(payment.fee_minor / 100).toFixed(2)} {payment.currency}</td><td>{({ paid: "Confirmado", test_paid: "Teste", pending: "Pendente", failed: "Falhou" })[payment.status]}</td></tr>)}</tbody></table></div>
       </section>}
 
       <ProductDialog
