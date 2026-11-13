@@ -1,0 +1,3 @@
+import { expect, it } from "vitest";
+import { visitorCountry } from "./visitor-country";
+it("reads edge country and rejects unavailable location codes", () => { expect(visitorCountry(new Request("https://example.com", { headers: { "cf-ipcountry": "ZA" } }))).toBe("ZA"); expect(visitorCountry(new Request("https://example.com", { headers: { "cf-ipcountry": "XX" } }))).toBeNull(); expect(visitorCountry(new Request("https://example.com"))).toBeNull(); });

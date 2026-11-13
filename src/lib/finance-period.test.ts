@@ -1,0 +1,4 @@
+import { expect, it } from "vitest";
+import { financePeriod } from "./finance-period";
+it("yesterday excludes today's transactions", () => { const now = new Date(2026, 10, 13, 12); const range = financePeriod(-1, now); expect(range.includes(new Date(2026, 10, 12, 14).toISOString())).toBe(true); expect(range.includes(new Date(2026, 10, 13, 1).toISOString())).toBe(false); });
+it("seven days includes seven calendar days only", () => { const range = financePeriod(7, new Date(2026, 10, 13, 12)); expect(range.includes(new Date(2026, 10, 7).toISOString())).toBe(true); expect(range.includes(new Date(2026, 10, 6, 23).toISOString())).toBe(false); });

@@ -19,6 +19,7 @@ export type Database = {
           attempted_at: string | null
           campaign: string
           completed_at: string | null
+          country_code: string | null
           created_at: string
           device: string
           error_at: string | null
@@ -37,6 +38,7 @@ export type Database = {
           attempted_at?: string | null
           campaign?: string
           completed_at?: string | null
+          country_code?: string | null
           created_at?: string
           device?: string
           error_at?: string | null
@@ -55,6 +57,7 @@ export type Database = {
           attempted_at?: string | null
           campaign?: string
           completed_at?: string | null
+          country_code?: string | null
           created_at?: string
           device?: string
           error_at?: string | null
