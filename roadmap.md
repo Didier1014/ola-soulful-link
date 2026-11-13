@@ -1,6 +1,6 @@
 # Reference checkout style
 
-- [ ] Correct the custom checkout to the supplied screenshots: blue header, full-width original photo, yellow order panel and dark form/summary; verify English processing without a real charge.
+- [x] Correct custom checkout to supplied screenshots: blue header, large original photo, yellow order panel and dark form/summary with optional buyer phone. English processing and errors verified with all payment requests blocked; desktop/mobile no overflow, 16 tests pass and build OK. No invented countdown, refund policy or EFT promise; publication required.
 
 - [x] Add selectable normal/offer checkout styles with isolated black/gold presentation and existing national/international payment verification.
 - [x] Apply offer style only to front-q6b for the specified owner; original photo, English language and 599 ZAR price preserved.
