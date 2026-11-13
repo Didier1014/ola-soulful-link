@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { initializeInternationalCheckout } from "@/lib/international-checkout.functions";
 import { formatProductPrice } from "@/lib/checkout-currency";
+import { PAYSTACK_PUBLIC_KEY } from "@/lib/paystack-config";
 
 type Product = { id: string; name: string; price_mzn: number; price_amount?: number | null; currency?: string; checkout_provider?: string; cover_url?: string | null };
 
 async function openPaystack(accessCode: string, onSuccess: () => void, onCancel: () => void) {
-  const host = window as unknown as { PaystackPop?: new () => { resumeTransaction: (code: string, options: { onSuccess: () => void; onCancel: () => void }) => void } };
+  const host = window as unknown as { PaystackPop?: new () => { resumeTransaction: (code: string, options: { onSuccess: () => void; onCancel: () => void; onError: () => void }) => void } };
   if (!host.PaystackPop) {
     await new Promise<void>((resolve, reject) => {
       const script = document.createElement("script");
@@ -21,7 +22,7 @@ async function openPaystack(accessCode: string, onSuccess: () => void, onCancel:
     });
   }
   if (!host.PaystackPop) throw new Error("Pagamento seguro indisponível");
-  new host.PaystackPop().resumeTransaction(accessCode, { onSuccess, onCancel });
+  new host.PaystackPop().resumeTransaction(accessCode, { onSuccess, onCancel, onError: onCancel });
 }
 
 export function InternationalCheckout({ product }: { product: Product }) {
@@ -47,7 +48,7 @@ export function InternationalCheckout({ product }: { product: Product }) {
     }
   }
 
-  return <div className="international-checkout min-h-screen bg-background text-foreground">
+  return <div className="international-checkout min-h-screen bg-background text-foreground" data-paystack-public-key={stripe ? undefined : PAYSTACK_PUBLIC_KEY}>
     <div className="mx-auto max-w-[680px] px-5 sm:px-8 pb-10">
       <header className="flex items-center justify-between gap-4 pt-8 pb-14 sm:pb-20">
         <a href="/" className="text-primary text-2xl font-extrabold leading-tight">REDOX<span className="block text-sm font-semibold">PAY</span></a>
