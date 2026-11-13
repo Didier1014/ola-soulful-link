@@ -11,9 +11,9 @@
 - All authenticated pages use the full desktop workspace width through the shared shell and page-wrapper CSS, with aligned header gutters; modal and individual control widths remain independent.
 - Active payments use the Pagar server-only client through the legacy adapter; pending VendusPay references stay reconcilable and TEST operations never settle as real sales.
 - Product checkout currency/provider combinations are validated centrally; international products have zero legacy MZN price to prevent national callers from charging foreign prices as MT.
-- Paystack uses the linked server-only gateway and its hosted card popup; capability-protected verification checks reference, amount, currency and environment before releasing delivery, never browser success claims.
+- Paystack uses the builder-designated saved provider secret directly server-side and its hosted card popup; capability-protected verification checks reference, amount, currency and environment before releasing delivery, never browser success claims.
 - International payments use a separate owner-readable ledger, never MZN balances; every Paystack initialization centrally enforces the approved global split without client overrides. Recorded platform fees are accounting-only unless the provider split reserves them.
-- Paystack callbacks validate SHA512 against the builder-designated saved LIVE secret, then independently verify through the linked connector; callback claims alone never settle a payment.
+- Paystack callbacks validate SHA512 against the same builder-designated saved LIVE secret used for API requests, then independently verify with the provider; callback claims alone never settle a payment.
 - Gateway settlement (Pagar and VendusPay, webhook, polling and reconciliation) uses the restricted atomic settlement function so webhook retries and polling cannot credit a seller twice.
 - Pagar webhooks prefer the dedicated webhook secret and fall back to the previously saved PagAja webhook secret, preserving signature validation without copying secret values.
 - App notifications send synchronously through the managed template helper; kept email tables are audit-only, and signed outcome events preserve their legacy status contract without gating sends.

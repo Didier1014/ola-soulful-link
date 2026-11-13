@@ -1,15 +1,16 @@
 export async function paystackRequest(path: string, body?: Record<string, unknown>) {
-  const key = process.env["LOVABLE_API_KEY"];
-  const connection = process.env["UDC_PAYSTACK_API_KEY"];
-  if (!key || !connection) throw new Error("Paystack ainda não está configurada");
+  // Builder explicitly selected this saved provider secret for the new account.
+  // Both API requests and webhook signatures use the same server-only value.
+  const key = process.env["STRIPE_LIVE_API_KEY"];
+  if (!key) throw new Error("Paystack ainda não está configurada");
   // Enforce the account-wide settlement destination for every new payment.
-  // The approved split does not reserve the ledger's recorded platform fee.
+  // Provider allocation follows this split; accounting fees do not override it.
   const requestBody = body && path === "/transaction/initialize"
-    ? { ...body, split_code: "SPL_fO36PDxvUk" }
+    ? { ...body, split_code: "SPL_73WGtTcz2N" }
     : body;
-  const response = await fetch(`https://connector-gateway.lovable.dev/udc_paystack${path}`, {
+  const response = await fetch(`https://api.paystack.co${path}`, {
     method: body ? "POST" : "GET",
-    headers: { Authorization: `Bearer ${key}`, "X-Connection-Api-Key": connection, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     ...(requestBody ? { body: JSON.stringify(requestBody) } : {}),
     signal: AbortSignal.timeout(25000),
   });
