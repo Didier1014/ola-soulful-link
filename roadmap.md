@@ -1,5 +1,11 @@
 # Multi-currency SaaS and international checkout
 
+# Bug review and email verification
+
+- [ ] Run regression tests and review authenticated dashboard, currency filters, transactions and checkout language for errors.
+- [x] Enable managed project emails; sender domain remains verifying DNS.
+- [ ] Test actual app-email delivery after sender verification; blocked by pending DNS verification, not an application queue.
+
 - [x] Add product checkout language (Portuguese, English, Spanish, French and automatic) and approximate edge visitor country, shown in Operation; no currency or price changes.
 - [x] Place currency controls below dashboard period filters and inside Transactions; include yesterday and paid MT withdrawal outflows. International outflows remain explicitly unavailable, not zero.
 - [x] Nineteen tests pass; saved/reloaded English on approved checkout, restored original language, removed validation product, verified actual 10 ZAR sale in Transactions, USD/MT switching, Operation and desktop/mobile without payment or overflow. Live edge geolocation awaits published traffic; local browser has no country by default.
