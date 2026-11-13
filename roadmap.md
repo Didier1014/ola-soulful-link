@@ -1,3 +1,9 @@
+# Reference checkout style
+
+- [x] Add selectable normal/offer checkout styles with isolated black/gold presentation and existing national/international payment verification.
+- [x] Apply offer style only to front-q6b for the specified owner; original photo, English language and 599 ZAR price preserved.
+- [x] Desktop/mobile photo, price and valid form verified without charging; authenticated style selection saved/read back using a temporary product, then removed. Fifteen style/language/currency tests pass; build OK. Publication required; no real purchase performed.
+
 # Paystack credential replacement
 
 - [x] Replace publishable key and global split; use builder-designated saved secret for both provider API and callback signatures, without fallback to the previous connection.

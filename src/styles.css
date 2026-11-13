@@ -166,6 +166,44 @@
 
  .international-checkout :is(h1, h2, h3) { font-family: var(--font-display); letter-spacing: 0; }
 
+/* Reference offer theme: local to opted-in public checkouts. */
+.offer-checkout {
+  --background: #090807;
+  --foreground: #171714;
+  --card: #ffffff;
+  --primary: #bf812d;
+  --primary-foreground: #110d06;
+  --muted-foreground: #66717d;
+  --border: #e4e6e8;
+  --input: #d6dce1;
+  --ring: #bf812d;
+  --secondary: #f6f7f8;
+  --secondary-foreground: #171714;
+  --accent: #fff4dc;
+  --accent-foreground: #171714;
+  --success: #9b691f;
+  --destructive: #b52d36;
+  --offer-gold: #f1c65f;
+  --offer-edge: #9d8f6e;
+  --offer-button: linear-gradient(105deg, var(--offer-gold), var(--primary));
+  --offer-shadow: 0 6px 15px color-mix(in srgb, var(--primary) 24%, transparent);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Manrope", sans-serif;
+  letter-spacing: 0;
+}
+.offer-brand { color: var(--offer-gold); }
+.offer-sheet { border: 1px solid var(--offer-edge); background: var(--card); }
+.offer-heading { background: var(--background); color: var(--offer-gold); border-bottom: 2px solid var(--primary); }
+.offer-heading h1 { font-family: "Manrope", sans-serif; color: var(--offer-gold); }
+.offer-label { background: var(--offer-button); color: var(--primary-foreground); }
+.offer-body { background: var(--card); }
+.offer-photo { background: var(--card); }
+.offer-kicker, .offer-trust { color: var(--success); }
+.offer-price { border-color: var(--border); }
+.offer-checkout input { background: var(--card); color: var(--foreground); border-color: var(--input); min-height: 48px; border-radius: 6px; }
+.offer-checkout .offer-submit { background: var(--offer-button); color: var(--primary-foreground); box-shadow: var(--offer-shadow); min-height: 52px; }
+
 @layer base {
   * {
     border-color: var(--color-border);
