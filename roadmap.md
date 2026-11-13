@@ -1,6 +1,6 @@
 # International product checkouts
 
-- [ ] Apply the approved global Paystack split to every new initialization; validate outgoing requests and provider acceptance without charging a card.
+- [x] Apply the approved global Paystack split to every new initialization; eleven tests pass and actual server adapter initialization is accepted without charging a card. The verified LIVE ZAR split allocates 100% to its recipient, as explicitly approved.
 - [x] Configure the supplied public key; designated saved LIVE secret exists and callback/webhook URLs provided.
 - [ ] Validate a signed Paystack callback after publication; saved webhook secret is unavailable to local preview and no provider callback has arrived.
 
@@ -8,7 +8,7 @@
 - [x] Product creation offers national MT, Paystack ZAR and future Stripe EUR/USD; created and read back ZAR product, then disabled validation product.
 - [x] Applied reference-led international design, desktop/mobile checked with no overflow; secure card fields stay hosted by Paystack.
 - [x] Separate owner-readable ZAR ledger, MZN guard and nine currency/signature tests pass; ledger read back through authenticated UI and missing capability rejected.
-- [ ] Collect the 8% platform fee automatically; needs provider split/subaccount and settlement configuration. The fee is calculated and displayed, not deducted by Paystack yet.
+- [x] Resolve Paystack split configuration: user explicitly approved a 100% recipient split without reserving the 8% platform fee. The ledger fee remains accounting-only; no fee collection is claimed.
 - [ ] Confirm an authorized real international purchase and delivery; no card details entered or real payment made.
 
 # Return to Pagar
