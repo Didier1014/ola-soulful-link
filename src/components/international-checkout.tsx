@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { initializeInternationalCheckout } from "@/lib/international-checkout.functions";
 import { formatProductPrice } from "@/lib/checkout-currency";
 import { PAYSTACK_PUBLIC_KEY } from "@/lib/paystack-config";
+import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
 
-type Product = { id: string; name: string; price_mzn: number; price_amount?: number | null; currency?: string; checkout_provider?: string; cover_url?: string | null };
+type Product = { id: string; slug?: string; name: string; price_mzn: number; price_amount?: number | null; currency?: string; checkout_provider?: string; cover_url?: string | null };
 
 async function openPaystack(accessCode: string, onSuccess: () => void, onCancel: () => void) {
   const host = window as unknown as { PaystackPop?: new () => { resumeTransaction: (code: string, options: { onSuccess: () => void; onCancel: () => void; onError: () => void }) => void } };
@@ -34,15 +35,18 @@ export function InternationalCheckout({ product }: { product: Product }) {
   const [resume, setResume] = useState<{ access_code: string; authorization_url: string } | null>(null);
   const stripe = product.checkout_provider === "stripe";
   const price = formatProductPrice(product);
+  const operation = useCheckoutOperation("product", product.slug ?? "", !!product.slug, name, email, true);
 
   async function pay() {
     setBusy(true); setError("");
     try {
-      const result = await initialize({ data: { product_id: product.id, name, email } });
+      const tracking = await operation.internationalAttempt();
+      const result = await initialize({ data: { product_id: product.id, name, email, ...tracking } });
       sessionStorage.setItem(`rdx-paystack:${result.reference}`, result.capability);
       setResume(result);
       await openPaystack(result.access_code, () => { window.location.assign(`/international-return?reference=${encodeURIComponent(result.reference)}`); }, () => { setBusy(false); setError("Pagamento interrompido. Pode continuar quando quiser."); });
     } catch (e) {
+      operation.error();
       setError(e instanceof Error ? e.message : "Não foi possível iniciar o pagamento");
       setBusy(false);
     }

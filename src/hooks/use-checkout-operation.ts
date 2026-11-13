@@ -4,7 +4,7 @@ import { formMilestone } from "@/lib/operation";
 type Session = { session_id: string; token: string; expires: number };
 type Event = "visited" | "started" | "completed" | "attempted" | "error" | "heartbeat";
 
-export function useCheckoutOperation(kind: "product" | "link", slug: string, enabled: boolean, name: string, phone: string) {
+export function useCheckoutOperation(kind: "product" | "link", slug: string, enabled: boolean, name: string, phone: string, international = false) {
   const session = useRef<Session | null>(null);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   const sent = useRef(new Set<string>());
@@ -50,14 +50,15 @@ export function useCheckoutOperation(kind: "product" | "link", slug: string, ena
 
   useEffect(() => {
     if (!enabled) return;
-    const milestone = formMilestone(name, phone);
+    const milestone = international ? (name.trim().length >= 2 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(phone) ? "completed" : name.trim() || phone.trim() ? "started" : null) : formMilestone(name, phone);
     if (!milestone || sent.current.has(milestone)) return;
     sent.current.add(milestone);
     send(milestone);
-  }, [enabled, name, phone, send]);
+  }, [enabled, name, phone, send, international]);
 
   return {
     attempt: async () => { send("attempted"); return session.current ? { operation_session_id: session.current.session_id } : {}; },
     error: () => send("error"),
+    internationalAttempt: async () => { await queue.current.catch(() => {}); send("attempted"); return session.current ? { operation_session_id: session.current.session_id, operation_token: session.current.token } : {}; },
   };
 }

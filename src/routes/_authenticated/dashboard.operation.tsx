@@ -7,8 +7,10 @@ import { Activity, Users, MousePointer2, FileCheck2, CreditCard, AlertTriangle, 
 import { AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 import { FunnelOperation, funnelsQuery } from "@/components/funnel-operation";
+import { useWorkspaceCurrency } from "@/components/workspace-currency";
+import type { WorkspaceCurrency } from "@/lib/workspace-currency";
 
-const operationQuery = (hours = 24, resource?: string) => queryOptions({ queryKey: ["operation", hours, resource], queryFn: () => getOperation({ data: { hours: hours as 24 | 168 | 720, resource } }), refetchInterval: 30000 });
+const operationQuery = (hours = 24, resource?: string, currency: WorkspaceCurrency = "MZN") => queryOptions({ queryKey: ["operation", hours, resource, currency], queryFn: () => getOperation({ data: { hours: hours as 24 | 168 | 720, resource, currency } }), refetchInterval: 30000 });
 export const Route = createFileRoute("/_authenticated/dashboard/operation")({
   loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(operationQuery()), context.queryClient.ensureQueryData(funnelsQuery())]),
   head: () => ({ meta: [
@@ -26,17 +28,18 @@ const count = (value: number) => new Intl.NumberFormat("pt-MZ").format(value);
 const percent = (value: number, total: number) => `${total ? (value / total * 100).toFixed(1) : "0,0"}%`;
 const stageLabels: Record<string, string> = { visited: "Chegou ao checkout", started: "A preencher", completed: "Dados preenchidos", attempted: "Pagamento iniciado", pending: "Pagamento pendente", paid: "Pago", failed: "Pagamento falhou", error: "Erro ao iniciar" };
 function OperationPage() {
+  const { currency } = useWorkspaceCurrency();
   const [hours, setHours] = useState(24);
   const [resource, setResource] = useState("all");
-  const { data: all } = useSuspenseQuery(operationQuery(hours));
-  const { data, refetch, isFetching } = useSuspenseQuery(operationQuery(hours, resource === "all" ? undefined : resource));
+  const { data: all } = useSuspenseQuery(operationQuery(hours, undefined, currency));
+  const { data, refetch, isFetching } = useSuspenseQuery(operationQuery(hours, resource === "all" ? undefined : resource, currency));
   const t = data.totals;
   const series = data.hourly.map(point => ({ ...point, label: new Date(point.ts).toLocaleTimeString("pt-MZ", { timeZone: "Africa/Maputo", hour: "2-digit", minute: "2-digit" }) }));
   const peak = series.reduce((best, point) => point.leads > best.leads ? point : best, series[0]);
   const funnel = [
     { label: "Chegaram ao checkout", value: t.visits, icon: Users },
     { label: "Começaram a preencher", value: t.started, icon: MousePointer2 },
-    { label: "Preencheram nome e telefone", value: t.completed, icon: FileCheck2 },
+    { label: currency === "MZN" ? "Preencheram nome e telefone" : "Preencheram nome e email", value: t.completed, icon: FileCheck2 },
     { label: "Clicaram em pagar", value: t.attempted, icon: CreditCard },
     { label: "Pagamento confirmado", value: t.paid, icon: TrendingUp },
   ];

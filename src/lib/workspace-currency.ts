@@ -15,5 +15,6 @@ export function currencyPayments(rows: WorkspacePayment[], currency: WorkspaceCu
 }
 export function paymentTotals(rows: WorkspacePayment[]) {
   const paid = rows.filter(row => row.status === "paid");
-  return { volume: paid.reduce((sum, row) => sum + row.amount, 0), fees: paid.reduce((sum, row) => sum + row.fee, 0), net: paid.reduce((sum, row) => sum + row.net, 0), paid: paid.length, count: rows.length };
+  const sum = (key: "amount" | "fee" | "net") => paid.reduce((total, row) => total + Math.round(row[key] * 100), 0) / 100;
+  return { volume: sum("amount"), fees: sum("fee"), net: sum("net"), paid: paid.length, count: rows.length };
 }

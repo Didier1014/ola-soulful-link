@@ -14,7 +14,7 @@ export const getWorkspaceFinance = createServerFn({ method: "GET" })
       client = (await import("@/integrations/supabase/client.server")).supabaseAdmin;
     }
     let nationalQuery = client.from("transactions").select("id,user_id,product_id,amount_mzn,fee_mzn,net_mzn,status,is_test,created_at,method,customer_name,customer_phone,customer_email,external_ref");
-    let internationalQuery = client.from("international_payments").select("id,user_id,product_id,reference,provider,currency,amount_minor,fee_minor,status,created_at");
+    let internationalQuery = client.from("international_payments").select("id,user_id,product_id,reference,provider,currency,amount_minor,fee_minor,status,created_at,customer_name,customer_email");
     if (!data.admin) { nationalQuery = nationalQuery.eq("user_id", context.userId); internationalQuery = internationalQuery.eq("user_id", context.userId); }
     const [national, international, profile] = await Promise.all([
       data.currency === "MZN" ? nationalQuery.order("created_at", { ascending: false }) : Promise.resolve({ data: [], error: null }),
@@ -24,7 +24,7 @@ export const getWorkspaceFinance = createServerFn({ method: "GET" })
     if (national.error || international.error || profile.error) throw new Error("Não foi possível carregar os pagamentos desta moeda");
     const payments: WorkspacePayment[] = [
       ...(national.data ?? []).map(row => ({ id: row.id, user_id: row.user_id, product_id: row.product_id, currency: "MZN" as WorkspaceCurrency, amount: Number(row.amount_mzn), fee: Number(row.fee_mzn ?? 0), net: Number(row.net_mzn ?? 0), status: row.is_test && row.status === "paid" ? "test_paid" : row.status, created_at: row.created_at, method: row.method, customer_name: row.customer_name, customer_email: row.customer_email, customer_phone: row.customer_phone, external_ref: row.external_ref, provider: "national" })),
-      ...(international.data ?? []).map(row => ({ id: row.id, user_id: row.user_id, product_id: row.product_id, currency: row.currency as WorkspaceCurrency, amount: Number(row.amount_minor) / 100, fee: Number(row.fee_minor) / 100, net: (Number(row.amount_minor) - Number(row.fee_minor)) / 100, status: row.status, created_at: row.created_at, method: "card", customer_name: null, customer_phone: null, customer_email: null, external_ref: row.reference, provider: row.provider })),
+      ...(international.data ?? []).map(row => ({ id: row.id, user_id: row.user_id, product_id: row.product_id, currency: row.currency as WorkspaceCurrency, amount: Number(row.amount_minor) / 100, fee: Number(row.fee_minor) / 100, net: (Number(row.amount_minor) - Number(row.fee_minor)) / 100, status: row.status, created_at: row.created_at, method: "card", customer_name: row.customer_name, customer_phone: null, customer_email: row.customer_email, external_ref: row.reference, provider: row.provider })),
     ];
     const rows = currencyPayments(payments, data.currency);
     const totals = paymentTotals(rows);
