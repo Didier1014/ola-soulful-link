@@ -1,7 +1,7 @@
 # Paystack credential replacement
 
 - [x] Replace publishable key and global split; use builder-designated saved secret for both provider API and callback signatures, without fallback to the previous connection.
-- [ ] Verify authentication and initialization without charging; run payment regression tests.
+- [x] Saved secret authenticates; requested split is active for ZAR and hosted initialization is accepted without a charge. Twelve payment/signature/currency tests pass and preview build is OK; real purchase and callback remain untested, and publication is required.
 
 # Complete email flows
 

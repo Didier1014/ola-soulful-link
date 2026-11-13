@@ -4,7 +4,7 @@ export async function paystackRequest(path: string, body?: Record<string, unknow
   const key = process.env["STRIPE_LIVE_API_KEY"];
   if (!key) throw new Error("Paystack ainda não está configurada");
   // Enforce the account-wide settlement destination for every new payment.
-  // The approved split does not reserve the ledger's recorded platform fee.
+  // Provider allocation follows this split; accounting fees do not override it.
   const requestBody = body && path === "/transaction/initialize"
     ? { ...body, split_code: "SPL_73WGtTcz2N" }
     : body;
