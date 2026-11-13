@@ -9,8 +9,10 @@ import { initializeInternationalCheckout } from "@/lib/international-checkout.fu
 import { formatProductPrice } from "@/lib/checkout-currency";
 import { PAYSTACK_PUBLIC_KEY } from "@/lib/paystack-config";
 import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
+import { OfferCheckout } from "@/components/offer-checkout";
+import { resolveCheckoutStyle } from "@/lib/checkout-style";
 
-type Product = { id: string; slug?: string; name: string; price_mzn: number; price_amount?: number | null; currency?: string; checkout_provider?: string; cover_url?: string | null; config?: { checkout?: { language?: string } }; visitor_country?: string | null };
+type Product = { id: string; slug?: string; name: string; description?: string | null; price_mzn: number; price_amount?: number | null; currency?: string; checkout_provider?: string; cover_url?: string | null; config?: { checkout?: { language?: string; style?: string } }; visitor_country?: string | null };
 
 async function openPaystack(accessCode: string, onSuccess: () => void, onCancel: () => void) {
   const host = window as unknown as { PaystackPop?: new () => { resumeTransaction: (code: string, options: { onSuccess: () => void; onCancel: () => void; onError: () => void }) => void } };
@@ -53,6 +55,20 @@ export function InternationalCheckout({ product }: { product: Product }) {
       setBusy(false);
     }
   }
+
+  if (resolveCheckoutStyle(product.config?.checkout) === "offer") return <OfferCheckout product={product} price={price} language={language} t={t}>
+    <form onSubmit={event => { event.preventDefault(); void pay(); }} className="space-y-5">
+      <div className="space-y-2"><Label htmlFor="international-name">{t.name}</Label><Input id="international-name" autoComplete="name" placeholder={t.yourName} required minLength={2} maxLength={120} value={name} onChange={event => setName(event.target.value)} /></div>
+      <div className="space-y-2"><Label htmlFor="international-email">{t.email}</Label><Input id="international-email" type="email" autoComplete="email" placeholder="you@example.com" required maxLength={160} value={email} onChange={event => setEmail(event.target.value)} /></div>
+      <div className="flex items-center gap-2 text-sm text-muted-foreground"><CreditCard className="size-5 shrink-0" />{t.card} · VISA · Mastercard</div>
+      <p className="text-xs leading-relaxed text-muted-foreground">{t.cardSafety} {stripe ? "Stripe" : "Paystack"}.</p>
+      {stripe && <p role="status" className="text-sm text-muted-foreground">{t.stripe}</p>}
+      {error && <p role="alert" className="text-destructive text-sm">{error}</p>}
+      <Button type="submit" disabled={busy || stripe} className="offer-submit w-full h-auto py-4 font-bold whitespace-normal gap-2">{busy ? <Loader2 className="size-5 animate-spin" /> : <Lock className="size-5" />}{t.finish} · {price}</Button>
+      {resume && !busy && <Button type="button" variant="outline" className="w-full whitespace-normal h-auto py-3" onClick={() => window.location.assign(resume.authorization_url)}>{t.continue}<ArrowRight className="size-4" /></Button>}
+      <p className="text-center text-xs text-muted-foreground">{t.charge} {product.currency} · {t.exchange}</p>
+    </form>
+  </OfferCheckout>;
 
   return <div lang={language} className="international-checkout min-h-screen bg-background text-foreground" data-paystack-public-key={stripe ? undefined : PAYSTACK_PUBLIC_KEY}>
     <div className="mx-auto max-w-[680px] px-5 sm:px-8 pb-10">

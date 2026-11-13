@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
 import { useCheckoutLanguage } from "@/hooks/use-checkout-language";
 import { InternationalCheckout } from "@/components/international-checkout";
+import { OfferCheckout } from "@/components/offer-checkout";
+import { resolveCheckoutStyle } from "@/lib/checkout-style";
 
 // Slugs com checkout personalizado próprio
 const CUSTOM_CHECKOUTS: Record<string, string> = {
@@ -313,6 +315,17 @@ function CheckoutPage() {
   const bumps: Array<{ id: string; name: string; price_mzn: number; cover_url: string | null }> = (product as any).order_bumps ?? [];
   const bumpsTotal = bumps.reduce((s, b) => selectedBumps[b.id] ? s + Number(b.price_mzn) : s, 0);
   const total = price + bumpsTotal;
+  if (resolveCheckoutStyle(product.config?.checkout) === "offer") return <OfferCheckout product={product} price={fmt(total)} language={language} t={t}>
+    <form className="space-y-5" onSubmit={event => { event.preventDefault(); m.mutate(); }}>
+      <div className="space-y-2"><Label htmlFor="offer-name">{t.name}</Label><Input id="offer-name" autoComplete="name" required minLength={2} maxLength={120} value={form.customer_name} onChange={event => setForm({ ...form, customer_name: event.target.value })} /></div>
+      <div className="space-y-2"><Label htmlFor="offer-email">{t.email}</Label><Input id="offer-email" type="email" autoComplete="email" maxLength={160} value={form.customer_email} onChange={event => setForm({ ...form, customer_email: event.target.value })} /></div>
+      {bumps.map(b => <label key={b.id} className="flex items-center gap-3 border border-border rounded-md p-3 text-sm"><input type="checkbox" checked={!!selectedBumps[b.id]} onChange={event => setSelectedBumps({ ...selectedBumps, [b.id]: event.target.checked })} className="size-4" /><span className="flex-1">{b.name}</span><strong>{fmt(Number(b.price_mzn))}</strong></label>)}
+      <fieldset className="space-y-2"><legend className="text-sm font-medium mb-2">{t.payWith}</legend><div className="grid grid-cols-2 gap-2">{(["mpesa", "emola"] as const).map(value => <Button key={value} type="button" variant={method === value ? "default" : "outline"} aria-pressed={method === value} onClick={() => setMethod(value)} className="h-12"><img src={`/brands/${value}.png`} alt="" className="size-7 object-contain" />{value === "mpesa" ? "M-Pesa" : "e-Mola"}</Button>)}</div></fieldset>
+      <div className="space-y-2"><Label htmlFor="offer-phone">{t.number} {method === "mpesa" ? "M-Pesa" : "e-Mola"}</Label><Input id="offer-phone" type="tel" autoComplete="tel" placeholder="+258" required maxLength={15} value={form.customer_phone} onChange={event => setForm({ ...form, customer_phone: event.target.value })} /></div>
+      {modal && <div role="status" className="border border-border rounded-md p-4 text-sm">{modal.status === "processing" ? t.processing : modal.status === "pending" ? `${t.pin} ${method === "mpesa" ? "M-Pesa" : "e-Mola"}.` : modal.status === "paid" ? t.confirmed : t.retryHint}</div>}
+      <Button type="submit" disabled={m.isPending || modal?.status === "pending" || modal?.status === "paid"} className="offer-submit w-full whitespace-normal h-auto py-4 font-bold">{m.isPending ? <Loader2 className="size-5 animate-spin" /> : <Lock className="size-5" />}{t.pay} · {fmt(total)}</Button>
+    </form>
+  </OfferCheckout>;
   const methodColor = method === "emola" ? "#0284c7" : "#ef4444";
   const methodGradient = method === "emola" ? "linear-gradient(135deg, #0ea5e9, #0284c7)" : "linear-gradient(135deg, #ef4444, #dc2626)";
 
