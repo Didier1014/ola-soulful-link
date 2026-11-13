@@ -1,5 +1,7 @@
 # Reference checkout style
 
+- [ ] Refine uploaded-photo match: wrapped breadcrumb, reference text proportions, rounded order/form/summary, phone prefix icon and input sizing; verify actual checkout on mobile and desktop without charging.
+
 - [x] Correct custom checkout to supplied screenshots: blue header, large original photo, yellow order panel and dark form/summary with optional buyer phone. English processing and errors verified with all payment requests blocked; desktop/mobile no overflow, 16 tests pass and build OK. No invented countdown, refund policy or EFT promise; publication required.
 
 - [x] Add selectable normal/offer checkout styles with isolated black/gold presentation and existing national/international payment verification.

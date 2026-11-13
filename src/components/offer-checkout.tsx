@@ -16,24 +16,24 @@ export function OfferCheckout({ product, price, language, t, children }: {
   const text = copy[language];
   return <div lang={language} className="offer-checkout min-h-screen">
     <header className="offer-brand">
-      <div className="mx-auto flex max-w-[750px] items-center justify-between gap-4 px-4 py-5 sm:px-8">
+      <div className="offer-header-inner mx-auto flex max-w-[750px] items-center justify-between gap-4 px-4 sm:px-8">
         <span className="offer-header-title min-w-0 truncate rounded-md px-3 py-2 font-bold">{product.name}</span>
         <span className="offer-header-price flex shrink-0 items-center gap-2 rounded-full px-4 py-2 font-bold"><Wallet className="size-5" />{price}</span>
       </div>
     </header>
     <main className="mx-auto max-w-[750px]">
       {product.cover_url && <div className="offer-photo aspect-[4/3] w-full"><img src={product.cover_url} alt={product.name} className="h-full w-full object-contain" /></div>}
-      <div className="offer-body px-4 py-5 sm:px-8 sm:py-8">
-        <nav aria-label="Breadcrumb" className="offer-breadcrumb mb-4 flex items-center gap-2 text-xs sm:text-sm"><a href="/">Redox Pay</a><ChevronRight className="size-4 shrink-0" /><span className="truncate">{product.name}</span><ChevronRight className="size-4 shrink-0" /><span>Checkout</span></nav>
+      <div className="offer-body px-4 py-4 sm:px-8 sm:py-8">
+        <nav aria-label="Breadcrumb" className="offer-breadcrumb mb-4 text-sm"><a href="/">Redox Pay</a><ChevronRight className="mx-1 inline size-3.5" /><span>{product.name}</span><ChevronRight className="mx-1 inline size-3.5" /><span>Checkout</span></nav>
         <section className="offer-order rounded-lg p-5 sm:p-8 mb-4 sm:mb-8">
         <div className="flex justify-between items-center gap-3"><p className="offer-kicker text-sm font-bold uppercase">{text.order}</p><span className="offer-label rounded-md px-2 py-1 text-xs font-bold">CHECKOUT</span></div>
-        <h1 className="mt-2 text-2xl sm:text-4xl font-extrabold leading-tight break-words">{product.name}</h1>
+        <h1 className="mt-2 text-[22px] sm:text-4xl font-extrabold leading-tight break-words">{product.name}</h1>
         {product.description && <p className="mt-3 text-sm leading-relaxed whitespace-pre-line">{product.description}</p>}
-        <p className="offer-price mt-3 text-4xl sm:text-5xl font-extrabold">{price}</p>
+        <p className="offer-price mt-3 text-[32px] sm:text-5xl font-extrabold">{price}</p>
         <p className="offer-kicker mt-3 text-base sm:text-xl leading-relaxed">{language === "en" ? "Complete the form below to finalize your purchase." : text.payment}</p>
         </section>
         {children}
-        <section className="offer-panel mt-4 sm:mt-8 rounded-lg p-5 sm:p-8 flex items-start gap-4"><ShieldCheck className="size-8 shrink-0 text-success" /><div><h2 className="text-lg font-bold">{t.protected}</h2><p className="mt-2 text-sm text-muted-foreground">{t.cardSafety} Paystack.</p></div></section>
+        <section className="offer-panel offer-protection mt-4 sm:mt-8 rounded-lg p-5 sm:p-8 flex items-start gap-3"><span className="offer-protection-icon flex size-10 shrink-0 items-center justify-center rounded-full"><ShieldCheck className="size-6 text-success" /></span><div><h2 className="text-base sm:text-lg font-bold">{t.protected}</h2><p className="mt-2 text-sm text-muted-foreground">{t.cardSafety} Paystack.</p></div></section>
         <div className="mt-4 grid grid-cols-2 gap-2 text-sm">{[{ Icon: ShieldCheck, label: t.secure }, { Icon: Lock, label: t.encrypted }, { Icon: Mail, label: t.email }, { Icon: ShieldCheck, label: "Paystack" }].map(({ Icon, label }) => <div key={label} className="offer-panel rounded-lg px-4 py-3 flex items-center gap-2"><Icon className="size-5 text-primary" /><span className="text-muted-foreground">{label}</span></div>)}</div>
       </div>
     </main>
