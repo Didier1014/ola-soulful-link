@@ -2,6 +2,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getRequest } from "@tanstack/react-start/server";
+import { visitorCountry } from "./visitor-country";
 import { productPricing } from "./checkout-currency";
 
 const productSchema = z.object({
@@ -24,7 +26,10 @@ const productSchema = z.object({
   lawtracker_id: z.string().trim().max(100).optional().default(""),
   support_phone: z.string().trim().max(20).optional().default(""),
   slug: z.string().trim().toLowerCase().regex(/^[a-z0-9-]+$/, "Slug inválido (apenas letras minúsculas, números e -)").min(3, "Slug deve ter no mínimo 3 caracteres").max(80),
-  config: z.record(z.unknown()).optional().default({}),
+  config: z.record(z.unknown()).optional().default({}).superRefine((config, ctx) => {
+    const checkout = config.checkout as { language?: unknown } | undefined;
+    if (checkout?.language !== undefined && !["pt", "en", "es", "fr", "auto"].includes(String(checkout.language))) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Idioma do checkout inválido" });
+  }),
 });
 
 const updateSchema = productSchema.extend({ id: z.string().uuid() });
@@ -252,7 +257,7 @@ export const getProductBySlug = createServerFn({ method: "GET" })
       }
     }
 
-    return { ...row, cover_url: await signCover(supabaseAdmin, row.cover_url), order_bumps: bumps };
+    return { ...row, visitor_country: visitorCountry(getRequest()), cover_url: await signCover(supabaseAdmin, row.cover_url), order_bumps: bumps };
   });
 
 // Public — register a checkout page view (click)
