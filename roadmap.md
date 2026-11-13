@@ -1,3 +1,10 @@
+# International product checkouts
+
+- [ ] Connect Paystack securely and verify account support for ZAR.
+- [ ] Add national MT, Paystack ZAR and future Stripe EUR/USD choices in product creation.
+- [ ] Apply the supplied international checkout design with provider-hosted secure card fields.
+- [ ] Isolate international payment amounts and settlement from existing MZN balances; verify payment flow and currency guards.
+
 # Return to Pagar
 
 - [x] Route new checkout, payment-link and merchant charges to Pagar using existing protected credentials; preserve pending VendusPay reconciliation, prices and fees.
