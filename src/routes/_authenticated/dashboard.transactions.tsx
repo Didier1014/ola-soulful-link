@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { listMyTransactions } from "@/lib/transactions.functions";
+import { useWorkspaceCurrency, useWorkspaceFinance } from "@/components/workspace-currency";
+import { currencyLabel } from "@/lib/workspace-currency";
+import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Search, RefreshCw, Copy, TrendingUp, Activity, CheckCircle2, Clock, XCircle } from "lucide-react";
@@ -10,17 +12,15 @@ export const Route = createFileRoute("/_authenticated/dashboard/transactions")({
   component: TxPage,
 });
 
-const fmtMT = (n: number) => `${new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(n)} MT`;
+const fmtMT = (n: number) => `${new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(n)} {unit}`;
 const fmtMT2 = (n: number) => new Intl.NumberFormat("pt-MZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 
 function TxPage() {
-  const fetchTx = useServerFn(listMyTransactions);
-  const { data = [], isLoading, refetch, isFetching } = useQuery({
-    queryKey: ["tx"],
-    queryFn: () => fetchTx(),
-    refetchInterval: 5000,
-    refetchOnWindowFocus: true,
-  });
+  const { currency } = useWorkspaceCurrency();
+  const unit = currencyLabel(currency);
+  const fmtMT = (n: number) => `${fmtMT2(n)} ${unit}`;
+  const { data: finance, isLoading, refetch, isFetching } = useWorkspaceFinance();
+  const data = (finance?.payments ?? []).map(row => ({ ...row, amount_mzn: row.amount, net_mzn: row.net }));
   const [filter, setFilter] = useState<"all" | "paid" | "pending" | "failed">("all");
   const [q, setQ] = useState("");
 
@@ -45,9 +45,7 @@ function TxPage() {
     const failed = data.filter((t) => t.status === "failed");
     const volume = paid.reduce((s, t) => s + Number(t.amount_mzn), 0);
     const net = paid.reduce((s, t) => {
-      const amt = Number(t.amount_mzn);
-      const fee = Math.round(amt * 0.08 * 100) / 100;
-      return s + (amt - fee);
+      return s + t.net;
     }, 0);
     return { paid: paid.length, pending: pending.length, failed: failed.length, volume, net };
   }, [data]);
@@ -70,21 +68,21 @@ function TxPage() {
             </span>
             {isFetching && <span className="text-[10px] text-muted-foreground uppercase tracking-widest">sync…</span>}
           </div>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-neo-glow">Transações</h1>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-neo-glow">Transações · {unit}</h1>
           <p className="text-sm text-muted-foreground">Fluxo em tempo real · {data.length} operações</p>
         </div>
-        <button
+        <Button
           onClick={() => refetch()}
           className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl neo-card hover:brightness-110 transition"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Atualizar
-        </button>
+        </Button>
       </div>
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard label="Volume pago" value={fmtMT(stats.volume)} icon={<TrendingUp className="h-4 w-4" />} tone="emerald" />
-        <KpiCard label="Líquido" value={fmtMT(stats.net)} icon={<CheckCircle2 className="h-4 w-4" />} tone="primary" />
+        <KpiCard label={currency === "MZN" ? "Líquido" : "Líquido contabilístico"} value={fmtMT(stats.net)} icon={<CheckCircle2 className="h-4 w-4" />} tone="primary" />
         <KpiCard label="Pendentes" value={String(stats.pending)} icon={<Clock className="h-4 w-4" />} tone="amber" />
         <KpiCard label="Falhadas" value={String(stats.failed)} icon={<XCircle className="h-4 w-4" />} tone="rose" />
       </div>
@@ -107,7 +105,7 @@ function TxPage() {
             ["pending", "Pendente"],
             ["failed", "Falhou"],
           ] as const).map(([k, l]) => (
-            <button
+            <Button
               key={k}
               onClick={() => setFilter(k)}
               className={`shrink-0 px-3.5 py-2 rounded-xl text-xs font-medium inline-flex items-center gap-1.5 transition ${
@@ -120,7 +118,7 @@ function TxPage() {
               <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${filter === k ? "bg-background/20" : "bg-muted/60 text-muted-foreground"}`}>
                 {counts[k]}
               </span>
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -131,13 +129,13 @@ function TxPage() {
         {!isLoading && !filtered.length && <p className="p-8 text-center text-muted-foreground text-sm">Nenhuma transação.</p>}
         {filtered.map((t) => {
           const amt = Number(t.amount_mzn);
-          const tFee = Math.round(amt * 0.08 * 100) / 100;
-          const tNet = Math.round((amt - tFee) * 100) / 100;
+          const tFee = t.fee;
+          const tNet = t.net;
           return (
             <div key={t.id} className="p-4 flex items-center gap-3 hover:bg-muted/20 transition">
               <MethodBadge method={t.method} />
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{t.customer_name}</p>
+                <p className="font-medium text-sm truncate">{t.customer_name || "Pagamento internacional"}</p>
                 <p className="text-[11px] text-muted-foreground truncate">
                   {t.customer_phone} · {new Date(t.created_at).toLocaleString("pt-MZ", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </p>
@@ -183,8 +181,8 @@ function TxPage() {
               <tbody>
                 {filtered.map((t) => {
                   const amt = Number(t.amount_mzn);
-                  const tFee = Math.round(amt * 0.08 * 100) / 100;
-                  const tNet = Math.round((amt - tFee) * 100) / 100;
+                  const tFee = t.fee;
+                  const tNet = t.net;
                   const created = new Date(t.created_at);
                   return (
                     <tr key={t.id} className="border-b border-border/40 last:border-0 hover:bg-primary/5 transition">
@@ -192,17 +190,17 @@ function TxPage() {
                         <code className="text-[11px] text-muted-foreground font-mono">{t.id.slice(0, 8)}</code>
                       </td>
                       <td className="py-3 px-3">
-                        <div className="font-medium truncate max-w-[180px]">{t.customer_name}</div>
+                        <div className="font-medium truncate max-w-[180px]">{t.customer_name || "Pagamento internacional"}</div>
                         {t.customer_email && <div className="text-[11px] text-muted-foreground truncate max-w-[180px]">{t.customer_email}</div>}
                       </td>
                       <td className="py-3 px-3 tabular-nums text-muted-foreground">{t.customer_phone || "—"}</td>
                       <td className="py-3 px-3"><MethodBadge method={t.method} compact /></td>
                       <td className="py-3 px-3 text-right tabular-nums font-semibold text-neo-glow">{fmtMT(amt)}</td>
                       <td className="py-3 px-3 text-right tabular-nums text-muted-foreground">
-                        {t.status === "paid" ? <>-{fmtMT2(tFee)} MT</> : "—"}
+                        {t.status === "paid" ? <>-{fmtMT2(tFee)} {unit}</> : "—"}
                       </td>
                       <td className="py-3 px-3 text-right tabular-nums">
-                        {t.status === "paid" ? <span className="text-emerald-500 font-semibold">+{fmtMT2(tNet)} MT</span> : "—"}
+                        {t.status === "paid" ? <span className="text-emerald-500 font-semibold">+{fmtMT2(tNet)} {unit}</span> : "—"}
                       </td>
                       <td className="py-3 px-3">
                         {t.external_ref ? (
@@ -217,12 +215,12 @@ function TxPage() {
                       </td>
                       <td className="py-3 px-3 text-center"><StatusPill status={t.status} /></td>
                       <td className="py-3 px-3 text-right">
-                        <button
+                        <Button
                           onClick={() => { navigator.clipboard.writeText(t.id); toast.success("ID copiado"); }}
                           className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-md border border-border/60 bg-card hover:bg-muted/40 transition"
                         >
                           <Copy className="h-3 w-3" /> ID
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   );
@@ -273,6 +271,7 @@ function MethodBadge({ method, compact }: { method: string; compact?: boolean })
 
 function StatusPill({ status }: { status: string }) {
   if (status === "paid") return <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-500"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_currentColor]" /> Sucesso</span>;
+  if (status === "test_paid") return <span className="text-xs text-muted-foreground">Teste · não liquidado</span>;
   if (status === "failed") return <span className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-500"><span className="h-1.5 w-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_currentColor]" /> Falhou</span>;
   return <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-500"><span className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_currentColor] animate-pulse" /> Pendente</span>;
 }
