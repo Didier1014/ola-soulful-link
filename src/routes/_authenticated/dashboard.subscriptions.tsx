@@ -1,3 +1,4 @@
+import { NationalOnly } from "@/components/workspace-currency";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,7 +13,7 @@ import { Plus, RotateCcw, Pause, Play, X } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
-export const Route = createFileRoute("/_authenticated/dashboard/subscriptions")({ component: Page });
+export const Route = createFileRoute("/_authenticated/dashboard/subscriptions")({ component: () => <NationalOnly label="Recorrência"><Page /></NationalOnly> });
 
 const fmtMT = (n: number) => `${new Intl.NumberFormat("pt-MZ").format(n)} MT`;
 const labelInterval: Record<string, string> = { weekly: "Semanal", monthly: "Mensal", yearly: "Anual" };

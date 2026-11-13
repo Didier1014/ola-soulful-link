@@ -1,3 +1,4 @@
+import { NationalOnly } from "@/components/workspace-currency";
 // @ts-nocheck
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -14,7 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Wallet, Clock, CheckCircle2, XCircle, Loader2, History } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/withdrawals")({
-  component: WdPage,
+  component: () => <NationalOnly label="Saques"><WdPage /></NationalOnly>,
 });
 
 const fmt = (n: number) => `${new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(n)} MT`;

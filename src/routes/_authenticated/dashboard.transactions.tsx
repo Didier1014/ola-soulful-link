@@ -12,7 +12,6 @@ export const Route = createFileRoute("/_authenticated/dashboard/transactions")({
   component: TxPage,
 });
 
-const fmtMT = (n: number) => `${new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(n)} {unit}`;
 const fmtMT2 = (n: number) => new Intl.NumberFormat("pt-MZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 
 function TxPage() {
