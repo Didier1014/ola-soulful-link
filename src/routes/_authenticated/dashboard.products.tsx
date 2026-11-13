@@ -22,8 +22,15 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { formatProductPrice } from "@/lib/checkout-currency";
+import { listInternationalPayments } from "@/lib/international-checkout.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/products")({
+  head: () => ({ meta: [
+    { title: "Produtos e moedas | Redox Pay" }, { name: "description", content: "Gira os seus produtos e checkouts nacionais e internacionais na Redox Pay." },
+    { property: "og:title", content: "Produtos e moedas | Redox Pay" }, { property: "og:description", content: "Produtos com checkout em MT, ZAR, EUR e USD." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+  ] }),
   component: ProductsPage,
 });
 
@@ -63,6 +70,8 @@ const TYPE_META: Record<ProductType, { label: string; desc: string; icon: any }>
 };
 
 interface Form {
+  checkout_provider: "national" | "paystack" | "stripe";
+  currency: "MZN" | "ZAR" | "EUR" | "USD";
   product_type: ProductType;
   name: string;
   slug: string;
@@ -84,6 +93,7 @@ interface Form {
 }
 
 const emptyForm: Form = {
+  checkout_provider: "national", currency: "MZN",
   product_type: "external",
   name: "", slug: "", description: "", price_mzn: "", discount_no_balance: "0",
   cover_path: "", cover_preview: "",
@@ -97,10 +107,11 @@ const emptyForm: Form = {
 
 function fromProduct(p: any): Form {
   return {
+    checkout_provider: p.checkout_provider ?? "national", currency: p.currency ?? "MZN",
     product_type: (p.product_type as ProductType) || "external",
     name: p.name, slug: p.slug || "",
     description: p.description || "",
-    price_mzn: String(Number(p.price_mzn)),
+    price_mzn: String(Number(p.price_amount ?? p.price_mzn)),
     discount_no_balance: String(p.discount_no_balance ?? 0),
     cover_path: p.cover_url || "", cover_preview: p.cover_url || "",
     delivery_url: p.delivery_url || "", thank_you_url: p.thank_you_url || "",
@@ -123,6 +134,8 @@ function ProductsPage() {
   const toggle = useServerFn(toggleProduct);
   const del = useServerFn(deleteProduct);
   const dup = useServerFn(duplicateProduct);
+  const fetchInternational = useServerFn(listInternationalPayments);
+  const { data: internationalPayments = [] } = useQuery({ queryKey: ["international-payments"], queryFn: () => fetchInternational() });
 
   const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: () => fetchList() });
 
@@ -195,7 +208,7 @@ function ProductsPage() {
                   </div>
                   <Switch checked={p.active} onCheckedChange={(v) => toggle({ data: { id: p.id, active: v } }).then(() => qc.invalidateQueries({ queryKey: ["products"] }))} />
                 </div>
-                <p className="text-primary font-bold text-lg">{fmtMT(Number(p.price_mzn))}</p>
+                <p className="text-primary font-bold text-lg">{formatProductPrice(p)}</p>
                 <div className="grid grid-cols-5 gap-1 pt-2 border-t border-border">
                   <Button variant="ghost" size="icon" className="w-full" onClick={() => window.open(`/c/${p.slug}`, "_blank")}><ExternalLink className="h-4 w-4" /></Button>
                   <Button variant="ghost" size="icon" className="w-full" onClick={() => copyLink(p.slug)}><Copy className="h-4 w-4" /></Button>
@@ -220,7 +233,7 @@ function ProductsPage() {
                 <div className="flex items-center gap-2 min-w-0">
                   <p className="font-medium truncate">{p.name}</p>
                 </div>
-                <p className="text-primary font-semibold text-sm">{fmtMT(Number(p.price_mzn))}</p>
+                <p className="text-primary font-semibold text-sm">{formatProductPrice(p)} · {p.checkout_provider === "paystack" ? "Paystack" : p.checkout_provider === "stripe" ? "Stripe · Em breve" : "Nacional"}</p>
                 <p className="text-xs text-muted-foreground truncate">/{p.slug}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
@@ -239,6 +252,12 @@ function ProductsPage() {
         ))}
       </div>
 
+      {!!internationalPayments.length && <section className="pt-6 space-y-3">
+        <h2 className="font-semibold text-lg">Pagamentos internacionais · ZAR</h2>
+        <p className="text-sm text-muted-foreground">Recebimentos na Paystack, separados do saldo em MT. Taxa Redox: 8%; cobrança da taxa pendente de configuração.</p>
+        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left border-b border-border"><th className="py-3">Data</th><th>Valor</th><th>Taxa Redox</th><th>Estado</th></tr></thead><tbody>{internationalPayments.map(payment => <tr key={payment.reference} className="border-b border-border"><td className="py-3">{new Date(payment.created_at).toLocaleDateString("pt-PT")}</td><td>{(payment.amount_minor / 100).toFixed(2)} ZAR</td><td>{(payment.fee_minor / 100).toFixed(2)} ZAR</td><td>{({ paid: "Confirmado", test_paid: "Teste", pending: "Pendente", failed: "Falhou" })[payment.status]}</td></tr>)}</tbody></table></div>
+      </section>}
+
       <ProductDialog
         open={open} step={step} setStep={setStep}
         form={form} setForm={setForm}
@@ -254,6 +273,7 @@ function ProductsPage() {
 /* -------------------- Serialize for server -------------------- */
 function serialize(f: Form) {
   return {
+    checkout_provider: f.checkout_provider, currency: f.currency, price_amount: Number(f.price_mzn || 0),
     product_type: f.product_type,
     name: f.name.trim(),
     slug: f.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, ""),
@@ -541,9 +561,17 @@ function FormStep({
             <Textarea rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </div>
 
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium mb-2">Checkout e moeda</legend>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {([{ provider: "national", currency: "MZN", label: "MT · Nacional" }, { provider: "paystack", currency: "ZAR", label: "ZAR · Paystack" }, { provider: "stripe", currency: "USD", label: "EUR/USD · Stripe" }] as const).map(option => <Button key={option.provider} type="button" variant={form.checkout_provider === option.provider ? "default" : "outline"} aria-pressed={form.checkout_provider === option.provider} onClick={() => setForm({ ...form, checkout_provider: option.provider, currency: option.currency })}><CreditCard className="size-4" />{option.label}</Button>)}
+            </div>
+            {form.checkout_provider === "stripe" && <div className="space-y-2"><div className="flex gap-2">{(["EUR", "USD"] as const).map(currency => <Button type="button" key={currency} variant={form.currency === currency ? "default" : "outline"} onClick={() => setForm({ ...form, currency })}>{currency}</Button>)}</div><p className="text-xs text-muted-foreground">Stripe: pode preparar o produto, mas os pagamentos só estarão disponíveis após a ligação futura.</p></div>}
+          </fieldset>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Preço (MZN)</Label>
+              <Label>Preço ({form.currency})</Label>
               <Input type="number" value={form.price_mzn} onChange={(e) => setForm({ ...form, price_mzn: e.target.value })} />
             </div>
             <div className="space-y-2">

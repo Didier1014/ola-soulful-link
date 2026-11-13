@@ -11,6 +11,7 @@ import { Loader2, Lock, ShieldCheck, AlertTriangle, Smartphone } from "lucide-re
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
+import { InternationalCheckout } from "@/components/international-checkout";
 
 // Slugs com checkout personalizado próprio
 const CUSTOM_CHECKOUTS: Record<string, string> = {
@@ -144,7 +145,7 @@ function CheckoutPage() {
       w.fbq("track", "PageView");
       w.fbq("track", "ViewContent", {
         content_ids: [product.id], content_name: product.name,
-        content_type: "product", value: Number(product.price_mzn), currency: "MZN",
+        content_type: "product", value: Number(product.price_amount ?? product.price_mzn), currency: product.currency ?? "MZN",
       });
       pixelFiredRef.current.pageview = true;
     }
@@ -303,6 +304,8 @@ function CheckoutPage() {
       <p className="text-sm text-gray-400">O link pode estar incorreto ou o produto foi desactivado.</p>
     </div>
   );
+
+  if (product.checkout_provider === "paystack" || product.checkout_provider === "stripe") return <InternationalCheckout product={product} />;
 
   const price = Number(product.price_mzn);
   const bumps: Array<{ id: string; name: string; price_mzn: number; cover_url: string | null }> = (product as any).order_bumps ?? [];

@@ -1,9 +1,14 @@
 # International product checkouts
 
-- [ ] Connect Paystack securely and verify account support for ZAR.
-- [ ] Add national MT, Paystack ZAR and future Stripe EUR/USD choices in product creation.
-- [ ] Apply the supplied international checkout design with provider-hosted secure card fields.
-- [ ] Isolate international payment amounts and settlement from existing MZN balances; verify payment flow and currency guards.
+- [x] Configure the supplied public key; designated saved LIVE secret exists and callback/webhook URLs provided.
+- [ ] Validate a signed Paystack callback after publication; saved webhook secret is unavailable to local preview and no provider callback has arrived.
+
+- [x] Connect Paystack securely; initialized a LIVE ZAR 50 session and opened actual provider card popup without payment.
+- [x] Product creation offers national MT, Paystack ZAR and future Stripe EUR/USD; created and read back ZAR product, then disabled validation product.
+- [x] Applied reference-led international design, desktop/mobile checked with no overflow; secure card fields stay hosted by Paystack.
+- [x] Separate owner-readable ZAR ledger, MZN guard and nine currency/signature tests pass; ledger read back through authenticated UI and missing capability rejected.
+- [ ] Collect the 8% platform fee automatically; needs provider split/subaccount and settlement configuration. The fee is calculated and displayed, not deducted by Paystack yet.
+- [ ] Confirm an authorized real international purchase and delivery; no card details entered or real payment made.
 
 # Return to Pagar
 

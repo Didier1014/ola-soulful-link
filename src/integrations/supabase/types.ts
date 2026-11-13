@@ -392,6 +392,62 @@ export type Database = {
         }
         Relationships: []
       }
+      international_payments: {
+        Row: {
+          amount_minor: number
+          authorization_url: string | null
+          capability_hash: string
+          created_at: string
+          currency: string
+          fee_minor: number
+          id: string
+          paid_at: string | null
+          product_id: string
+          provider: string
+          reference: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount_minor: number
+          authorization_url?: string | null
+          capability_hash: string
+          created_at?: string
+          currency: string
+          fee_minor: number
+          id?: string
+          paid_at?: string | null
+          product_id: string
+          provider?: string
+          reference: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount_minor?: number
+          authorization_url?: string | null
+          capability_hash?: string
+          created_at?: string
+          currency?: string
+          fee_minor?: number
+          id?: string
+          paid_at?: string | null
+          product_id?: string
+          provider?: string
+          reference?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "international_payments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       merchant_api_calls: {
         Row: {
           api_key_prefix: string | null
@@ -654,9 +710,11 @@ export type Database = {
         Row: {
           active: boolean
           approval_status: string
+          checkout_provider: string
           config: Json
           cover_url: string | null
           created_at: string
+          currency: string
           delivery_url: string | null
           description: string | null
           digital_file_path: string | null
@@ -665,6 +723,7 @@ export type Database = {
           lawtracker_id: string | null
           name: string
           pixel_id: string | null
+          price_amount: number | null
           price_mzn: number
           product_type: string
           rejection_reason: string | null
@@ -680,9 +739,11 @@ export type Database = {
         Insert: {
           active?: boolean
           approval_status?: string
+          checkout_provider?: string
           config?: Json
           cover_url?: string | null
           created_at?: string
+          currency?: string
           delivery_url?: string | null
           description?: string | null
           digital_file_path?: string | null
@@ -691,6 +752,7 @@ export type Database = {
           lawtracker_id?: string | null
           name: string
           pixel_id?: string | null
+          price_amount?: number | null
           price_mzn: number
           product_type?: string
           rejection_reason?: string | null
@@ -706,9 +768,11 @@ export type Database = {
         Update: {
           active?: boolean
           approval_status?: string
+          checkout_provider?: string
           config?: Json
           cover_url?: string | null
           created_at?: string
+          currency?: string
           delivery_url?: string | null
           description?: string | null
           digital_file_path?: string | null
@@ -717,6 +781,7 @@ export type Database = {
           lawtracker_id?: string | null
           name?: string
           pixel_id?: string | null
+          price_amount?: number | null
           price_mzn?: number
           product_type?: string
           rejection_reason?: string | null

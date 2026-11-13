@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as InternationalReturnRouteImport } from './routes/international-return'
 import { Route as ObrigadoRouteImport } from './routes/obrigado'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TxunaEmolaRouteImport } from './routes/txuna-emola'
@@ -46,6 +47,7 @@ import { Route as ApiPublicCreateMerchantPaymentRouteImport } from './routes/api
 import { Route as ApiPublicFunnelEventsRouteImport } from './routes/api/public/funnel-events'
 import { Route as ApiPublicPagajaWebhookRouteImport } from './routes/api/public/pagaja-webhook'
 import { Route as ApiPublicPagarWebhookRouteImport } from './routes/api/public/pagar-webhook'
+import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
 import { Route as ApiPublicReconcilePendingRouteImport } from './routes/api/public/reconcile-pending'
 import { Route as ApiPublicVenduspayWebhookRouteImport } from './routes/api/public/venduspay-webhook'
 import { Route as ApiPublicVpayWebhookRouteImport } from './routes/api/public/vpay-webhook'
@@ -71,6 +73,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InternationalReturnRoute = InternationalReturnRouteImport.update({
+  id: '/international-return',
+  path: '/international-return',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ObrigadoRoute = ObrigadoRouteImport.update({
@@ -265,6 +272,12 @@ const ApiPublicPagarWebhookRoute = ApiPublicPagarWebhookRouteImport.update({
   path: '/api/public/pagar-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPaystackWebhookRoute =
+  ApiPublicPaystackWebhookRouteImport.update({
+    id: '/api/public/paystack-webhook',
+    path: '/api/public/paystack-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicReconcilePendingRoute =
   ApiPublicReconcilePendingRouteImport.update({
     id: '/api/public/reconcile-pending',
@@ -336,6 +349,7 @@ const LovableEmailTransactionalPreviewRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/international-return': typeof InternationalReturnRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/txuna-emola': typeof TxunaEmolaRoute
@@ -369,6 +383,7 @@ export interface FileRoutesByFullPath {
   '/api/public/funnel-events': typeof ApiPublicFunnelEventsRoute
   '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
+  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/api/public/venduspay-webhook': typeof ApiPublicVenduspayWebhookRoute
   '/api/public/vpay-webhook': typeof ApiPublicVpayWebhookRoute
@@ -386,6 +401,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/international-return': typeof InternationalReturnRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/txuna-emola': typeof TxunaEmolaRoute
@@ -419,6 +435,7 @@ export interface FileRoutesByTo {
   '/api/public/funnel-events': typeof ApiPublicFunnelEventsRoute
   '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
+  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/api/public/venduspay-webhook': typeof ApiPublicVenduspayWebhookRoute
   '/api/public/vpay-webhook': typeof ApiPublicVpayWebhookRoute
@@ -438,6 +455,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/international-return': typeof InternationalReturnRoute
   '/obrigado': typeof ObrigadoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/txuna-emola': typeof TxunaEmolaRoute
@@ -471,6 +489,7 @@ export interface FileRoutesById {
   '/api/public/funnel-events': typeof ApiPublicFunnelEventsRoute
   '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
+  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/api/public/venduspay-webhook': typeof ApiPublicVenduspayWebhookRoute
   '/api/public/vpay-webhook': typeof ApiPublicVpayWebhookRoute
@@ -490,6 +509,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/international-return'
     | '/obrigado'
     | '/reset-password'
     | '/txuna-emola'
@@ -523,6 +543,7 @@ export interface FileRouteTypes {
     | '/api/public/funnel-events'
     | '/api/public/pagaja-webhook'
     | '/api/public/pagar-webhook'
+    | '/api/public/paystack-webhook'
     | '/api/public/reconcile-pending'
     | '/api/public/venduspay-webhook'
     | '/api/public/vpay-webhook'
@@ -540,6 +561,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/international-return'
     | '/obrigado'
     | '/reset-password'
     | '/txuna-emola'
@@ -573,6 +595,7 @@ export interface FileRouteTypes {
     | '/api/public/funnel-events'
     | '/api/public/pagaja-webhook'
     | '/api/public/pagar-webhook'
+    | '/api/public/paystack-webhook'
     | '/api/public/reconcile-pending'
     | '/api/public/venduspay-webhook'
     | '/api/public/vpay-webhook'
@@ -591,6 +614,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/international-return'
     | '/obrigado'
     | '/reset-password'
     | '/txuna-emola'
@@ -624,6 +648,7 @@ export interface FileRouteTypes {
     | '/api/public/funnel-events'
     | '/api/public/pagaja-webhook'
     | '/api/public/pagar-webhook'
+    | '/api/public/paystack-webhook'
     | '/api/public/reconcile-pending'
     | '/api/public/venduspay-webhook'
     | '/api/public/vpay-webhook'
@@ -643,6 +668,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  InternationalReturnRoute: typeof InternationalReturnRoute
   ObrigadoRoute: typeof ObrigadoRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TxunaEmolaRoute: typeof TxunaEmolaRoute
@@ -657,6 +683,7 @@ export interface RootRouteChildren {
   ApiPublicFunnelEventsRoute: typeof ApiPublicFunnelEventsRoute
   ApiPublicPagajaWebhookRoute: typeof ApiPublicPagajaWebhookRoute
   ApiPublicPagarWebhookRoute: typeof ApiPublicPagarWebhookRoute
+  ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
   ApiPublicReconcilePendingRoute: typeof ApiPublicReconcilePendingRoute
   ApiPublicVenduspayWebhookRoute: typeof ApiPublicVenduspayWebhookRoute
   ApiPublicVpayWebhookRoute: typeof ApiPublicVpayWebhookRoute
@@ -689,6 +716,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/international-return': {
+      id: '/international-return'
+      path: '/international-return'
+      fullPath: '/international-return'
+      preLoaderRoute: typeof InternationalReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/obrigado': {
@@ -929,6 +963,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPagarWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/paystack-webhook': {
+      id: '/api/public/paystack-webhook'
+      path: '/api/public/paystack-webhook'
+      fullPath: '/api/public/paystack-webhook'
+      preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/reconcile-pending': {
       id: '/api/public/reconcile-pending'
       path: '/api/public/reconcile-pending'
@@ -1112,6 +1153,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  InternationalReturnRoute: InternationalReturnRoute,
   ObrigadoRoute: ObrigadoRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TxunaEmolaRoute: TxunaEmolaRoute,
@@ -1126,6 +1168,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicFunnelEventsRoute: ApiPublicFunnelEventsRoute,
   ApiPublicPagajaWebhookRoute: ApiPublicPagajaWebhookRoute,
   ApiPublicPagarWebhookRoute: ApiPublicPagarWebhookRoute,
+  ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
   ApiPublicReconcilePendingRoute: ApiPublicReconcilePendingRoute,
   ApiPublicVenduspayWebhookRoute: ApiPublicVenduspayWebhookRoute,
   ApiPublicVpayWebhookRoute: ApiPublicVpayWebhookRoute,

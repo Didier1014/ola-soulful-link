@@ -2,11 +2,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { productPricing } from "./checkout-currency";
 
 const productSchema = z.object({
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().max(4000).optional().default(""),
   price_mzn: z.number().min(0).max(1_000_000),
+  checkout_provider: z.enum(["national", "paystack", "stripe"]).default("national"),
+  currency: z.enum(["MZN", "ZAR", "EUR", "USD"]).default("MZN"),
+  price_amount: z.number().finite().min(0).max(1_000_000).optional(),
   cover_path: z.string().trim().max(500).optional().default(""),
   delivery_url: z.string().url().max(500).optional().or(z.literal("")).default(""),
   thank_you_url: z.string().url().max(500).optional().or(z.literal("")).default(""),
@@ -70,7 +74,7 @@ export const createProduct = createServerFn({ method: "POST" })
         slug,
         name: data.name,
         description: data.description || null,
-        price_mzn: data.price_mzn,
+        ...productPricing(data),
         cover_url: data.cover_path || null,
         delivery_url: data.delivery_url || null,
         thank_you_url: data.thank_you_url || null,
@@ -128,7 +132,7 @@ export const updateProduct = createServerFn({ method: "POST" })
     const patch: Record<string, unknown> = {
       name: rest.name,
       description: rest.description || null,
-      price_mzn: rest.price_mzn,
+      ...productPricing(rest),
       cover_url: rest.cover_path || null,
       delivery_url: rest.delivery_url || null,
       thank_you_url: rest.thank_you_url || null,
@@ -218,7 +222,7 @@ export const getProductBySlug = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
       .from("products")
-      .select("id,user_id,slug,name,description,price_mzn,cover_url,delivery_url,thank_you_url,product_type,discount_no_balance,active,pixel_id,utimify_id,lawtracker_id,support_phone,config")
+      .select("id,user_id,slug,name,description,price_mzn,price_amount,currency,checkout_provider,cover_url,product_type,discount_no_balance,active,pixel_id,utimify_id,lawtracker_id,support_phone,config")
       .eq("slug", data.slug).eq("active", true).eq("approval_status", "approved").maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) throw new Error("Produto não encontrado");
@@ -238,6 +242,7 @@ export const getProductBySlug = createServerFn({ method: "GET" })
           .select("id,name,price_mzn,cover_url")
           .in("id", ids)
           .eq("user_id", (row as any).user_id)
+          .eq("checkout_provider", "national")
           .eq("active", true)
           .eq("approval_status", "approved");
         bumps = await Promise.all((bp ?? []).map(async (b: any) => ({
