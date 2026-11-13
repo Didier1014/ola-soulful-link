@@ -168,40 +168,45 @@
 
 /* Reference offer theme: local to opted-in public checkouts. */
 .offer-checkout {
-  --background: #090807;
-  --foreground: #171714;
-  --card: #ffffff;
-  --primary: #bf812d;
-  --primary-foreground: #110d06;
-  --muted-foreground: #66717d;
-  --border: #e4e6e8;
-  --input: #d6dce1;
-  --ring: #bf812d;
-  --secondary: #f6f7f8;
-  --secondary-foreground: #171714;
-  --accent: #fff4dc;
-  --accent-foreground: #171714;
-  --success: #9b691f;
-  --destructive: #b52d36;
-  --offer-gold: #f1c65f;
-  --offer-edge: #9d8f6e;
-  --offer-button: linear-gradient(105deg, var(--offer-gold), var(--primary));
-  --offer-shadow: 0 6px 15px color-mix(in srgb, var(--primary) 24%, transparent);
+  --background: #f3f4f6;
+  --foreground: #f5f4f4;
+  --card: #181616;
+  --primary: #1048cb;
+  --primary-foreground: #ffffff;
+  --muted-foreground: #aba3a3;
+  --border: #302b2b;
+  --input: #100e0e;
+  --ring: #1048cb;
+  --secondary: #211d1d;
+  --secondary-foreground: #f5f4f4;
+  --accent: #242121;
+  --accent-foreground: #f5f4f4;
+  --success: #26aa68;
+  --destructive: #e34243;
+  --offer-gold: #ffeaa0;
+  --offer-order-border: #ffda66;
+  --offer-ink: #083278;
+  --offer-note: #805723;
+  --offer-paper: #ffffff;
+  --offer-button: var(--primary);
+  --offer-shadow: none;
   background: var(--background);
   color: var(--foreground);
   font-family: "Manrope", sans-serif;
   letter-spacing: 0;
 }
-.offer-brand { color: var(--offer-gold); }
-.offer-sheet { border: 1px solid var(--offer-edge); background: var(--card); }
-.offer-heading { background: var(--background); color: var(--offer-gold); border-bottom: 2px solid var(--primary); }
-.offer-heading h1 { font-family: "Manrope", sans-serif; color: var(--offer-gold); }
-.offer-label { background: var(--offer-button); color: var(--primary-foreground); }
-.offer-body { background: var(--card); }
-.offer-photo { background: var(--card); }
-.offer-kicker, .offer-trust { color: var(--success); }
-.offer-price { border-color: var(--border); }
-.offer-checkout input { background: var(--card); color: var(--foreground); border-color: var(--input); min-height: 48px; border-radius: 6px; }
+.offer-brand { color: var(--primary-foreground); background: var(--primary); }
+.offer-header-title { background: color-mix(in srgb, var(--offer-paper) 12%, transparent); max-width: 65%; }
+.offer-header-price { color: var(--primary); background: var(--offer-paper); }
+.offer-label { background: var(--destructive); color: var(--primary-foreground); }
+.offer-body { background: var(--background); }
+.offer-photo { background: var(--offer-paper); }
+.offer-breadcrumb { color: var(--offer-note); }
+.offer-order { background: var(--offer-gold); border: 1px solid var(--offer-order-border); color: var(--offer-ink); }
+.offer-kicker { color: var(--offer-note); }
+.offer-panel { background: var(--card); color: var(--foreground); border: 1px solid var(--border); }
+.offer-checkout :is(h1,h2,h3) { font-family: inherit; letter-spacing: 0; }
+.offer-checkout input { background: var(--input); color: var(--foreground); border-color: var(--border); min-height: 48px; border-radius: 8px; }
 .offer-checkout .offer-submit { background: var(--offer-button); color: var(--primary-foreground); box-shadow: var(--offer-shadow); min-height: 52px; }
 
 @layer base {
