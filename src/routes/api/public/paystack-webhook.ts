@@ -6,6 +6,10 @@ export const Route = createFileRoute("/api/public/paystack-webhook")({
   server: { handlers: {
     GET: () => Response.json({ service: "Redox Pay Paystack webhook", method: "POST" }),
     POST: async ({ request }) => {
+      // Reject unsigned probes before checking environment configuration. They
+      // are unauthorized requests, not an outage of the payment service.
+      const signature = request.headers.get("x-paystack-signature");
+      if (!signature || !/^[a-f0-9]{128}$/i.test(signature)) return new Response("Invalid signature", { status: 401 });
       // The builder supplied this already-saved secret reference for Paystack;
       // connector keys are gateway credentials and cannot verify provider HMACs.
       const secret = process.env["STRIPE_LIVE_API_KEY"];
@@ -14,7 +18,7 @@ export const Route = createFileRoute("/api/public/paystack-webhook")({
       const body = await request.text();
       if (body.length > 100000) return new Response("Payload too large", { status: 413 });
       const { validPaystackSignature } = await import("@/lib/paystack-signature.server");
-      if (!validPaystackSignature(body, request.headers.get("x-paystack-signature"), secret)) return new Response("Invalid signature", { status: 401 });
+      if (!validPaystackSignature(body, signature, secret)) return new Response("Invalid signature", { status: 401 });
       let event;
       try { event = z.object({ event: z.string().max(100), data: z.object({ reference: z.string().max(100) }).passthrough() }).parse(JSON.parse(body)); }
       catch { return new Response("Invalid payload", { status: 400 }); }
