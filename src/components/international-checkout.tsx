@@ -1,7 +1,7 @@
 import { useCheckoutLanguage } from "@/hooks/use-checkout-language";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { CreditCard, Lock, ShieldCheck, Loader2, ArrowRight } from "lucide-react";
+import { CreditCard, Lock, ShieldCheck, Loader2, ArrowRight, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,22 +61,21 @@ export function InternationalCheckout({ product }: { product: Product }) {
 
   if (resolveCheckoutStyle(product.config?.checkout) === "offer") return <OfferCheckout product={product} price={offerPrice} language={language} t={t}>
     <form onSubmit={event => { event.preventDefault(); void pay(); }} className="space-y-4 sm:space-y-8">
-      <section className="offer-panel rounded-lg p-5 sm:p-8 space-y-5">
-      <h2 className="border-l-4 border-primary pl-4 text-xl font-bold">{language === "en" ? "Your Information" : t.details}</h2>
-      <div className="space-y-2"><Label htmlFor="international-name">{t.name}</Label><Input id="international-name" autoComplete="name" placeholder={t.yourName} required minLength={2} maxLength={120} value={name} onChange={event => setName(event.target.value)} /></div>
-      <div className="space-y-2"><Label htmlFor="international-email">{t.email}</Label><Input id="international-email" type="email" autoComplete="email" placeholder="you@example.com" required maxLength={160} value={email} onChange={event => setEmail(event.target.value)} /></div>
-      <div className="space-y-2"><Label htmlFor="international-phone">{language === "en" ? "Phone Number" : t.number}</Label><div className="flex rounded-lg border border-border overflow-hidden"><span className="bg-secondary px-4 flex items-center text-muted-foreground text-sm">+27</span><Input id="international-phone" type="tel" autoComplete="tel-national" placeholder="82 123 4567" maxLength={15} value={phone} onChange={event => setPhone(event.target.value)} className="border-0 rounded-none min-w-0 flex-1" /></div></div>
+      <section className="offer-panel offer-information rounded-lg p-5 sm:p-8 space-y-5">
+      <h2 className="border-l-4 border-primary pl-3 text-lg sm:text-xl font-bold">{language === "en" ? "Your Information" : t.details}</h2>
+      <div className="space-y-2"><Label htmlFor="international-name">{t.name}</Label><Input id="international-name" autoComplete="name" placeholder={language === "en" ? "John Doe" : t.yourName} required minLength={2} maxLength={120} value={name} onChange={event => setName(event.target.value)} /></div>
+      <div className="space-y-2"><Label htmlFor="international-email">{language === "en" ? "Email Address" : t.email}</Label><Input id="international-email" type="email" autoComplete="email" placeholder="john@example.com" required maxLength={160} value={email} onChange={event => setEmail(event.target.value)} /></div>
+      <div className="space-y-2"><Label htmlFor="international-phone">{language === "en" ? "Phone Number" : t.number}</Label><div className="offer-phone flex border border-border overflow-hidden"><span className="bg-secondary px-3 flex gap-2 items-center text-muted-foreground text-base"><Phone className="size-4" />+27</span><Input id="international-phone" type="tel" autoComplete="tel-national" placeholder="82 123 4567" maxLength={15} value={phone} onChange={event => setPhone(event.target.value)} className="border-0 rounded-none min-w-0 flex-1" /></div></div>
       </section>
-      <section className="offer-panel rounded-lg p-5 sm:p-8 space-y-5">
-      <h2 className="text-xl font-bold">{t.summary}</h2>
-      <div className="flex justify-between gap-4 text-sm"><span className="text-muted-foreground truncate min-w-0">{product.name}</span><span className="shrink-0">{offerPrice}</span></div>
+      <section className="offer-panel offer-summary rounded-lg p-5 sm:p-8 space-y-5">
+      <h2 className="text-base sm:text-xl font-bold">{language === "en" ? "Order Summary" : t.summary}</h2>
+      <div className="flex justify-between gap-4 text-base"><span className="text-muted-foreground truncate min-w-0">{product.name}</span><span className="shrink-0">{offerPrice}</span></div>
       <div className="flex justify-between gap-4 border-t border-border pt-5 text-xl font-bold"><span>{language === "en" ? "Total" : t.total}</span><span>{offerPrice}</span></div>
       {stripe && <p role="status" className="text-sm text-muted-foreground">{t.stripe}</p>}
       {error && <p role="alert" className="text-destructive text-sm">{error}</p>}
       <Button type="submit" disabled={busy || stripe} className="offer-submit w-full h-auto py-4 font-bold whitespace-normal gap-2">{busy ? <Loader2 className="size-5 animate-spin" /> : <CreditCard className="size-5" />}{busy ? t.processing : `${t.pay.toUpperCase()} ${offerPrice}`}</Button>
       {busy && <p role="status" className="text-center text-sm">{t.processing}</p>}
       {resume && !busy && <Button type="button" variant="outline" className="w-full whitespace-normal h-auto py-3" onClick={() => window.location.assign(resume.authorization_url)}>{t.continue}<ArrowRight className="size-4" /></Button>}
-      <p className="text-center text-xs text-muted-foreground">{t.charge} {product.currency} · {t.exchange}</p>
       <div className="flex justify-center gap-4 text-muted-foreground text-xs"><span className="flex items-center gap-1"><Lock className="size-4" />SSL</span><span className="flex items-center gap-1"><CreditCard className="size-4" />{t.card}</span></div>
       </section>
     </form>
