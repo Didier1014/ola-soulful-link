@@ -66,6 +66,7 @@ function TxunaCheckout() {
 
 
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [testResult, setTestResult] = useState<string | null>(null);
@@ -89,6 +90,7 @@ function TxunaCheckout() {
           product_id: product?.id ?? "",
           amount_mzn: amount,
           customer_name: name.trim(),
+          customer_email: email.trim(),
           customer_phone: phone, method,
           tracking: { src: `txuna-${plan}m`, ...operationTracking },
         },
@@ -227,6 +229,10 @@ function TxunaCheckout() {
           />
         </section>
 
+        <section className="tx-card space-y-3 rounded-2xl px-4 py-5 sm:px-8">
+          <Label htmlFor="txuna-email">Email</Label>
+          <Input id="txuna-email" type="email" autoComplete="email" maxLength={160} value={email} onChange={e => setEmail(e.target.value)} placeholder="voce@exemplo.com" />
+        </section>
         {/* Método + Planos */}
         <section className="tx-card space-y-4 rounded-2xl bg-white px-4 py-5 sm:space-y-5 sm:rounded-3xl sm:px-8 sm:py-8">
           <h2 className="text-[15px] font-black sm:text-xl">Método de pagamento</h2>

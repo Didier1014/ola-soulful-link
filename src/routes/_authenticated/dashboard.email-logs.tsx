@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Mail, RefreshCw, AlertCircle, CheckCircle2, Clock, Ban, XCircle } from "lucide-react";
+import { sendSelfEmailTest } from '@/lib/account-email.functions';
+import { toast } from 'sonner';
 
 export const Route = createFileRoute("/_authenticated/dashboard/email-logs")({
   head: () => pageHead('Histórico de emails', 'Consulte histórico de emails na Redox Pay com segurança.'),
@@ -51,6 +53,18 @@ function statusBadge(s: string) {
 }
 
 function EmailLogsPage() {
+  const testEmail = useServerFn(sendSelfEmailTest);
+  const [testing, setTesting] = useState(false);
+  async function sendTest() {
+    setTesting(true);
+    try {
+      const result = await testEmail();
+      if (result.ok) toast.success('Email de teste enviado para o seu email.');
+      else toast.error('Não foi possível enviar o teste. Consulte Mais → Emails.');
+      await refetch();
+    } catch { toast.error('Não foi possível enviar o teste.'); }
+    finally { setTesting(false); }
+  }
   const fetchLogs = useServerFn(getEmailLogs);
   const [days, setDays] = useState(7);
   const [template, setTemplate] = useState<string>("");
@@ -70,6 +84,7 @@ function EmailLogsPage() {
           <h1 className="text-xl font-bold flex items-center gap-2"><Mail className="h-5 w-5 text-primary" /> Monitoramento de Emails</h1>
           <p className="text-xs text-muted-foreground mt-0.5">Estado completo de envio (auth + transacionais)</p>
         </div>
+        <Button size="sm" variant="outline" onClick={sendTest} disabled={testing}><Mail className="size-4" />{testing ? 'A enviar…' : 'Testar meu email'}</Button>
         <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isFetching} className="h-9 rounded-lg">
           <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
         </Button>

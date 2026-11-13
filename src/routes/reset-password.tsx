@@ -21,6 +21,7 @@ function ResetPassword() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [invalid, setInvalid] = useState(false);
 
   useEffect(() => {
     // Supabase parses recovery token from URL hash on load.
@@ -29,7 +30,8 @@ function ResetPassword() {
     });
     // Fallback: if session already exists
     supabase.auth.getSession().then(({ data }) => { if (data.session) setReady(true); });
-    return () => subscription.unsubscribe();
+    const timer = setTimeout(() => setInvalid(true), 8000);
+    return () => { subscription.unsubscribe(); clearTimeout(timer); };
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -69,6 +71,8 @@ function ResetPassword() {
               <h1 className="mt-4 text-2xl font-bold">Senha atualizada</h1>
               <p className="mt-2 text-sm text-muted-foreground">A redirecionar para o painel...</p>
             </div>
+          ) : !ready && invalid ? (
+            <div className="text-center space-y-4"><h1 className="text-xl font-semibold">Link inválido ou expirado</h1><p className="text-sm text-muted-foreground">Solicite um novo link para recuperar a sua senha.</p><Button asChild variant="outline"><Link to="/auth">Recuperar senha</Link></Button></div>
           ) : !ready ? (
             <div className="text-center py-8">
               <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />

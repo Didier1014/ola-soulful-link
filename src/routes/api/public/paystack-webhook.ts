@@ -27,12 +27,21 @@ export const Route = createFileRoute("/api/public/paystack-webhook")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: payment, error } = await supabaseAdmin.from("international_payments").select("reference,amount_minor,currency,status").eq("reference", event.data.reference).maybeSingle();
         if (error) return new Response("Payment lookup failed", { status: 500 });
-        if (!payment || payment.status === "paid" || payment.status === "test_paid") return new Response("ok");
+        if (!payment || payment.status === "test_paid") return new Response("ok");
+        if (payment.status === "paid") {
+          const { sendPurchaseEmails } = await import('@/lib/purchase-email.server');
+          await sendPurchaseEmails(supabaseAdmin, 'international', payment.reference);
+          return new Response('ok');
+        }
         const { paystackRequest } = await import("@/lib/paystack.server");
         const verified = await paystackRequest(`/transaction/verify/${encodeURIComponent(payment.reference)}`);
         const status = verifiedInternationalState(payment, verified);
         const { error: updateError } = await supabaseAdmin.from("international_payments").update({ status, ...(status === "paid" ? { paid_at: new Date().toISOString() } : {}) }).eq("reference", payment.reference).not("status", "in", "(paid,test_paid)");
         if (updateError) return new Response("Payment update failed", { status: 500 });
+        if (status === 'paid') {
+          const { sendPurchaseEmails } = await import('@/lib/purchase-email.server');
+          await sendPurchaseEmails(supabaseAdmin, 'international', payment.reference);
+        }
         return new Response("ok");
       } catch { return new Response("Payment verification failed", { status: 502 }); }
     },
