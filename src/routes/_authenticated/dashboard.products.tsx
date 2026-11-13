@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { checkoutLanguages, languageNames } from "@/lib/checkout-language";
+import { resolveCheckoutStyle } from "@/lib/checkout-style";
 import { Link } from "@tanstack/react-router";
 import { formatProductPrice } from "@/lib/checkout-currency";
 import { useWorkspaceCurrency } from "@/components/workspace-currency";
@@ -568,6 +569,13 @@ function FormStep({
               {([{ provider: "national", currency: "MZN", label: "MT · Nacional" }, { provider: "paystack", currency: "ZAR", label: "ZAR · Paystack" }, { provider: "stripe", currency: "USD", label: "EUR/USD · Stripe" }] as const).map(option => <Button key={option.provider} type="button" variant={form.checkout_provider === option.provider ? "default" : "outline"} aria-pressed={form.checkout_provider === option.provider} onClick={() => setForm({ ...form, checkout_provider: option.provider, currency: option.currency })}><CreditCard className="size-4" />{option.label}</Button>)}
             </div>
             {form.checkout_provider === "stripe" && <div className="space-y-2"><div className="flex gap-2">{(["EUR", "USD"] as const).map(currency => <Button type="button" key={currency} variant={form.currency === currency ? "default" : "outline"} onClick={() => setForm({ ...form, currency })}>{currency}</Button>)}</div><p className="text-xs text-muted-foreground">Stripe: pode preparar o produto, mas os pagamentos só estarão disponíveis após a ligação futura.</p></div>}
+          </fieldset>
+
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium mb-2">Estilo de checkout</legend>
+            <div className="grid grid-cols-2 gap-2">
+              {([{ value: "normal", label: "Checkout normal", icon: CreditCard }, { value: "offer", label: "Oferta exclusiva", icon: Palette }] as const).map(option => <Button key={option.value} type="button" variant={resolveCheckoutStyle(form.config?.checkout) === option.value ? "default" : "outline"} aria-pressed={resolveCheckoutStyle(form.config?.checkout) === option.value} className="h-auto min-h-12 whitespace-normal" onClick={() => setForm({ ...form, config: { ...form.config, checkout: { ...form.config?.checkout, style: option.value } } })}><option.icon className="size-4" />{option.label}</Button>)}
+            </div>
           </fieldset>
 
           <div className="space-y-2">

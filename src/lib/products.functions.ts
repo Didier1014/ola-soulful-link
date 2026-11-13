@@ -27,8 +27,9 @@ const productSchema = z.object({
   support_phone: z.string().trim().max(20).optional().default(""),
   slug: z.string().trim().toLowerCase().regex(/^[a-z0-9-]+$/, "Slug inválido (apenas letras minúsculas, números e -)").min(3, "Slug deve ter no mínimo 3 caracteres").max(80),
   config: z.record(z.unknown()).optional().default({}).superRefine((config, ctx) => {
-    const checkout = config.checkout as { language?: unknown } | undefined;
+    const checkout = config.checkout as { language?: unknown; style?: unknown } | undefined;
     if (checkout?.language !== undefined && !["pt", "en", "es", "fr", "auto"].includes(String(checkout.language))) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Idioma do checkout inválido" });
+    if (checkout?.style !== undefined && !["normal", "offer"].includes(String(checkout.style))) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Estilo do checkout inválido" });
   }),
 });
 
