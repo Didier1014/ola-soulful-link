@@ -10,7 +10,7 @@ describe("Paystack account-wide split", () => {
   it("sends the approved split for all initializations, overriding caller splits", async () => {
     vi.stubEnv("LOVABLE_API_KEY", "test-gateway-key");
     vi.stubEnv("UDC_PAYSTACK_API_KEY", "test-connection-key");
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ status: true, data: { access_code: "test-access" } })));
+    const fetchMock = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ status: true, data: { access_code: "test-access" } })));
     vi.stubGlobal("fetch", fetchMock);
 
     for (const split of [undefined, "SPL_other"]) {
