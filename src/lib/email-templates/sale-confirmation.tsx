@@ -22,6 +22,7 @@ interface SaleConfirmationProps {
   netAmount?: string
   transactionId?: string
   date?: string
+  international?: boolean
 }
 
 const SaleConfirmationEmail = ({
@@ -33,6 +34,7 @@ const SaleConfirmationEmail = ({
   netAmount = '0 MZN',
   transactionId = '',
   date = '',
+  international = false,
 }: SaleConfirmationProps) => (
   <Html lang="pt" dir="ltr">
     <Head />
@@ -47,7 +49,7 @@ const SaleConfirmationEmail = ({
 
         <Section style={card}>
           <Text style={amountStyle}>{amount}</Text>
-          <Text style={netLabel}>Valor líquido: <strong>{netAmount}</strong></Text>
+          {!international && <Text style={netLabel}>Valor líquido: <strong>{netAmount}</strong></Text>}
         </Section>
 
         <Hr style={hr} />
@@ -63,7 +65,7 @@ const SaleConfirmationEmail = ({
         <Hr style={hr} />
 
         <Text style={footer}>
-          O valor já foi creditado no seu saldo RedoxPay e está disponível para saque.
+          {international ? 'Recebimento internacional confirmado pelo provedor. A liquidação segue a divisão configurada no provedor; este valor não é saldo nacional disponível para saque.' : 'O valor foi creditado no seu saldo nacional Redox Pay.'}
         </Text>
       </Container>
     </Body>

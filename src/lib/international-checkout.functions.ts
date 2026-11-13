@@ -52,6 +52,10 @@ export const checkInternationalCheckout = createServerFn({ method: "POST" })
       if (updateError) throw new Error(updateError.message);
     }
     if (status !== "paid") return { status, delivery_url: null };
+    try {
+      const { sendPurchaseEmails } = await import('./purchase-email.server');
+      await sendPurchaseEmails(supabaseAdmin, 'international', payment.reference);
+    } catch { console.error('[email:international] purchase notification failed'); }
     const { data: product } = await supabaseAdmin.from("products").select("delivery_url,thank_you_url,product_type,digital_file_path").eq("id", payment.product_id).maybeSingle();
     let delivery = product?.thank_you_url || product?.delivery_url || null;
     if (product?.product_type === "digital" && product.digital_file_path) {

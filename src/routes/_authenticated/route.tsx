@@ -14,6 +14,8 @@ import { WorkspaceCurrencyProvider, WorkspaceCurrencySelector } from "@/componen
 
 
 import { useEffect, useState } from "react";
+import { useServerFn } from '@tanstack/react-start';
+import { sendAccountWelcome } from '@/lib/account-email.functions';
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -62,6 +64,8 @@ const navItems = [
 ] as const;
 
 function AuthedShell() {
+  const welcome = useServerFn(sendAccountWelcome);
+  useEffect(() => { welcome().catch(() => {}); }, []);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);

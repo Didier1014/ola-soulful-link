@@ -120,10 +120,16 @@ export async function notifyNewSale(supabaseAdmin: any, txId: string) {
 
   const userId = tx.user_id;
   console.log(`[sale:${tx.id}] notifyNewSale start user=${userId} status=${tx.status}`);
-  if (tx.status !== "paid") {
+  if (tx.status !== "paid" || tx.is_test || tx.metadata?.test_mode) {
     console.log(`[sale:${tx.id}] skipped — status is ${tx.status}`);
     return;
   }
+
+  // Buyer delivery is independent from the seller's notification preferences.
+  try {
+    const { sendPurchaseEmails } = await import('./purchase-email.server');
+    await sendPurchaseEmails(supabaseAdmin, 'national', tx.id);
+  } catch { console.error('[email:product-delivery] purchase notification failed'); }
 
   // Serialize concurrent webhooks for the same sale. If another invocation
   // is already processing this transaction, skip — it will (or already did)
