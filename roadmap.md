@@ -1,3 +1,8 @@
+# Paystack credential replacement
+
+- [x] Replace publishable key and global split; use builder-designated saved secret for both provider API and callback signatures, without fallback to the previous connection.
+- [ ] Verify authentication and initialization without charging; run payment regression tests.
+
 # Complete email flows
 
 - [x] Wire buyer receipts and product delivery to verified national/international payments; preserve auth and operational emails. Historical sales are excluded from automatic delivery.
