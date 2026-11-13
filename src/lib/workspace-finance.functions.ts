@@ -16,9 +16,14 @@ export const getWorkspaceFinance = createServerFn({ method: "GET" })
     let nationalQuery = client.from("transactions").select("id,user_id,product_id,amount_mzn,fee_mzn,net_mzn,status,is_test,created_at,method,customer_name,customer_phone,customer_email,external_ref");
     let internationalQuery = client.from("international_payments").select("id,user_id,product_id,reference,provider,currency,amount_minor,fee_minor,status,created_at,customer_name,customer_email");
     if (!data.admin) { nationalQuery = nationalQuery.eq("user_id", context.userId); internationalQuery = internationalQuery.eq("user_id", context.userId); }
+    async function readAll<T>(query: { range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }> }) {
+      const rows: T[] = [];
+      for (let offset = 0; ; offset += 1000) { const result = await query.range(offset, offset + 999); if (result.error) throw new Error("Não foi possível carregar o histórico financeiro"); rows.push(...(result.data ?? [])); if ((result.data?.length ?? 0) < 1000) break; }
+      return { data: rows, error: null };
+    }
     const [national, international, profile] = await Promise.all([
-      data.currency === "MZN" ? nationalQuery.order("created_at", { ascending: false }) : Promise.resolve({ data: [], error: null }),
-      data.currency !== "MZN" ? internationalQuery.eq("currency", data.currency).order("created_at", { ascending: false }) : Promise.resolve({ data: [], error: null }),
+      data.currency === "MZN" ? readAll(nationalQuery.order("created_at", { ascending: false }).order("id")) : Promise.resolve({ data: [], error: null }),
+      data.currency !== "MZN" ? readAll(internationalQuery.eq("currency", data.currency).order("created_at", { ascending: false }).order("id")) : Promise.resolve({ data: [], error: null }),
       context.supabase.from("profiles").select("balance_mzn,full_name,business_name").eq("id", context.userId).maybeSingle(),
     ]);
     if (national.error || international.error || profile.error) throw new Error("Não foi possível carregar os pagamentos desta moeda");
