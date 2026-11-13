@@ -12,12 +12,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Trash2, Copy, Link2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useWorkspaceCurrency } from "@/components/workspace-currency";
+import { listMyProducts } from "@/lib/products.functions";
+import { formatProductPrice } from "@/lib/checkout-currency";
 
 export const Route = createFileRoute("/_authenticated/dashboard/payment-links")({ component: Page });
 
 const fmtMT = (n: number) => `${new Intl.NumberFormat("pt-MZ").format(n)} MT`;
 
 function Page() {
+  const { currency } = useWorkspaceCurrency();
+  const fetchProducts = useServerFn(listMyProducts);
+  const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: () => fetchProducts() });
   const qc = useQueryClient();
   const fetchList = useServerFn(listLinks);
   const create = useServerFn(createLink);
@@ -36,6 +42,8 @@ function Page() {
   const delM = useMutation({ mutationFn: (id: string) => del({ data: { id } }), onSuccess: () => { toast.success("Removido"); qc.invalidateQueries({ queryKey: ["payment_links"] }); } });
 
   const copy = (slug: string) => { navigator.clipboard.writeText(`${window.location.origin}/l/${slug}`); toast.success("Link copiado"); };
+
+  if (currency !== "MZN") return <section className="space-y-5"><h1 className="text-2xl font-semibold">Links de pagamento · {currency}</h1>{products.filter(product => product.currency === currency).map(product => <article key={product.id} className="py-5 border-b border-border"><p className="font-semibold">{product.name}</p><p className="text-sm text-muted-foreground mt-2">{formatProductPrice(product)} · /c/{product.slug}</p><div className="flex gap-2 mt-3"><Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/c/${product.slug}`); toast.success("Link copiado"); }}><Copy className="size-4" />Copiar</Button><Button variant="outline" size="sm" asChild><a href={`/c/${product.slug}`} target="_blank" rel="noreferrer"><ExternalLink className="size-4" />Abrir</a></Button></div></article>)}{!products.some(product => product.currency === currency) && <p className="text-sm text-muted-foreground">Nenhum produto com link nesta moeda.</p>}</section>;
 
   return (
     <div className="space-y-4">

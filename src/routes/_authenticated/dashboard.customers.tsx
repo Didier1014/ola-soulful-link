@@ -11,12 +11,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Trash2, Search, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useMemo, useState } from "react";
+import { useWorkspaceCurrency, useWorkspaceFinance } from "@/components/workspace-currency";
 
 export const Route = createFileRoute("/_authenticated/dashboard/customers")({ component: Page });
 
 const fmtMT = (n: number) => `${new Intl.NumberFormat("pt-MZ").format(n)} MT`;
 
 function Page() {
+  const { currency } = useWorkspaceCurrency();
+  const { data: finance } = useWorkspaceFinance();
   const qc = useQueryClient();
   const fetchList = useServerFn(listCustomers);
   const create = useServerFn(createCustomer);
@@ -39,6 +42,11 @@ function Page() {
     mutationFn: (id: string) => del({ data: { id } }),
     onSuccess: () => { toast.success("Removido"); qc.invalidateQueries({ queryKey: ["customers"] }); },
   });
+
+  if (currency !== "MZN") {
+    const payers = (finance?.payments ?? []).filter(payment => payment.status === "paid");
+    return <section className="space-y-5"><h1 className="text-2xl font-semibold">Clientes · {currency}</h1>{payers.map(payment => <article key={payment.id} className="border-b border-border py-4"><p className="font-semibold">{payment.customer_name || "Comprador internacional"}</p><p className="text-sm text-muted-foreground mt-1">{payment.customer_email || payment.external_ref}</p><p className="text-sm mt-2">{payment.amount.toFixed(2)} {currency} · Confirmado</p></article>)}{!payers.length && <p className="text-sm text-muted-foreground">Nenhum comprador confirmado nesta moeda.</p>}</section>;
+  }
 
   return (
     <div className="space-y-4">

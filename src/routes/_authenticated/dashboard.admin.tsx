@@ -24,6 +24,8 @@ import {
   Radar, Globe, Link2,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useWorkspaceCurrency } from "@/components/workspace-currency";
+import { InternationalFinance } from "@/components/international-finance";
 
 export const Route = createFileRoute("/_authenticated/dashboard/admin")({ component: AdminPage });
 
@@ -35,6 +37,7 @@ const RUBY = "#e11d48";
 type Tab = "overview" | "users" | "transactions" | "withdrawals" | "products" | "approvals" | "monitor" | "merchants";
 
 function AdminPage() {
+  const { currency } = useWorkspaceCurrency();
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("overview");
   const [search, setSearch] = useState("");
@@ -193,6 +196,7 @@ function AdminPage() {
   }
 
   const d = overview.data;
+  if (currency !== "MZN") return <InternationalFinance admin />;
 
   return (
     <div className="flex flex-col lg:flex-row gap-4">

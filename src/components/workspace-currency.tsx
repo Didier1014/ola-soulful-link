@@ -13,6 +13,11 @@ export function WorkspaceCurrencyProvider({ children }: { children: ReactNode })
   return <CurrencyContext.Provider value={{ currency, setCurrency: change }}>{children}</CurrencyContext.Provider>;
 }
 export const useWorkspaceCurrency = () => useContext(CurrencyContext);
+export function NationalOnly({ children, label }: { children: ReactNode; label: string }) {
+  const { currency, setCurrency } = useWorkspaceCurrency();
+  if (currency === "MZN") return children;
+  return <section className="space-y-4"><h1 className="text-2xl font-semibold">{label}</h1><p className="text-sm text-muted-foreground">{label} disponíveis apenas em MT. Os recebimentos em {currency} ficam separados na conta do provedor.</p><Select value={currency} onValueChange={() => setCurrency("MZN")}><SelectTrigger className="w-40" aria-label="Mudar para MT"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="MZN">Ver em MT</SelectItem></SelectContent></Select></section>;
+}
 export function WorkspaceCurrencySelector() {
   const { currency, setCurrency } = useWorkspaceCurrency();
   return <Select value={currency} onValueChange={value => { if (isWorkspaceCurrency(value)) setCurrency(value); }}><SelectTrigger aria-label="Moeda do espaço de trabalho" className="w-24 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{workspaceCurrencies.map(value => <SelectItem key={value} value={value}>{currencyLabel(value)}</SelectItem>)}</SelectContent></Select>;
