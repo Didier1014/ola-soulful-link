@@ -87,7 +87,7 @@ function CheckoutPage() {
   }, [product?.id]);
 
 
-  const [form, setForm] = useState({ customer_name: "", customer_phone: "" });
+  const [form, setForm] = useState({ customer_name: "", customer_phone: "", customer_email: "" });
   const operation = useCheckoutOperation("product", slug, !!product?.id, form.customer_name, form.customer_phone);
   const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [selectedBumps, setSelectedBumps] = useState<Record<string, boolean>>({});
@@ -170,7 +170,7 @@ function CheckoutPage() {
       const total = Number(product!.price_mzn) + bumpTotal;
       return checkout({
         data: {
-          product_id: product!.id, method, ...form, customer_email: "",
+          product_id: product?.id, method, ...form,
           amount_mzn: total,
           tracking: { ...trackingRef.current, ...operationTracking, ...(bumpIds.length ? { order_bumps: bumpIds.join(",") } : {}) },
         },
@@ -424,6 +424,10 @@ function CheckoutPage() {
                 className="border-[1.5px] border-gray-200 rounded-xl py-2.5 px-3 text-sm font-medium placeholder:text-gray-300 focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/10 transition-all" />
             </div>
 
+            <div className="space-y-1.5">
+              <Label htmlFor="buyer-email">{t.email}</Label>
+              <Input id="buyer-email" type="email" autoComplete="email" maxLength={160} value={form.customer_email} onChange={e => setForm({ ...form, customer_email: e.target.value })} placeholder="voce@exemplo.com" />
+            </div>
             <div className="space-y-1.5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">{t.payWith}</p>
               <div className="grid grid-cols-2 gap-2">
