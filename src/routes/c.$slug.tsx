@@ -145,7 +145,7 @@ function CheckoutPage() {
       w.fbq("track", "PageView");
       w.fbq("track", "ViewContent", {
         content_ids: [product.id], content_name: product.name,
-        content_type: "product", value: Number(product.price_mzn), currency: "MZN",
+        content_type: "product", value: Number(product.price_amount ?? product.price_mzn), currency: product.currency ?? "MZN",
       });
       pixelFiredRef.current.pageview = true;
     }
