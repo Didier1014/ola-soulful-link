@@ -1,3 +1,10 @@
+# International admin, notifications and custom product
+
+- [ ] Audit admin overview/monitoring across currencies; remove invented profit and system-health claims.
+- [ ] Send verified international sale notifications and web push in the payment currency; check purchase email evidence.
+- [ ] Create the reference offer product for the requested seller with original name/photo and configured countdown.
+- [ ] Verify authenticated admin and public checkout on desktop/mobile, tests, and delivery limitations.
+
 # Reference checkout style
 
 - [x] Refine uploaded-photo match: wrapped breadcrumb, reference text proportions, rounded order/form/summary, phone prefix icon and input sizing. Actual front-q6b photo, valid completed form, price and enabled pay button verified at 390px and 1280px without charging; no overflow/runtime errors and build OK. Publication required.
