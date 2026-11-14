@@ -38,9 +38,7 @@ const positions = [
   { value: "top-left", label: "Superior esquerdo" },
 ];
 
-const webhookUrl = typeof window !== "undefined"
-  ? `${window.location.origin}/api/public/webhook-payment`
-  : "";
+const webhookUrl = `${PUBLIC_BASE_URL}/api/public/webhook-payment`;
 
 function SettingsPage() {
   const ping = useServerFn(checkApiStatus);
