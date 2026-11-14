@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useWorkspaceCurrency } from "@/components/workspace-currency";
+import { formatProductPrice } from "@/lib/checkout-currency";
 import { InternationalFinance } from "@/components/international-finance";
 
 export const Route = createFileRoute("/_authenticated/dashboard/admin")({
@@ -103,13 +104,13 @@ function AdminPage() {
     } catch (e: any) { toast.error(e?.message || "Erro"); }
   };
 
-  const overview = useQuery({ queryKey: ["admin_overview"], queryFn: () => fnOverview(), retry: false });
+  const overview = useQuery({ queryKey: ["admin_overview"], queryFn: () => fnOverview(), retry: false, refetchInterval: 15000 });
   const profiles = useQuery({ queryKey: ["admin_profiles"], queryFn: () => fnProfiles(), enabled: tab === "users" });
   const txs = useQuery({ queryKey: ["admin_tx"], queryFn: () => fnTx(), enabled: tab === "transactions" });
   const wds = useQuery({ queryKey: ["admin_wd"], queryFn: () => fnWd(), enabled: tab === "withdrawals" || tab === "overview" });
   const prods = useQuery({ queryKey: ["admin_prods"], queryFn: () => fnProd(), enabled: tab === "products" || tab === "approvals" || tab === "overview" });
   const fnMonitor = useServerFn(listMerchantMonitoring);
-  const monitor = useQuery({ queryKey: ["admin_monitor"], queryFn: () => fnMonitor(), enabled: tab === "monitor" });
+  const monitor = useQuery({ queryKey: ["admin_monitor"], queryFn: () => fnMonitor(), enabled: tab === "monitor", refetchInterval: 15000 });
   const [monitorSearch, setMonitorSearch] = useState("");
   const fnMerchants = useServerFn(listMerchantsApiUsage);
   const merchantsQ = useQuery({ queryKey: ["admin_merchants_api"], queryFn: () => fnMerchants(), enabled: tab === "merchants", refetchInterval: tab === "merchants" ? 15000 : false });
@@ -160,7 +161,7 @@ function AdminPage() {
         })
         .on("postgres_changes", { event: "*", schema: "public", table: "products" }, (payload: any) => {
           qc.invalidateQueries({ queryKey: ["admin_prods"] });
-          if (payload?.eventType === "INSERT") {
+          if (payload?.eventType === "INSERT" && payload.new?.approval_status === "pending") {
             const p = payload.new || {};
             toast.info(`Novo produto para aprovação: ${p.name ?? ""}`);
           }
@@ -198,7 +199,7 @@ function AdminPage() {
   }
 
   const d = overview.data;
-  if (currency !== "MZN") return <InternationalFinance admin />;
+
 
   return (
     <div className="flex flex-col lg:flex-row gap-4">
@@ -234,13 +235,14 @@ function AdminPage() {
             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Gateway</span>
           </div>
-          <p className="text-xs">Sistemas operacionais</p>
+          <p className="text-xs">Estado externo não verificado</p>
         </div>
       </aside>
 
       {/* Conteúdo */}
       <main className="flex-1 min-w-0 space-y-4">
-        {tab === "overview" && d && (
+        {currency !== "MZN" && (tab === "overview" || tab === "transactions") && <InternationalFinance admin />}
+        {tab === "overview" && currency === "MZN" && d && (
           <>
             {pendingCount > 0 && (
               <div className="flex items-center justify-between p-4 rounded-2xl border" style={{ background: `${RUBY}08`, borderColor: `${RUBY}30` }}>
@@ -258,9 +260,9 @@ function AdminPage() {
             )}
 
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-              <Kpi label="Lucro hoje" value={fmtMT(d.profit_today_mzn)} icon={DollarSign} accent />
+              <Kpi label="Taxas registadas hoje" value={fmtMT(d.profit_today_mzn)} icon={DollarSign} accent />
               <Kpi label="Volume pago" value={fmtMT(d.volume_mzn)} icon={TrendingUp} accent />
-              <Kpi label="Lucro total" value={fmtMT(d.profit_mzn)} icon={DollarSign} accent />
+              <Kpi label="Taxas registadas totais" value={fmtMT(d.profit_mzn)} icon={DollarSign} accent />
               <Kpi label="Saldo utilizadores" value={fmtMT(d.user_balance_mzn)} icon={Wallet} />
               <Kpi label="Saques pendentes" value={fmtMT(d.pending_withdrawals_mzn)} icon={AlertTriangle} warn />
             </div>
@@ -283,20 +285,20 @@ function AdminPage() {
               <Card className="p-5 rounded-2xl">
                 <h2 className="font-semibold mb-3 flex items-center gap-2"><Zap className="h-4 w-4 text-emerald-500" /> Estado do Sistema</h2>
                 <div className="space-y-3 text-sm">
-                  <SysRow label="Gateway de pagamento" sub="Latência: 45ms" status="online" />
-                  <SysRow label="Base de dados" sub="Carga: baixa" status="online" />
-                  <SysRow label="Webhooks externos" sub="Operacional" status="online" />
+                  <p className="text-muted-foreground">Pagar · MT · estado externo não verificado</p>
+                  <p className="text-muted-foreground">Paystack · ZAR · estado externo não verificado</p>
+                  <p className="text-muted-foreground">Stripe · USD/EUR · ainda não ativado</p>
                 </div>
                 <div className="mt-4 p-3 rounded-lg bg-secondary border border-border">
                   <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">Webhook URL</p>
-                  <p className="text-[11px] font-mono break-all">https://redoxpay.vercel.app/api/public/webhook-payment</p>
+                  <p className="text-[11px] font-mono break-all">https://www.redoxpay.site/api/public/pagar-webhook</p>
                 </div>
               </Card>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               <Card className="p-5 rounded-2xl">
-                <h2 className="font-semibold mb-3 flex items-center gap-2"><DollarSign className="h-4 w-4" style={{ color: RUBY }} /> Lucro diário</h2>
+                <h2 className="font-semibold mb-3 flex items-center gap-2"><DollarSign className="h-4 w-4" style={{ color: RUBY }} /> Taxas registadas diárias</h2>
                 <AreaChart data={d.revenue_growth.map(u => ({ label: u.date.slice(5), value: Math.round(u.value) }))} height={140} />
               </Card>
               <Card className="p-5 rounded-2xl">
@@ -379,21 +381,19 @@ function AdminPage() {
           </>
         )}
 
-        {tab === "transactions" && (
+        {tab === "transactions" && currency === "MZN" && (
           <Card className="rounded-2xl overflow-hidden">
             <div className="grid grid-cols-12 px-4 py-3 text-[10px] uppercase tracking-wider font-bold text-muted-foreground border-b border-border bg-secondary/40">
               <div className="col-span-4">Cliente</div>
               <div className="col-span-2">Método</div>
               <div className="col-span-2 text-right">Valor</div>
-              <div className="col-span-2 text-right">Margem</div>
+              <div className="col-span-2 text-right">Taxa registada</div>
               <div className="col-span-2 text-right">Status</div>
             </div>
             <div className="divide-y divide-border">
               {(txs.data ?? []).map((t: any) => {
                 const amt = Number(t.amount_mzn);
-                const sFee = Math.round(amt * 0.08 * 100) / 100;
-                const rCost = Math.round((amt * 0.10 + 10) * 100) / 100;
-                const margin = sFee - rCost;
+                const margin = Number(t.fee_mzn ?? 0);
                 const methodBg = t.method === 'mpesa' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                   : t.method === 'emola' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
                   : 'bg-secondary text-muted-foreground border-border';
@@ -543,7 +543,7 @@ function AdminPage() {
                     <p className="font-mono font-bold text-sm" style={{ color: p.sales_count > 0 ? RUBY : undefined }}>
                       {fmt(Number(p.sales_count ?? 0))}
                     </p>
-                    <p className="text-[10px] text-muted-foreground font-mono">{fmtMT(Number(p.sales_total_mzn ?? 0))}</p>
+                    <p className="text-[10px] text-muted-foreground font-mono">{`${fmt2(Number(p.sales_total ?? 0))} ${p.currency ?? "MZN"}`}</p>
                   </div>
                   <div className="col-span-2 flex items-center gap-2 min-w-0" onClick={(e) => e.stopPropagation()}>
                     {p.delivery_url && (
@@ -560,7 +560,7 @@ function AdminPage() {
                     )}
                     {!p.delivery_url && !p.digital_file_path && <span className="text-[11px] text-muted-foreground">—</span>}
                   </div>
-                  <div className="col-span-1 text-right font-mono font-semibold">{fmtMT(Number(p.price_mzn))}</div>
+                  <div className="col-span-1 text-right font-mono font-semibold">{formatProductPrice(p)}</div>
                   <div className="col-span-1 text-right space-y-1" onClick={(e) => e.stopPropagation()}>
                     {p.approval_status === "approved" && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
@@ -642,7 +642,7 @@ function AdminPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] uppercase text-muted-foreground">Volume</p>
-                        <p className="font-mono font-bold">{fmtMT(m.total_volume_mzn)}</p>
+                        <p className="font-mono font-bold">{Object.entries(m.volumes ?? {}).map(([code, value]) => `${fmt2(Number(value))} ${code}`).join(" · ") || "—"}</p>
                       </div>
                     </div>
                   </div>
@@ -663,7 +663,7 @@ function AdminPage() {
                         <div key={p.id} className="p-3 flex items-center gap-3">
                           <Package className="h-4 w-4 text-muted-foreground shrink-0" />
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate">{p.name} {!p.active && <span className="text-[10px] text-muted-foreground">(inactivo)</span>}</p>
+                            <p className="text-sm font-medium truncate">{p.name} · {p.currency ?? "MZN"} · {p.checkout_provider ?? "national"} {!p.active && <span className="text-[10px] text-muted-foreground">(inactivo)</span>}</p>
                             <a href={`/c/${p.slug}`} target="_blank" rel="noreferrer" className="text-[11px] text-muted-foreground truncate hover:text-foreground inline-flex items-center gap-1">
                               /c/{p.slug} <ExternalLink className="h-3 w-3" />
                             </a>
@@ -677,7 +677,7 @@ function AdminPage() {
                           </div>
                           <div className="text-right text-[11px] shrink-0">
                             <p className="font-mono">{fmt(p.clicks)} clk</p>
-                            <p className="font-mono text-muted-foreground">{fmt(p.sales_count)} · {fmtMT(p.volume_mzn)}</p>
+                            <p className="font-mono text-muted-foreground">{fmt(p.sales_count)} · {`${fmt2(p.volume_mzn)} ${p.currency ?? "MZN"}`}</p>
                           </div>
                         </div>
                       ))}
@@ -1010,12 +1010,12 @@ function AdminPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline justify-between gap-2">
                         <p className="font-medium text-sm truncate">{p.name}</p>
-                        <p className="font-mono font-bold text-sm shrink-0">{fmtMT(Number(p.price_mzn))}</p>
+                        <p className="font-mono font-bold text-sm shrink-0">{formatProductPrice(p)}</p>
                       </div>
                       <p className="text-[11px] text-muted-foreground uppercase">{p.product_type || "external"} · {p.active ? "Activo" : "Inactivo"}</p>
                       <p className="text-[11px] mt-1">
                         <span className="font-bold" style={{ color: p.sales_count > 0 ? RUBY : undefined }}>{fmt(Number(p.sales_count ?? 0))} venda{p.sales_count === 1 ? "" : "s"}</span>
-                        {p.sales_count > 0 && <span className="text-muted-foreground"> · {fmtMT(Number(p.sales_total_mzn ?? 0))}</span>}
+                        {p.sales_count > 0 && <span className="text-muted-foreground"> · {`${fmt2(Number(p.sales_total ?? 0))} ${p.currency ?? "MZN"}`}</span>}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         <a href={`/c/${p.slug}`} target="_blank" rel="noreferrer"
