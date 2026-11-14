@@ -1,4 +1,5 @@
 import { pageHead } from "@/lib/page-head";
+import { PUBLIC_BASE_URL } from "@/lib/public-url";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
