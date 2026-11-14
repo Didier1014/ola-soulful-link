@@ -16,6 +16,7 @@ import { useState } from "react";
 import { useWorkspaceCurrency } from "@/components/workspace-currency";
 import { listMyProducts } from "@/lib/products.functions";
 import { formatProductPrice } from "@/lib/checkout-currency";
+import { publicCheckoutUrl, publicPaymentLinkUrl } from "@/lib/public-url";
 
 export const Route = createFileRoute("/_authenticated/dashboard/payment-links")({
   head: () => pageHead('Links de pagamento', 'Consulte links de pagamento na Redox Pay com segurança.'), component: Page });
@@ -43,9 +44,9 @@ function Page() {
   const toggleM = useMutation({ mutationFn: (v: { id: string; active: boolean }) => toggle({ data: v }), onSuccess: () => qc.invalidateQueries({ queryKey: ["payment_links"] }) });
   const delM = useMutation({ mutationFn: (id: string) => del({ data: { id } }), onSuccess: () => { toast.success("Removido"); qc.invalidateQueries({ queryKey: ["payment_links"] }); } });
 
-  const copy = (slug: string) => { navigator.clipboard.writeText(`${window.location.origin}/l/${slug}`); toast.success("Link copiado"); };
+  const copy = (slug: string) => { navigator.clipboard.writeText(publicPaymentLinkUrl(slug)); toast.success("Link copiado"); };
 
-  if (currency !== "MZN") return <section className="space-y-5"><h1 className="text-2xl font-semibold">Links de pagamento · {currency}</h1>{products.filter(product => product.currency === currency).map(product => <article key={product.id} className="py-5 border-b border-border"><p className="font-semibold">{product.name}</p><p className="text-sm text-muted-foreground mt-2">{formatProductPrice(product)} · /c/{product.slug}</p><div className="flex gap-2 mt-3"><Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/c/${product.slug}`); toast.success("Link copiado"); }}><Copy className="size-4" />Copiar</Button><Button variant="outline" size="sm" asChild><a href={`/c/${product.slug}`} target="_blank" rel="noreferrer"><ExternalLink className="size-4" />Abrir</a></Button></div></article>)}{!products.some(product => product.currency === currency) && <p className="text-sm text-muted-foreground">Nenhum produto com link nesta moeda.</p>}</section>;
+  if (currency !== "MZN") return <section className="space-y-5"><h1 className="text-2xl font-semibold">Links de pagamento · {currency}</h1>{products.filter(product => product.currency === currency).map(product => <article key={product.id} className="py-5 border-b border-border"><p className="font-semibold">{product.name}</p><p className="text-sm text-muted-foreground mt-2">{formatProductPrice(product)} · /c/{product.slug}</p><div className="flex gap-2 mt-3"><Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(publicCheckoutUrl(product.slug)); toast.success("Link copiado"); }}><Copy className="size-4" />Copiar</Button><Button variant="outline" size="sm" asChild><a href={`/c/${product.slug}`} target="_blank" rel="noreferrer"><ExternalLink className="size-4" />Abrir</a></Button></div></article>)}{!products.some(product => product.currency === currency) && <p className="text-sm text-muted-foreground">Nenhum produto com link nesta moeda.</p>}</section>;
 
   return (
     <div className="space-y-4">
