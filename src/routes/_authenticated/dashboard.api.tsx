@@ -1,4 +1,5 @@
 import { pageHead } from "@/lib/page-head";
+import { PUBLIC_BASE_URL } from "@/lib/public-url";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,7 @@ function Page() {
   const [isMerchant, setIsMerchant] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [loading, setLoading] = useState(true);
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://redoxpay.lovable.app";
+  const baseUrl = PUBLIC_BASE_URL;
 
   useEffect(() => {
     (async () => {

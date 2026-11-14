@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { pageHead } from "@/lib/page-head";
+import { PUBLIC_BASE_URL } from "@/lib/public-url";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -38,9 +39,7 @@ const positions = [
   { value: "top-left", label: "Superior esquerdo" },
 ];
 
-const webhookUrl = typeof window !== "undefined"
-  ? `${window.location.origin}/api/public/webhook-payment`
-  : "";
+const webhookUrl = `${PUBLIC_BASE_URL}/api/public/webhook-payment`;
 
 function SettingsPage() {
   const ping = useServerFn(checkApiStatus);
