@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS notifications_international_sale_event ON public.notifications (user_id, (data->>'international_reference')) WHERE type = 'international_sale' AND data->>'international_reference' IS NOT NULL;

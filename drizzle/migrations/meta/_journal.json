@@ -78,6 +78,13 @@
       "when": 1794559685556,
       "tag": "0010_tighten_clicks_and_product_images",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794620881428,
+      "tag": "0011_international_sale_notification_event",
+      "breakpoints": true
     }
   ]
 }

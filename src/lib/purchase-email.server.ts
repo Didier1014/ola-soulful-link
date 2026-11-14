@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { sendAppEmail, getUserEmail } from './email.server';
 import { canEmailPurchase, DIGITAL_EMAIL_LINK_SECONDS, safeDeliveryUrl, EMAIL_LAUNCH_DATE } from './email-policy';
-import { resolveCheckoutLanguage } from './checkout-language';
+import { resolveCheckoutLanguage, checkoutLanguageConfig } from './checkout-language';
 
 /** Only persisted, provider-confirmed LIVE payments may trigger delivery. */
 export async function sendPurchaseEmails(client: SupabaseClient, ledger: 'national' | 'international', id: string) {
@@ -14,7 +14,13 @@ export async function sendPurchaseEmails(client: SupabaseClient, ledger: 'nation
   const { data: profile } = await client.from('profiles').select('support_phone,support_phone2').eq('id', payment.user_id).maybeSingle();
   const currency = ledger === 'national' ? 'MZN' : payment.currency;
   const amount = ledger === 'national' ? Number(payment.amount_mzn) : Number(payment.amount_minor) / 100;
-  const formatted = new Intl.NumberFormat('pt-MZ', { style: 'currency', currency }).format(amount);
+  let country: string | null = null;
+  if (payment.checkout_session_id) {
+    const { data: session } = await client.from('checkout_sessions').select('country_code').eq('id', payment.checkout_session_id).eq('user_id', payment.user_id).eq('product_id', payment.product_id).maybeSingle();
+    country = session?.country_code ?? null;
+  }
+  const language = resolveCheckoutLanguage(checkoutLanguageConfig((product?.config as { checkout?: unknown } | null)?.checkout, currency), country);
+  const formatted = new Intl.NumberFormat(language === 'en' ? 'en-ZA' : 'pt-MZ', { style: 'currency', currency, currencyDisplay: 'code' }).format(amount);
   let deliveryUrl = safeDeliveryUrl(product?.delivery_url) ?? safeDeliveryUrl(product?.thank_you_url);
   let digital = false;
   if (product?.product_type === 'digital' && product.digital_file_path) {
@@ -25,7 +31,7 @@ export async function sendPurchaseEmails(client: SupabaseClient, ledger: 'nation
   const result = payment.customer_email ? await sendAppEmail(client, {
     templateName: 'product-delivery', recipientEmail: payment.customer_email,
     idempotencyKey: `product-delivery-${ledger}-${id}`,
-    templateData: { customerName: payment.customer_name ?? 'Cliente', productName: product?.name ?? 'Pagamento', amount: formatted, reference: id, deliveryUrl, digital, support: [profile?.support_phone, profile?.support_phone2].filter(Boolean).join(' / '), language: resolveCheckoutLanguage((product?.config as { checkout?: unknown } | null)?.checkout) },
+    templateData: { customerName: payment.customer_name ?? 'Cliente', productName: product?.name ?? 'Pagamento', amount: formatted, reference: id, deliveryUrl, digital, support: [profile?.support_phone, profile?.support_phone2].filter(Boolean).join(' / '), language },
   }) : { ok: false, reason: 'no_recipient' };
   if (ledger === 'international') {
     const email = await getUserEmail(client, payment.user_id);

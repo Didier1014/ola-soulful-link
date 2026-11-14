@@ -53,6 +53,10 @@ export const checkInternationalCheckout = createServerFn({ method: "POST" })
     }
     if (status !== "paid") return { status, delivery_url: null };
     try {
+      const { notifyInternationalSale } = await import('./international-sale.server');
+      await notifyInternationalSale(supabaseAdmin, payment.reference);
+    } catch { console.error('[international-sale] notification failed'); }
+    try {
       const { sendPurchaseEmails } = await import('./purchase-email.server');
       await sendPurchaseEmails(supabaseAdmin, 'international', payment.reference);
     } catch { console.error('[email:international] purchase notification failed'); }

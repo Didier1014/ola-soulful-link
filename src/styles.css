@@ -196,6 +196,7 @@
   font-family: "Manrope", sans-serif;
   letter-spacing: 0;
 }
+.offer-countdown { background: var(--destructive); color: var(--primary-foreground); min-height: 84px; }
 .offer-brand { color: var(--primary-foreground); background: var(--primary); }
 .offer-header-inner { min-height: 60px; }
 .offer-header-title { background: color-mix(in srgb, var(--offer-paper) 12%, transparent); max-width: 65%; }

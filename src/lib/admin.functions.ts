@@ -37,24 +37,18 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       supabaseAdmin.from("transactions").select("*", { count: "exact", head: true }),
       supabaseAdmin.from("products").select("*", { count: "exact", head: true }),
       supabaseAdmin.from("withdrawals").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("transactions").select("amount_mzn").eq("status", "paid"),
-      supabaseAdmin.from("transactions").select("amount_mzn,fee_mzn").eq("status", "paid"),
+      supabaseAdmin.from("transactions").select("amount_mzn").eq("status", "paid").eq("is_test", false),
+      supabaseAdmin.from("transactions").select("amount_mzn,fee_mzn").eq("status", "paid").eq("is_test", false),
       supabaseAdmin.from("profiles").select("balance_mzn"),
       supabaseAdmin.from("withdrawals").select("amount_mzn").eq("status", "pending"),
       supabaseAdmin.from("withdrawals").select("amount_mzn"),
       supabaseAdmin.from("profiles").select("created_at"),
-      supabaseAdmin.from("transactions").select("created_at,fee_mzn,amount_mzn,status"),
+      supabaseAdmin.from("transactions").select("created_at,fee_mzn,amount_mzn,status").eq("is_test", false),
     ]);
 
     const totalVolume = (vol ?? []).reduce((a: number, r: any) => a + Number(r.amount_mzn || 0), 0);
-    // Lucro estimado = seller_fee (8%) - custo processador (~10%+10).
-    // Modo simulação — sem custo externo de processamento.
-    const totalProfit = (fees ?? []).reduce((a: number, r: any) => {
-      const amt = Number(r.amount_mzn || 0);
-      const sellerFee = Math.round(amt * 0.08 * 100) / 100;
-      const providerCost = Math.round((amt * 0.10 + 10) * 100) / 100;
-      return a + (sellerFee - providerCost);
-    }, 0);
+    // Persisted platform fees are accounting values, not verified processor profit.
+    const totalProfit = (fees ?? []).reduce((a: number, r: any) => a + Number(r.fee_mzn || 0), 0);
     const totalBalance = (balances ?? []).reduce((a: number, r: any) => a + Number(r.balance_mzn || 0), 0);
     const pendingWd = (wdPending ?? []).reduce((a: number, r: any) => a + Number(r.amount_mzn || 0), 0);
     const totalWd = (wdTotal ?? []).reduce((a: number, r: any) => a + Number(r.amount_mzn || 0), 0);
@@ -72,10 +66,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     (txDates ?? []).forEach((t: any) => {
       const day = new Date(t.created_at).toISOString().slice(0, 10);
       if (t.status === "paid") {
-        const amt = Number(t.amount_mzn || 0);
-        const sellerFee = Math.round(amt * 0.08 * 100) / 100;
-        const providerCost = Math.round((amt * 0.10 + 10) * 100) / 100;
-        revenueGrowth[day] = (revenueGrowth[day] || 0) + (sellerFee - providerCost);
+        revenueGrowth[day] = (revenueGrowth[day] || 0) + Number(t.fee_mzn || 0);
       }
       txTimeline[day] = (txTimeline[day] || 0) + 1;
     });
@@ -306,12 +297,22 @@ export const listAllProducts = createServerFn({ method: "GET" })
         stats[k].total += Number(t.net_mzn ?? 0);
       }
     }
+    if (ids.length) {
+      const { data: foreign, error } = await supabaseAdmin.from("international_payments").select("product_id,amount_minor,fee_minor").in("product_id", ids).eq("status", "paid");
+      if (error) throw new Error(error.message);
+      for (const t of foreign ?? []) {
+        if (!stats[t.product_id]) stats[t.product_id] = { count: 0, total: 0 };
+        stats[t.product_id].count++;
+        stats[t.product_id].total += (Number(t.amount_minor) - Number(t.fee_minor)) / 100;
+      }
+    }
     const clicks = await computeClickCounts(supabaseAdmin, ids);
     return Promise.all(products.map(async (p: any) => ({
       ...p,
       cover_url: await signCover(supabaseAdmin, p.cover_url),
       sales_count: stats[p.id]?.count ?? 0,
       sales_total_mzn: stats[p.id]?.total ?? 0,
+      sales_total: stats[p.id]?.total ?? 0,
       clicks_count: clicks[p.id] ?? 0,
     })));
   });
@@ -322,7 +323,7 @@ export const listUserProducts = createServerFn({ method: "POST" })
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: products, error } = await supabaseAdmin
-      .from("products").select("id,name,slug,price_mzn,cover_url,delivery_url,digital_file_path,product_type,active,created_at")
+      .from("products").select("id,name,slug,price_mzn,price_amount,currency,checkout_provider,cover_url,delivery_url,digital_file_path,product_type,active,created_at")
       .eq("user_id", data.user_id).order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     const list = products ?? [];
@@ -341,12 +342,22 @@ export const listUserProducts = createServerFn({ method: "POST" })
         stats[k].total += Number(t.net_mzn ?? 0);
       }
     }
+    if (ids.length) {
+      const { data: foreign, error } = await supabaseAdmin.from("international_payments").select("product_id,amount_minor,fee_minor").in("product_id", ids).eq("status", "paid");
+      if (error) throw new Error(error.message);
+      for (const t of foreign ?? []) {
+        if (!stats[t.product_id]) stats[t.product_id] = { count: 0, total: 0 };
+        stats[t.product_id].count++;
+        stats[t.product_id].total += (Number(t.amount_minor) - Number(t.fee_minor)) / 100;
+      }
+    }
     const clicks = await computeClickCounts(supabaseAdmin, ids);
     return Promise.all(list.map(async (p: any) => ({
       ...p,
       cover_url: await signCover(supabaseAdmin, p.cover_url),
       sales_count: stats[p.id]?.count ?? 0,
       sales_total_mzn: stats[p.id]?.total ?? 0,
+      sales_total: stats[p.id]?.total ?? 0,
       clicks_count: clicks[p.id] ?? 0,
     })));
   });
@@ -514,12 +525,13 @@ export const listMerchantMonitoring = createServerFn({ method: "GET" })
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [{ data: profs }, { data: products }, { data: links }, { data: clicks }, { data: txs }] = await Promise.all([
+    const [{ data: profs }, { data: products }, { data: links }, { data: clicks }, { data: txs }, { data: foreign }] = await Promise.all([
       supabaseAdmin.from("profiles").select("id, full_name, business_name, phone"),
-      supabaseAdmin.from("products").select("id, user_id, name, slug, price_mzn, active, approval_status, created_at"),
+      supabaseAdmin.from("products").select("id, user_id, name, slug, price_mzn, price_amount, currency, checkout_provider, active, approval_status, created_at"),
       supabaseAdmin.from("payment_links").select("id, user_id, title, slug, amount_mzn, active, clicks, payments_count, created_at"),
       supabaseAdmin.from("product_clicks").select("product_id, referrer, created_at").order("created_at", { ascending: false }).limit(5000),
-      supabaseAdmin.from("transactions").select("user_id, product_id, status, amount_mzn, metadata, created_at").order("created_at", { ascending: false }).limit(5000),
+      supabaseAdmin.from("transactions").select("user_id, product_id, status, amount_mzn, metadata, created_at").eq("is_test", false).order("created_at", { ascending: false }).limit(5000),
+      supabaseAdmin.from("international_payments").select("user_id,product_id,currency,status,amount_minor").eq("status", "paid").limit(5000),
     ]);
 
     const host = (r?: string | null) => {
@@ -553,6 +565,11 @@ export const listMerchantMonitoring = createServerFn({ method: "GET" })
       }
     }
 
+    for (const t of foreign ?? []) {
+      if (!salesByProduct[t.product_id]) salesByProduct[t.product_id] = { count: 0, volume: 0 };
+      salesByProduct[t.product_id].count++;
+      salesByProduct[t.product_id].volume += Number(t.amount_minor) / 100;
+    }
     const merchants: Record<string, any> = {};
     for (const p of profs ?? []) {
       merchants[p.id] = {
@@ -564,6 +581,7 @@ export const listMerchantMonitoring = createServerFn({ method: "GET" })
         total_clicks: 0,
         total_sales: 0,
         total_volume_mzn: 0,
+        volumes: {} as Record<string, number>,
         top_referrers: [] as { host: string; count: number }[],
       };
     }
@@ -574,14 +592,15 @@ export const listMerchantMonitoring = createServerFn({ method: "GET" })
       const s = salesByProduct[pr.id] ?? { count: 0, volume: 0 };
       const c = clickByProduct[pr.id] ?? { count: 0, refs: {} };
       m.products.push({
-        id: pr.id, name: pr.name, slug: pr.slug, price_mzn: pr.price_mzn,
+        id: pr.id, name: pr.name, slug: pr.slug, price_mzn: pr.price_mzn, currency: pr.currency, checkout_provider: pr.checkout_provider,
         active: pr.active, approval_status: pr.approval_status,
         clicks: c.count, sales_count: s.count, volume_mzn: s.volume,
         top_referrers: Object.entries(c.refs).sort((a, b) => (b[1] as number) - (a[1] as number)).slice(0, 3).map(([h, n]) => ({ host: h, count: n })),
       });
       m.total_clicks += c.count;
       m.total_sales += s.count;
-      m.total_volume_mzn += s.volume;
+      if (pr.currency === "MZN") m.total_volume_mzn += s.volume;
+      m.volumes[pr.currency] = (m.volumes[pr.currency] ?? 0) + s.volume;
       for (const [h, n] of Object.entries(c.refs)) {
         if (!refByUser[pr.user_id]) refByUser[pr.user_id] = {};
         refByUser[pr.user_id][h] = (refByUser[pr.user_id][h] || 0) + (n as number);

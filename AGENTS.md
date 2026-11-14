@@ -1,5 +1,9 @@
 # Architecture rules
 
+- International sale side effects read verified LIVE ledger rows; a unique notification event index gates webhook/poll push duplication, and payloads retain ledger currency without conversion.
+- Offer countdowns use seller-configured minutes and a session-persisted deadline; expiration never resets or changes price/payment authorization.
+- Admin finance reports persisted fees as accounting, never invented processor costs or profit; global admin navigation stays available under every currency.
+
 - Checkout style is stored in product config independently of currency/provider; opted-in offer checkouts share a scoped presentation shell and reuse existing payment/capability flows so changing style cannot change financial behavior. Optional international buyer phone goes only to payment metadata, never anonymous analytics.
 
 - All SMS callers share the legacy SMS adapter routed through the linked MozeSMS gateway connection; credentials remain server-only and the approved sender is enforced centrally to avoid rejected custom senders.

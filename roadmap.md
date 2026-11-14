@@ -1,3 +1,12 @@
+# International admin, notifications and custom product
+
+- [x] Audit admin overview/monitoring across currencies; persisted fees replace invented profit/costs, external health is unverified, and all admin tabs remain accessible under ZAR/USD/EUR.
+- [x] Wire verified international sale notifications and web push in original currency with unique event deduplication; buyer emails use checkout language/country and explicit currency codes. Recent real buyer email audit says sent, not inbox-confirmed.
+- [x] Create /c/front-matue for the requested seller with original name, owner-folder photo, 599 ZAR and session-persisted 40-minute timer.
+- [x] Authenticated admin shows actual 20 ZAR volume and separate merchant currencies; MT fees, USD unavailable, mobile/desktop checkout, original photo and valid form verified without charge. 24 targeted tests pass; no browser runtime errors and build OK.
+- [ ] Configure this product's deliverable: awaiting the seller's actual URL/file; source product and recent paid test product have none, so receipts cannot contain a delivery link.
+- [ ] Verify device receipt of new ZAR push and actual purchase delivery: requires publication plus an authorized buyer payment and active notification subscription; no charge or synthetic sale sent.
+
 # Reference checkout style
 
 - [x] Refine uploaded-photo match: wrapped breadcrumb, reference text proportions, rounded order/form/summary, phone prefix icon and input sizing. Actual front-q6b photo, valid completed form, price and enabled pay button verified at 390px and 1280px without charging; no overflow/runtime errors and build OK. Publication required.

@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
-import { Lock, ShieldCheck, Wallet, ChevronRight, Mail } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Lock, ShieldCheck, Wallet, ChevronRight, Mail, Timer } from "lucide-react";
+import { offerTimerMinutes, offerSecondsLeft } from "@/lib/offer-timer";
 import type { CheckoutLanguage, CheckoutCopy } from "@/lib/checkout-language";
 
 const copy = {
@@ -10,11 +11,29 @@ const copy = {
 };
 
 export function OfferCheckout({ product, price, language, t, children }: {
-  product: { name: string; description?: string | null; cover_url?: string | null };
+  product: { id?: string; name: string; description?: string | null; cover_url?: string | null; config?: { personalizacao?: unknown } };
   price: string; language: CheckoutLanguage; t: CheckoutCopy; children: ReactNode;
 }) {
   const text = copy[language];
+  const minutes = offerTimerMinutes(product.config?.personalizacao);
+  const [seconds, setSeconds] = useState<number | null>(null);
+  useEffect(() => {
+    if (!minutes) return;
+    const key = `rdx-offer-deadline:${product.id ?? product.name}`;
+    let deadline = Date.now() + minutes * 60000;
+    try {
+      const stored = Number(sessionStorage.getItem(key));
+      if (stored > 0 && Number.isFinite(stored)) deadline = stored;
+      else sessionStorage.setItem(key, String(deadline));
+    } catch { /* Storage may be unavailable; keep a stable in-memory deadline. */ }
+    const tick = () => setSeconds(offerSecondsLeft(deadline, Date.now()));
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, [minutes, product.id, product.name]);
+  const timerValue = seconds ?? (minutes ?? 0) * 60;
   return <div lang={language} className="offer-checkout min-h-screen">
+    {minutes && <div className="offer-countdown flex flex-wrap items-center justify-center gap-3 px-4 py-5 text-center"><Timer className="size-6 shrink-0" /><span className="font-mono text-2xl sm:text-3xl font-bold tabular-nums">{[Math.floor(timerValue / 3600), Math.floor(timerValue / 60) % 60, timerValue % 60].map(value => String(value).padStart(2, '0')).join(' : ')}</span><span className="text-base sm:text-xl">{timerValue > 0 ? ({ en: 'Hurry, time is running out!', pt: 'O tempo está a acabar!', es: '¡El tiempo se acaba!', fr: 'Le temps presse !' })[language] : ({ en: 'Offer timer ended', pt: 'Temporizador terminado', es: 'Temporizador terminado', fr: 'Compte à rebours terminé' })[language]}</span></div>}
     <header className="offer-brand">
       <div className="offer-header-inner mx-auto flex max-w-[750px] items-center justify-between gap-4 px-4 sm:px-8">
         <span className="offer-header-title min-w-0 truncate rounded-md px-3 py-2 font-bold">{product.name}</span>

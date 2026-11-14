@@ -13,7 +13,7 @@ import { OfferCheckout } from "@/components/offer-checkout";
 import { resolveCheckoutStyle } from "@/lib/checkout-style";
 import { checkoutLanguageConfig } from "@/lib/checkout-language";
 
-type Product = { id: string; slug?: string; name: string; description?: string | null; price_mzn: number; price_amount?: number | null; currency?: string; checkout_provider?: string; cover_url?: string | null; config?: { checkout?: { language?: string; style?: string } }; visitor_country?: string | null };
+type Product = { id: string; slug?: string; name: string; description?: string | null; price_mzn: number; price_amount?: number | null; currency?: string; checkout_provider?: string; cover_url?: string | null; config?: { checkout?: { language?: string; style?: string }; personalizacao?: unknown }; visitor_country?: string | null };
 
 async function openPaystack(accessCode: string, onSuccess: () => void, onCancel: () => void, errorMessage: string) {
   const host = window as unknown as { PaystackPop?: new () => { resumeTransaction: (code: string, options: { onSuccess: () => void; onCancel: () => void; onError: () => void }) => void } };
