@@ -27,6 +27,7 @@ import { checkoutLanguages, languageNames } from "@/lib/checkout-language";
 import { resolveCheckoutStyle } from "@/lib/checkout-style";
 import { Link } from "@tanstack/react-router";
 import { formatProductPrice } from "@/lib/checkout-currency";
+import { PUBLIC_BASE_URL, publicCheckoutUrl } from "@/lib/public-url";
 import { useWorkspaceCurrency } from "@/components/workspace-currency";
 import { listInternationalPayments } from "@/lib/international-checkout.functions";
 
@@ -175,7 +176,7 @@ function ProductsPage() {
   });
 
   function copyLink(slug: string) {
-    navigator.clipboard.writeText(`${window.location.origin}/c/${slug}`);
+    navigator.clipboard.writeText(publicCheckoutUrl(slug));
     toast.success("Link copiado");
   }
 
@@ -551,7 +552,7 @@ function FormStep({
           <div className="space-y-2">
             <Label>Slug (URL do checkout) <span className="text-destructive">*</span></Label>
             <div className="flex items-center gap-1 rounded-md border border-border bg-secondary">
-              <span className="px-3 text-xs text-muted-foreground">{typeof window !== "undefined" ? window.location.origin : "redoxpay.site"}/c/</span>
+              <span className="px-3 text-xs text-muted-foreground">{PUBLIC_BASE_URL}/c/</span>
               <Input value={form.slug}
                 onChange={(e) => setForm({ ...form, slug: e.target.value })}
                 placeholder="nome-do-produto" className="border-0 bg-transparent" />
