@@ -20,7 +20,7 @@ export async function sendPurchaseEmails(client: SupabaseClient, ledger: 'nation
     country = session?.country_code ?? null;
   }
   const language = resolveCheckoutLanguage(checkoutLanguageConfig((product?.config as { checkout?: unknown } | null)?.checkout, currency), country);
-  const formatted = new Intl.NumberFormat(language === 'en' ? 'en-ZA' : 'pt-MZ', { style: 'currency', currency }).format(amount);
+  const formatted = new Intl.NumberFormat(language === 'en' ? 'en-ZA' : 'pt-MZ', { style: 'currency', currency, currencyDisplay: 'code' }).format(amount);
   let deliveryUrl = safeDeliveryUrl(product?.delivery_url) ?? safeDeliveryUrl(product?.thank_you_url);
   let digital = false;
   if (product?.product_type === 'digital' && product.digital_file_path) {
