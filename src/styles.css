@@ -690,3 +690,7 @@ body.saas-active [role="dialog"] .lucide { stroke-width: 1.65; }
 .escale-muted { color: #6b7280; }
 .escale-checkout .offer-panel { background: #ffffff; border-color: #e5e7eb; color: #1f2937; border-radius: 16px; }
 .escale-checkout .offer-information h2 { border-color: #3fae8a; }
+
+@keyframes pay-pulse { 0%,100% { transform: scale(1); box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 55%, transparent); } 50% { transform: scale(1.03); box-shadow: 0 0 0 10px transparent; } }
+.pay-pulse:not(:disabled) { animation: pay-pulse 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .pay-pulse { animation: none; } }
