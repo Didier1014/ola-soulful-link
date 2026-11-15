@@ -235,7 +235,7 @@ export const getProductBySlug = createServerFn({ method: "GET" })
 
     // Resolve order bumps: fetch selected products (must be active/approved & same owner)
     const bumpCfg = (row as any).config?.orderBumps;
-    let bumps: Array<{ id: string; name: string; price_mzn: number; cover_url: string | null }> = [];
+    let bumps: Array<{ id: string; name: string; description: string | null; price_mzn: number; price_amount: number; cover_url: string | null }> = [];
     if (bumpCfg?.enabled) {
       const ids: string[] = Array.isArray(bumpCfg.product_ids)
         ? bumpCfg.product_ids
@@ -245,14 +245,15 @@ export const getProductBySlug = createServerFn({ method: "GET" })
       if (ids.length) {
         const { data: bp } = await supabaseAdmin
           .from("products")
-          .select("id,name,price_mzn,cover_url")
-          .in("id", ids)
+          .select("id,name,description,price_mzn,price_amount,cover_url")
+          .in("id", ids.filter(id => id !== (row as any).id).slice(0, 10))
           .eq("user_id", (row as any).user_id)
-          .eq("checkout_provider", "national")
+          .eq("checkout_provider", (row as any).checkout_provider)
+          .eq("currency", (row as any).currency)
           .eq("active", true)
           .eq("approval_status", "approved");
         bumps = await Promise.all((bp ?? []).map(async (b: any) => ({
-          id: b.id, name: b.name, price_mzn: Number(b.price_mzn),
+          id: b.id, name: b.name, description: b.description ?? null, price_mzn: Number(b.price_mzn), price_amount: Number(b.price_amount ?? 0),
           cover_url: await signCover(supabaseAdmin, b.cover_url),
         })));
       }

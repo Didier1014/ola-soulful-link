@@ -5,14 +5,24 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { internationalAmounts, verifiedInternationalState } from "./checkout-currency";
 
 export const initializeInternationalCheckout = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => z.object({ product_id: z.string().uuid(), name: z.string().trim().min(2).max(120), email: z.string().trim().email().max(160), phone: z.string().trim().max(15).regex(/^[+\d ()-]*$/).optional(), operation_session_id: z.string().uuid().optional(), operation_token: z.string().regex(/^[a-f0-9]{64}$/).optional() }).parse(input))
+  .inputValidator((input: unknown) => z.object({ product_id: z.string().uuid(), name: z.string().trim().min(2).max(120), email: z.string().trim().email().max(160), phone: z.string().trim().max(15).regex(/^[+\d ()-]*$/).optional(), operation_session_id: z.string().uuid().optional(), operation_token: z.string().regex(/^[a-f0-9]{64}$/).optional(), order_bump_ids: z.array(z.string().uuid()).max(10).optional() }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { paystackRequest, capabilityHash } = await import("./paystack.server");
-    const { data: product, error } = await supabaseAdmin.from("products").select("id,user_id,checkout_provider,currency,price_amount,active,approval_status").eq("id", data.product_id).maybeSingle();
+    const { data: product, error } = await supabaseAdmin.from("products").select("id,user_id,checkout_provider,currency,price_amount,active,approval_status,config").eq("id", data.product_id).maybeSingle();
     if (error || !product || !product.active || product.approval_status !== "approved") throw new Error("Produto indisponível");
     if (product.checkout_provider !== "paystack" || product.currency !== "ZAR") throw new Error("Este método de pagamento não está disponível");
-    const amounts = internationalAmounts(Number(product.price_amount));
+    // Order bumps: only ids configured on this product, same owner/provider/currency, active and approved.
+    const bumpCfg = (product.config as { orderBumps?: { enabled?: boolean; product_ids?: unknown } } | null)?.orderBumps;
+    const allowed: string[] = !bumpCfg?.enabled ? [] : Array.isArray(bumpCfg.product_ids) ? bumpCfg.product_ids.map(String) : typeof bumpCfg.product_ids === "string" ? bumpCfg.product_ids.split(",").map(v => v.trim()) : [];
+    const wanted = [...new Set(data.order_bump_ids ?? [])].filter(id => id !== product.id && allowed.includes(id));
+    let bumpTotal = 0;
+    if (wanted.length) {
+      const { data: bumpRows } = await supabaseAdmin.from("products").select("id,price_amount").in("id", wanted).eq("user_id", product.user_id).eq("checkout_provider", "paystack").eq("currency", "ZAR").eq("active", true).eq("approval_status", "approved");
+      if ((bumpRows ?? []).length !== wanted.length) throw new Error("Produto adicional indisponível");
+      bumpTotal = (bumpRows ?? []).reduce((sum, row) => sum + Number(row.price_amount ?? 0), 0);
+    }
+    const amounts = internationalAmounts(Number(product.price_amount) + bumpTotal);
     const reference = `rdx-${crypto.randomUUID()}`;
     const capability = `${crypto.randomUUID()}${crypto.randomUUID()}`;
     let checkoutSessionId: string | null = null;
@@ -25,7 +35,7 @@ export const initializeInternationalCheckout = createServerFn({ method: "POST" }
     const origin = new URL(getRequest().url).origin;
     let initialized;
     try {
-      initialized = await paystackRequest("/transaction/initialize", { email: data.email, amount: String(amounts.amount_minor), currency: "ZAR", reference, callback_url: `${origin}/international-return`, metadata: { product_id: product.id, customer_name: data.name, ...(data.phone ? { customer_phone: data.phone } : {}) }, channels: ["card", "eft", "capitec_pay"] });
+      initialized = await paystackRequest("/transaction/initialize", { email: data.email, amount: String(amounts.amount_minor), currency: "ZAR", reference, callback_url: `${origin}/international-return`, metadata: { product_id: product.id, customer_name: data.name, ...(wanted.length ? { order_bumps: wanted.join(",") } : {}), ...(data.phone ? { customer_phone: data.phone } : {}) }, channels: ["card", "eft", "capitec_pay"] });
       const url = new URL(initialized.authorization_url);
       if (url.protocol !== "https:" || !["checkout.paystack.com", "paystack.com"].includes(url.hostname)) throw new Error("Endereço de pagamento inválido");
     } catch (e) {
