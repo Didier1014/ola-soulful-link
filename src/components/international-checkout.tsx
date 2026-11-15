@@ -110,7 +110,7 @@ export function InternationalCheckout({ product }: { product: Product }) {
         <div className="flex items-center gap-3 text-muted-foreground py-4 border-y border-border"><ShieldCheck className="size-6 text-success shrink-0" /><p className="text-sm">{t.cardSafety} {stripe ? "Stripe" : "Paystack"}.</p></div>
         {stripe && <p role="status" className="text-sm text-muted-foreground">{t.stripe}</p>}
         {error && <p role="alert" className="text-destructive text-sm">{error}</p>}
-        <Button type="submit" disabled={busy || stripe} className="w-full h-auto min-h-16 py-4 text-lg font-bold rounded-lg whitespace-normal gap-2">{busy ? <Loader2 className="size-5 animate-spin shrink-0" /> : <Lock className="size-5 shrink-0" />}{busy ? t.processing : `${t.finish} · ${price}`}</Button>
+        <Button type="submit" disabled={busy || stripe} className="pay-pulse w-full h-auto min-h-16 py-4 text-lg font-bold rounded-lg whitespace-normal gap-2">{busy ? <Loader2 className="size-5 animate-spin shrink-0" /> : <Lock className="size-5 shrink-0" />}{busy ? t.processing : `${t.finish} · ${price}`}</Button>
         {resume && !busy && <Button type="button" variant="outline" className="w-full" onClick={() => window.location.assign(resume.authorization_url)}>{t.continue}<ArrowRight className="size-4" /></Button>}
         <p className="text-center text-sm text-muted-foreground">{t.charge} {product.currency} · {t.exchange}</p>
       </form>
