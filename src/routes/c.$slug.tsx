@@ -315,7 +315,7 @@ function CheckoutPage() {
   const bumps: Array<{ id: string; name: string; price_mzn: number; cover_url: string | null }> = (product as any).order_bumps ?? [];
   const bumpsTotal = bumps.reduce((s, b) => selectedBumps[b.id] ? s + Number(b.price_mzn) : s, 0);
   const total = price + bumpsTotal;
-  if (resolveCheckoutStyle(product.config?.checkout) === "offer") return <OfferCheckout product={product} price={fmt(total)} language={language} t={t}>
+  if (resolveCheckoutStyle(product.config?.checkout) !== "normal") return <OfferCheckout variant={resolveCheckoutStyle(product.config?.checkout) === "escale" ? "escale" : "offer"} product={product} price={fmt(total)} language={language} t={t}>
     <form className="space-y-5" onSubmit={event => { event.preventDefault(); m.mutate(); }}>
       <div className="space-y-2"><Label htmlFor="offer-name">{t.name}</Label><Input id="offer-name" autoComplete="name" required minLength={2} maxLength={120} value={form.customer_name} onChange={event => setForm({ ...form, customer_name: event.target.value })} /></div>
       <div className="space-y-2"><Label htmlFor="offer-email">{t.email}</Label><Input id="offer-email" type="email" autoComplete="email" maxLength={160} value={form.customer_email} onChange={event => setForm({ ...form, customer_email: event.target.value })} /></div>

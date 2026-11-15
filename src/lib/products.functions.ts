@@ -29,7 +29,7 @@ const productSchema = z.object({
   config: z.record(z.unknown()).optional().default({}).superRefine((config, ctx) => {
     const checkout = config.checkout as { language?: unknown; style?: unknown } | undefined;
     if (checkout?.language !== undefined && !["pt", "en", "es", "fr", "auto"].includes(String(checkout.language))) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Idioma do checkout inválido" });
-    if (checkout?.style !== undefined && !["normal", "offer"].includes(String(checkout.style))) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Estilo do checkout inválido" });
+    if (checkout?.style !== undefined && !["normal", "offer", "escale"].includes(String(checkout.style))) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Estilo do checkout inválido" });
   }),
 });
 

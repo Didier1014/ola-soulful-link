@@ -575,7 +575,7 @@ function FormStep({
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium mb-2">Estilo de checkout</legend>
             <div className="grid grid-cols-2 gap-2">
-              {([{ value: "normal", label: "Checkout normal", icon: CreditCard }, { value: "offer", label: "Oferta exclusiva", icon: Palette }] as const).map(option => <Button key={option.value} type="button" variant={resolveCheckoutStyle(form.config?.checkout) === option.value ? "default" : "outline"} aria-pressed={resolveCheckoutStyle(form.config?.checkout) === option.value} className="h-auto min-h-12 whitespace-normal" onClick={() => setForm({ ...form, config: { ...form.config, checkout: { ...form.config?.checkout, style: option.value } } })}><option.icon className="size-4" />{option.label}</Button>)}
+              {([{ value: "normal", label: "Checkout normal", icon: CreditCard }, { value: "offer", label: "Oferta exclusiva", icon: Palette }, { value: "escale", label: "Estilo Escale", icon: Palette }] as const).map(option => <Button key={option.value} type="button" variant={resolveCheckoutStyle(form.config?.checkout) === option.value ? "default" : "outline"} aria-pressed={resolveCheckoutStyle(form.config?.checkout) === option.value} className="h-auto min-h-12 whitespace-normal" onClick={() => setForm({ ...form, config: { ...form.config, checkout: { ...form.config?.checkout, style: option.value } } })}><option.icon className="size-4" />{option.label}</Button>)}
             </div>
           </fieldset>
 
