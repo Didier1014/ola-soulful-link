@@ -680,3 +680,13 @@ body.saas-active [role="dialog"] .lucide { stroke-width: 1.65; }
   .saas-content > div > div:first-child:has(h1) > div { min-width: 0; }
   .saas-content > div > div:first-child:has(h1) > button { max-width: 150px; white-space: normal; height: auto; min-height: 36px; }
 }
+
+/* Escale-style checkout (light, green accents, red sticky timer) */
+.escale-checkout { --background: #ffffff; --foreground: #1f2937; --card: #ffffff; --border: #d1d5db; --input: #ffffff; --muted-foreground: #6b7280; --primary: #3fae8a; --primary-foreground: #ffffff; --offer-breadcrumb: #9ca3af; --offer-button: #3fae8a; background: #f9fafb; color: #1f2937; font-family: "Inter", system-ui, sans-serif; }
+.escale-countdown { background: linear-gradient(90deg, #c0392b, #b03024); color: #ffffff; }
+.escale-card { background: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 4px 14px rgba(0,0,0,.05); }
+.escale-line { border-top: 1px solid #e5e7eb; }
+.escale-green { color: #3fae8a; }
+.escale-muted { color: #6b7280; }
+.escale-checkout .offer-panel { background: #ffffff; border-color: #e5e7eb; color: #1f2937; border-radius: 16px; }
+.escale-checkout .offer-information h2 { border-color: #3fae8a; }

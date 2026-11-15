@@ -59,7 +59,7 @@ export function InternationalCheckout({ product }: { product: Product }) {
     }
   }
 
-  if (resolveCheckoutStyle(product.config?.checkout) === "offer") return <OfferCheckout product={product} price={offerPrice} language={language} t={t}>
+  if (resolveCheckoutStyle(product.config?.checkout) !== "normal") return <OfferCheckout variant={resolveCheckoutStyle(product.config?.checkout) === "escale" ? "escale" : "offer"} product={product} price={offerPrice} language={language} t={t}>
     <form onSubmit={event => { event.preventDefault(); void pay(); }} className="space-y-4 sm:space-y-8">
       <section className="offer-panel offer-information rounded-lg p-5 sm:p-8 space-y-5">
       <h2 className="border-l-4 border-primary pl-3 text-lg sm:text-xl font-bold">{language === "en" ? "Your Information" : t.details}</h2>
