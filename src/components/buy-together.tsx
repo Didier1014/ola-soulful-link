@@ -15,15 +15,15 @@ export function BuyTogether({ bumps, selected, onToggle, format, language }: { b
   const [open, setOpen] = useState<Record<string, boolean>>({});
   if (!bumps.length) return null;
   const text = labels[language];
-  return <section className="space-y-3" aria-label={text.title}>
+  return <section className="space-y-2.5" aria-label={text.title}>
     <div className="flex items-center gap-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground"><span className="h-px flex-1 bg-border" />{text.title}<span className="h-px flex-1 bg-border" /></div>
-    {bumps.map(b => <div key={b.id} className={`bump-card rounded-xl border-2 p-3 ${selected[b.id] ? "border-primary" : "border-border"}`}>
+    {bumps.map(b => <div key={b.id} className={`bump-card rounded-lg border-2 px-3 py-2.5 ${selected[b.id] ? "border-primary" : "border-border"}`}>
       <label className="flex cursor-pointer items-start gap-3">
-        <span className="flex shrink-0 flex-col items-center gap-1"><ArrowDown className="size-5 text-destructive" strokeWidth={3} /><input type="checkbox" checked={!!selected[b.id]} onChange={e => onToggle(b.id, e.target.checked)} className="size-5 accent-[var(--primary)]" /></span>
-        {b.cover_url && <img src={b.cover_url} alt="" className="size-14 shrink-0 rounded-md object-cover" />}
-        <span className="min-w-0"><span className="block font-semibold leading-snug">{b.name}</span><span className="mt-1 block font-bold text-primary">{format(b.price)}</span></span>
+        <span className="flex shrink-0 flex-col items-center gap-1"><ArrowDown className="size-4 text-destructive" strokeWidth={3} /><input type="checkbox" checked={!!selected[b.id]} onChange={e => onToggle(b.id, e.target.checked)} className="size-4 accent-[var(--primary)]" /></span>
+        {b.cover_url && <img src={b.cover_url} alt="" className="size-12 shrink-0 rounded-md object-cover" />}
+        <span className="min-w-0"><span className="block text-[15px] font-semibold leading-snug">{b.name}</span><span className="mt-0.5 block text-[15px] font-bold text-primary">{format(b.price)}</span></span>
       </label>
-      {b.description && <div className="mt-2 text-sm text-muted-foreground"><p className={open[b.id] ? "whitespace-pre-line" : "line-clamp-2"}>{b.description}</p><button type="button" className="mt-1 text-xs font-medium text-primary" onClick={() => setOpen({ ...open, [b.id]: !open[b.id] })}>{open[b.id] ? text.less : text.more}</button></div>}
+      {b.description && <div className="mt-1.5 text-[13px] leading-snug text-muted-foreground"><p className={open[b.id] ? "whitespace-pre-line" : "line-clamp-2"}>{b.description}</p><button type="button" className="mt-1 text-xs font-medium text-primary" onClick={() => setOpen({ ...open, [b.id]: !open[b.id] })}>{open[b.id] ? text.less : text.more}</button></div>}
     </div>)}
   </section>;
 }

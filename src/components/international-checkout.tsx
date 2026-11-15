@@ -81,7 +81,7 @@ export function InternationalCheckout({ product }: { product: Product }) {
       <div className="flex justify-between gap-4 border-t border-border pt-5 text-xl font-bold"><span>{language === "en" ? "Total" : t.total}</span><span>{offerPrice}</span></div>
       {stripe && <p role="status" className="text-sm text-muted-foreground">{t.stripe}</p>}
       {error && <p role="alert" className="text-destructive text-sm">{error}</p>}
-      <Button type="submit" disabled={busy || stripe} className="offer-submit w-full h-auto py-4 font-bold whitespace-normal gap-2">{busy ? <Loader2 className="size-5 animate-spin" /> : <CreditCard className="size-5" />}{busy ? t.processing : `${t.pay.toUpperCase()} ${offerPrice}`}</Button>
+      <Button type="submit" disabled={busy || stripe} className="offer-submit pay-pulse w-full h-auto py-4 font-bold whitespace-normal gap-2">{busy ? <Loader2 className="size-5 animate-spin" /> : <CreditCard className="size-5" />}{busy ? t.processing : `${t.pay.toUpperCase()} ${offerPrice}`}</Button>
       {busy && <p role="status" className="text-center text-sm">{t.processing}</p>}
       {resume && !busy && <Button type="button" variant="outline" className="w-full whitespace-normal h-auto py-3" onClick={() => window.location.assign(resume.authorization_url)}>{t.continue}<ArrowRight className="size-4" /></Button>}
       <div className="flex justify-center gap-4 text-muted-foreground text-xs"><span className="flex items-center gap-1"><Lock className="size-4" />SSL</span><span className="flex items-center gap-1"><CreditCard className="size-4" />{t.card}</span></div>
