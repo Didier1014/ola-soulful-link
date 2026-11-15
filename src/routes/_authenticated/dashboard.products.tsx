@@ -798,7 +798,7 @@ function PillDialog({ open, pillKey, config, onClose, onSave }: {
           {pillKey === "orderBumps" && (
             <>
               <p className="text-xs text-muted-foreground">
-                Escolhe abaixo os produtos que aparecerão no checkout como <strong>“Oferta especial — adicionar”</strong>. O cliente pode adicionar com um clique e o valor será somado ao total.
+                Escolhe abaixo os produtos que aparecerão no checkout como <strong>“Oferta especial — adicionar”</strong>. O cliente pode adicionar com um clique e o valor será somado ao total. Só aparecem no checkout produtos ativos/aprovados com a mesma moeda deste produto.
               </p>
               <div className="rounded-xl border border-border max-h-72 overflow-y-auto divide-y divide-border">
                 {allProducts.length === 0 && (
@@ -816,7 +816,7 @@ function PillDialog({ open, pillKey, config, onClose, onSave }: {
                         <p className="text-sm font-medium truncate">{p.name}</p>
                         <p className="text-xs text-muted-foreground truncate">/{p.slug}</p>
                       </div>
-                      <span className="text-sm font-semibold text-primary shrink-0">{fmtMT(Number(p.price_mzn))}</span>
+                      <span className="text-sm font-semibold text-primary shrink-0">{p.checkout_provider && p.checkout_provider !== "national" ? `${Number(p.price_amount ?? 0).toFixed(2)} ${p.currency}` : fmtMT(Number(p.price_mzn))}</span>
                     </label>
                   );
                 })}

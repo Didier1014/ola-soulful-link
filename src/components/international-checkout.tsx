@@ -10,10 +10,11 @@ import { formatProductPrice } from "@/lib/checkout-currency";
 import { PAYSTACK_PUBLIC_KEY } from "@/lib/paystack-config";
 import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
 import { OfferCheckout } from "@/components/offer-checkout";
+import { BuyTogether } from "@/components/buy-together";
 import { resolveCheckoutStyle } from "@/lib/checkout-style";
 import { checkoutLanguageConfig } from "@/lib/checkout-language";
 
-type Product = { id: string; slug?: string; name: string; description?: string | null; price_mzn: number; price_amount?: number | null; currency?: string; checkout_provider?: string; cover_url?: string | null; config?: { checkout?: { language?: string; style?: string }; personalizacao?: unknown }; visitor_country?: string | null };
+type Product = { id: string; slug?: string; name: string; description?: string | null; price_mzn: number; price_amount?: number | null; currency?: string; checkout_provider?: string; cover_url?: string | null; config?: { checkout?: { language?: string; style?: string }; personalizacao?: unknown }; visitor_country?: string | null; order_bumps?: Array<{ id: string; name: string; description?: string | null; cover_url: string | null; price_amount: number }> };
 
 async function openPaystack(accessCode: string, onSuccess: () => void, onCancel: () => void, errorMessage: string) {
   const host = window as unknown as { PaystackPop?: new () => { resumeTransaction: (code: string, options: { onSuccess: () => void; onCancel: () => void; onError: () => void }) => void } };
@@ -40,15 +41,21 @@ export function InternationalCheckout({ product }: { product: Product }) {
   const [error, setError] = useState("");
   const [resume, setResume] = useState<{ access_code: string; authorization_url: string } | null>(null);
   const stripe = product.checkout_provider === "stripe";
-  const price = formatProductPrice(product);
-  const offerPrice = product.currency === "ZAR" ? `R ${Number(product.price_amount).toFixed(2)}` : price;
+  const [selectedBumps, setSelectedBumps] = useState<Record<string, boolean>>({});
+  const bumps = (product.order_bumps ?? []).map(b => ({ ...b, price: Number(b.price_amount) }));
+  const bumpIds = bumps.filter(b => selectedBumps[b.id]).map(b => b.id);
+  const total = Number(product.price_amount ?? 0) + bumps.reduce((sum, b) => selectedBumps[b.id] ? sum + b.price : sum, 0);
+  const formatAmount = (value: number) => product.currency === "ZAR" ? `R ${value.toFixed(2)}` : formatProductPrice({ ...product, price_amount: value });
+  const price = formatProductPrice({ ...product, price_amount: total });
+  const offerPrice = formatAmount(total);
+  const bumpList = <BuyTogether bumps={bumps} selected={selectedBumps} onToggle={(id, value) => setSelectedBumps({ ...selectedBumps, [id]: value })} format={formatAmount} language={language} />;
   const operation = useCheckoutOperation("product", product.slug ?? "", !!product.slug, name, email, true);
 
   async function pay() {
     setBusy(true); setError("");
     try {
       const tracking = await operation.internationalAttempt();
-      const result = await initialize({ data: { product_id: product.id, name, email, phone: phone || undefined, ...tracking } });
+      const result = await initialize({ data: { product_id: product.id, name, email, phone: phone || undefined, ...(bumpIds.length ? { order_bump_ids: bumpIds } : {}), ...tracking } });
       sessionStorage.setItem(`rdx-paystack:${result.reference}`, result.capability);
       setResume(result);
       await openPaystack(result.access_code, () => { window.location.assign(`/international-return?reference=${encodeURIComponent(result.reference)}`); }, () => { setBusy(false); setError(t.interrupted); }, t.startError);
@@ -67,6 +74,7 @@ export function InternationalCheckout({ product }: { product: Product }) {
       <div className="space-y-2"><Label htmlFor="international-email">{language === "en" ? "Email Address" : t.email}</Label><Input id="international-email" type="email" autoComplete="email" placeholder="john@example.com" required maxLength={160} value={email} onChange={event => setEmail(event.target.value)} /></div>
       <div className="space-y-2"><Label htmlFor="international-phone">{language === "en" ? "Phone Number" : t.number}</Label><div className="offer-phone flex border border-border overflow-hidden"><span className="bg-secondary px-3 flex gap-2 items-center text-muted-foreground text-base"><Phone className="size-4" />+27</span><Input id="international-phone" type="tel" autoComplete="tel-national" placeholder="82 123 4567" maxLength={15} value={phone} onChange={event => setPhone(event.target.value)} className="border-0 rounded-none min-w-0 flex-1" /></div></div>
       </section>
+      {bumpList}
       <section className="offer-panel offer-summary rounded-lg p-5 sm:p-8 space-y-5">
       <h2 className="text-base sm:text-xl font-bold">{language === "en" ? "Order Summary" : t.summary}</h2>
       <div className="flex justify-between gap-4 text-base"><span className="text-muted-foreground truncate min-w-0">{product.name}</span><span className="shrink-0">{offerPrice}</span></div>
@@ -98,6 +106,7 @@ export function InternationalCheckout({ product }: { product: Product }) {
         <div className="space-y-2"><Label htmlFor="international-name">{t.name}</Label><Input id="international-name" autoComplete="name" placeholder={t.yourName} required minLength={2} maxLength={120} value={name} onChange={event => setName(event.target.value)} /></div>
         <div className="space-y-2"><Label htmlFor="international-email">{t.email}</Label><Input id="international-email" type="email" autoComplete="email" placeholder="voce@exemplo.com" required maxLength={160} value={email} onChange={event => setEmail(event.target.value)} /></div>
         <div className="flex justify-between items-center gap-2 pt-2"><h2 className="flex items-center gap-3 font-semibold text-xl"><span className="international-step">2</span>{t.payment}</h2><span className="text-muted-foreground text-sm flex gap-2 items-center"><CreditCard className="size-4" />{t.card}</span></div>
+        {bumpList}
         <div className="flex items-center gap-3 text-muted-foreground py-4 border-y border-border"><ShieldCheck className="size-6 text-success shrink-0" /><p className="text-sm">{t.cardSafety} {stripe ? "Stripe" : "Paystack"}.</p></div>
         {stripe && <p role="status" className="text-sm text-muted-foreground">{t.stripe}</p>}
         {error && <p role="alert" className="text-destructive text-sm">{error}</p>}

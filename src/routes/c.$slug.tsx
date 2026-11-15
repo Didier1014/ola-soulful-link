@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
 import { useCheckoutLanguage } from "@/hooks/use-checkout-language";
 import { InternationalCheckout } from "@/components/international-checkout";
+import { BuyTogether } from "@/components/buy-together";
 import { OfferCheckout } from "@/components/offer-checkout";
 import { resolveCheckoutStyle } from "@/lib/checkout-style";
 
@@ -312,14 +313,14 @@ function CheckoutPage() {
   if (product.checkout_provider === "paystack" || product.checkout_provider === "stripe") return <InternationalCheckout product={product} />;
 
   const price = Number(product.price_mzn);
-  const bumps: Array<{ id: string; name: string; price_mzn: number; cover_url: string | null }> = (product as any).order_bumps ?? [];
+  const bumps: Array<{ id: string; name: string; description?: string | null; price_mzn: number; cover_url: string | null }> = (product as any).order_bumps ?? [];
   const bumpsTotal = bumps.reduce((s, b) => selectedBumps[b.id] ? s + Number(b.price_mzn) : s, 0);
   const total = price + bumpsTotal;
   if (resolveCheckoutStyle(product.config?.checkout) !== "normal") return <OfferCheckout variant={resolveCheckoutStyle(product.config?.checkout) === "escale" ? "escale" : "offer"} product={product} price={fmt(total)} language={language} t={t}>
     <form className="space-y-5" onSubmit={event => { event.preventDefault(); m.mutate(); }}>
       <div className="space-y-2"><Label htmlFor="offer-name">{t.name}</Label><Input id="offer-name" autoComplete="name" required minLength={2} maxLength={120} value={form.customer_name} onChange={event => setForm({ ...form, customer_name: event.target.value })} /></div>
       <div className="space-y-2"><Label htmlFor="offer-email">{t.email}</Label><Input id="offer-email" type="email" autoComplete="email" maxLength={160} value={form.customer_email} onChange={event => setForm({ ...form, customer_email: event.target.value })} /></div>
-      {bumps.map(b => <label key={b.id} className="flex items-center gap-3 border border-border rounded-md p-3 text-sm"><input type="checkbox" checked={!!selectedBumps[b.id]} onChange={event => setSelectedBumps({ ...selectedBumps, [b.id]: event.target.checked })} className="size-4" /><span className="flex-1">{b.name}</span><strong>{fmt(Number(b.price_mzn))}</strong></label>)}
+      <BuyTogether bumps={bumps.map(b => ({ ...b, price: Number(b.price_mzn) }))} selected={selectedBumps} onToggle={(id, value) => setSelectedBumps({ ...selectedBumps, [id]: value })} format={fmt} language={language} />
       <fieldset className="space-y-2"><legend className="text-sm font-medium mb-2">{t.payWith}</legend><div className="grid grid-cols-2 gap-2">{(["mpesa", "emola"] as const).map(value => <Button key={value} type="button" variant={method === value ? "default" : "outline"} aria-pressed={method === value} onClick={() => setMethod(value)} className="h-12"><img src={`/brands/${value}.png`} alt="" className="size-7 object-contain" />{value === "mpesa" ? "M-Pesa" : "e-Mola"}</Button>)}</div></fieldset>
       <div className="space-y-2"><Label htmlFor="offer-phone">{t.number} {method === "mpesa" ? "M-Pesa" : "e-Mola"}</Label><Input id="offer-phone" type="tel" autoComplete="tel" placeholder="+258" required maxLength={15} value={form.customer_phone} onChange={event => setForm({ ...form, customer_phone: event.target.value })} /></div>
       {modal && <div role="status" className="border border-border rounded-md p-4 text-sm">{modal.status === "processing" ? t.processing : modal.status === "pending" ? `${t.pin} ${method === "mpesa" ? "M-Pesa" : "e-Mola"}.` : modal.status === "paid" ? t.confirmed : t.retryHint}</div>}
