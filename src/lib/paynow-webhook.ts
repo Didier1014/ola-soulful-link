@@ -24,10 +24,15 @@ export async function verifyPaynowSignature(raw: string, header: string, secret:
 }
 
 export async function handlePaynowWebhook(request: Request, secret: string | undefined) {
-  if (!secret) return new Response("Webhook secret not configured", { status: 503 });
+  const header = request.headers.get("x-pagaja-signature") ?? "";
+  // Reject unauthenticated probes before checking server configuration.
+  if (!/^t=\d{1,12},v1=[a-fA-F0-9]{64}$/.test(header.trim())) {
+    return Response.json({ error: "Invalid signature" }, { status: 401 });
+  }
+  if (!secret) return Response.json({ error: "Webhook secret not configured" }, { status: 503, headers: { "Retry-After": "3600" } });
   const raw = await request.text();
   if (raw.length > 65536) return new Response("Payload too large", { status: 413 });
-  if (!await verifyPaynowSignature(raw, request.headers.get("x-pagaja-signature") ?? "", secret)) {
+  if (!await verifyPaynowSignature(raw, header, secret)) {
     return new Response("Invalid signature", { status: 401 });
   }
   let parsed: unknown;

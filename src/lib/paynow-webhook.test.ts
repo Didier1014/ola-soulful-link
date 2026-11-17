@@ -18,6 +18,16 @@ describe("PayNow webhook", () => {
   it("rejects unsigned payment claims", async () => {
     expect((await handlePaynowWebhook(new Request("https://example.test", { method: "POST", body: raw }), secret)).status).toBe(401);
   });
+  it("rejects unsigned probes even before the webhook secret is configured", async () => {
+    const response = await handlePaynowWebhook(new Request("https://example.test", { method: "POST", body: "{}" }), undefined);
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ error: "Invalid signature" });
+  });
+  it("keeps signed deliveries retryable when configuration is missing", async () => {
+    const response = await handlePaynowWebhook(new Request("https://example.test", { method: "POST", body: raw, headers: { "x-pagaja-signature": await sign(raw) } }), undefined);
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Retry-After")).toBe("3600");
+  });
   it("does not acknowledge or settle payments before provider activation", async () => {
     const request = new Request("https://example.test", { method: "POST", body: raw, headers: { "x-pagaja-signature": await sign(raw) } });
     expect((await handlePaynowWebhook(request, secret)).status).toBe(503);
