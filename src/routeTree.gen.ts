@@ -47,6 +47,7 @@ import { Route as ApiPublicCreateMerchantPaymentRouteImport } from './routes/api
 import { Route as ApiPublicFunnelEventsRouteImport } from './routes/api/public/funnel-events'
 import { Route as ApiPublicPagajaWebhookRouteImport } from './routes/api/public/pagaja-webhook'
 import { Route as ApiPublicPagarWebhookRouteImport } from './routes/api/public/pagar-webhook'
+import { Route as ApiPublicPaynowWebhookRouteImport } from './routes/api/public/paynow-webhook'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
 import { Route as ApiPublicReconcilePendingRouteImport } from './routes/api/public/reconcile-pending'
 import { Route as ApiPublicVenduspayWebhookRouteImport } from './routes/api/public/venduspay-webhook'
@@ -272,6 +273,11 @@ const ApiPublicPagarWebhookRoute = ApiPublicPagarWebhookRouteImport.update({
   path: '/api/public/pagar-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPaynowWebhookRoute = ApiPublicPaynowWebhookRouteImport.update({
+  id: '/api/public/paynow-webhook',
+  path: '/api/public/paynow-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaystackWebhookRoute =
   ApiPublicPaystackWebhookRouteImport.update({
     id: '/api/public/paystack-webhook',
@@ -383,6 +389,7 @@ export interface FileRoutesByFullPath {
   '/api/public/funnel-events': typeof ApiPublicFunnelEventsRoute
   '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
+  '/api/public/paynow-webhook': typeof ApiPublicPaynowWebhookRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/api/public/venduspay-webhook': typeof ApiPublicVenduspayWebhookRoute
@@ -435,6 +442,7 @@ export interface FileRoutesByTo {
   '/api/public/funnel-events': typeof ApiPublicFunnelEventsRoute
   '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
+  '/api/public/paynow-webhook': typeof ApiPublicPaynowWebhookRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/api/public/venduspay-webhook': typeof ApiPublicVenduspayWebhookRoute
@@ -489,6 +497,7 @@ export interface FileRoutesById {
   '/api/public/funnel-events': typeof ApiPublicFunnelEventsRoute
   '/api/public/pagaja-webhook': typeof ApiPublicPagajaWebhookRoute
   '/api/public/pagar-webhook': typeof ApiPublicPagarWebhookRoute
+  '/api/public/paynow-webhook': typeof ApiPublicPaynowWebhookRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/api/public/reconcile-pending': typeof ApiPublicReconcilePendingRoute
   '/api/public/venduspay-webhook': typeof ApiPublicVenduspayWebhookRoute
@@ -543,6 +552,7 @@ export interface FileRouteTypes {
     | '/api/public/funnel-events'
     | '/api/public/pagaja-webhook'
     | '/api/public/pagar-webhook'
+    | '/api/public/paynow-webhook'
     | '/api/public/paystack-webhook'
     | '/api/public/reconcile-pending'
     | '/api/public/venduspay-webhook'
@@ -595,6 +605,7 @@ export interface FileRouteTypes {
     | '/api/public/funnel-events'
     | '/api/public/pagaja-webhook'
     | '/api/public/pagar-webhook'
+    | '/api/public/paynow-webhook'
     | '/api/public/paystack-webhook'
     | '/api/public/reconcile-pending'
     | '/api/public/venduspay-webhook'
@@ -648,6 +659,7 @@ export interface FileRouteTypes {
     | '/api/public/funnel-events'
     | '/api/public/pagaja-webhook'
     | '/api/public/pagar-webhook'
+    | '/api/public/paynow-webhook'
     | '/api/public/paystack-webhook'
     | '/api/public/reconcile-pending'
     | '/api/public/venduspay-webhook'
@@ -683,6 +695,7 @@ export interface RootRouteChildren {
   ApiPublicFunnelEventsRoute: typeof ApiPublicFunnelEventsRoute
   ApiPublicPagajaWebhookRoute: typeof ApiPublicPagajaWebhookRoute
   ApiPublicPagarWebhookRoute: typeof ApiPublicPagarWebhookRoute
+  ApiPublicPaynowWebhookRoute: typeof ApiPublicPaynowWebhookRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
   ApiPublicReconcilePendingRoute: typeof ApiPublicReconcilePendingRoute
   ApiPublicVenduspayWebhookRoute: typeof ApiPublicVenduspayWebhookRoute
@@ -963,6 +976,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPagarWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/paynow-webhook': {
+      id: '/api/public/paynow-webhook'
+      path: '/api/public/paynow-webhook'
+      fullPath: '/api/public/paynow-webhook'
+      preLoaderRoute: typeof ApiPublicPaynowWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/paystack-webhook': {
       id: '/api/public/paystack-webhook'
       path: '/api/public/paystack-webhook'
@@ -1168,6 +1188,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicFunnelEventsRoute: ApiPublicFunnelEventsRoute,
   ApiPublicPagajaWebhookRoute: ApiPublicPagajaWebhookRoute,
   ApiPublicPagarWebhookRoute: ApiPublicPagarWebhookRoute,
+  ApiPublicPaynowWebhookRoute: ApiPublicPaynowWebhookRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
   ApiPublicReconcilePendingRoute: ApiPublicReconcilePendingRoute,
   ApiPublicVenduspayWebhookRoute: ApiPublicVenduspayWebhookRoute,
