@@ -1,6 +1,6 @@
 # Architecture rules
 
-- PayNow has a separate timestamp/raw-body HMAC webhook; until its charges and atomic settlement are connected it returns retryable errors, never acknowledges unprocessed sales or touches existing balances.
+- PayNow uses timestamp/raw-body HMAC callbacks and authenticated paid-order verification matching reference, MZN amount and non-test provenance before atomic settlement; unprocessed deliveries remain retryable.
 
 - International sale side effects read verified LIVE ledger rows; a unique notification event index gates webhook/poll push duplication, and payloads retain ledger currency without conversion.
 - Offer countdowns use seller-configured minutes and a session-persisted deadline; expiration never resets or changes price/payment authorization.
@@ -17,12 +17,12 @@
 - Workspace currency selection scopes read-only finance and activity views to one ledger currency; never converts or mixes amounts, and international provider receipts must not be presented as a withdrawable national balance. Privileged finance reads verify protected roles before loading the admin client.
 - International checkout analytics link payments only to matching owner/product sessions with verified capabilities; anonymous analytics never receive buyer field contents. Leaf routes own page metadata through a shared helper.
 - All authenticated pages use the full desktop workspace width through the shared shell and page-wrapper CSS, with aligned header gutters; modal and individual control widths remain independent.
-- Active payments use the Pagar server-only client through the legacy adapter; pending VendusPay references stay reconcilable and TEST operations never settle as real sales.
+- New national payments use the linked PayNow server-only gateway through the legacy adapter without automatic charge retries; pending Pagar/VendusPay references remain reconcilable and TEST operations never settle as real sales.
 - Product checkout currency/provider combinations are validated centrally; international products have zero legacy MZN price to prevent national callers from charging foreign prices as MT.
 - Paystack uses the builder-designated saved provider secret directly server-side and its hosted card popup; capability-protected verification checks reference, amount, currency and environment before releasing delivery, never browser success claims.
 - International payments use a separate owner-readable ledger, never MZN balances; every Paystack initialization centrally enforces the approved global split without client overrides. Recorded platform fees are accounting-only unless the provider split reserves them.
 - Paystack callbacks validate SHA512 against the same builder-designated saved LIVE secret used for API requests, then independently verify with the provider; callback claims alone never settle a payment.
-- Gateway settlement (Pagar and VendusPay, webhook, polling and reconciliation) uses the restricted atomic settlement function so webhook retries and polling cannot credit a seller twice.
+- Gateway settlement (PayNow, Pagar and VendusPay, webhook, polling and reconciliation) uses the restricted atomic settlement function so webhook retries and polling cannot credit a seller twice.
 - Pagar webhooks prefer the dedicated webhook secret and fall back to the previously saved PagAja webhook secret, preserving signature validation without copying secret values.
 - App notifications send synchronously through the managed template helper; kept email tables are audit-only, and signed outcome events preserve their legacy status contract without gating sends.
 - Purchase email delivery reads persisted LIVE paid ledger rows, uses event-specific managed idempotency keys and signed private-file links; welcome targets newly created confirmed accounts only, and test emails target the authenticated account only to prevent arbitrary sends.

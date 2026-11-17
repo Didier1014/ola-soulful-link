@@ -26,7 +26,7 @@ const checkoutSchema = z.object({
   product_id: z.string().uuid().optional(),
   amount_mzn: z.number().min(50, "Valor mínimo é 50 MT").max(1_000_000).optional(),
   customer_name: z.string().trim().min(2).max(120),
-  customer_email: z.string().trim().email().max(160).optional().or(z.literal("")).default(""),
+  customer_email: z.string().trim().email("Informe um email válido para pagar").max(160),
   customer_phone: z.string().trim().regex(/^\+?\d{8,15}$/, "Telefone inválido"),
   method: z.enum(["mpesa", "emola", "card"]).optional().default("mpesa"),
   tracking: z.object({
@@ -100,7 +100,7 @@ export const createCheckout = createServerFn({ method: "POST" })
     }).select().single();
     if (tErr) throw new Error(tErr.message);
 
-    // Inicia cobrança no gateway ativo (Pagar).
+    // Inicia cobrança no gateway ativo (PayNow).
     let gatewayPaid = false;
     let checkoutUrl: string | undefined;
     let testMode = false;
@@ -120,7 +120,7 @@ export const createCheckout = createServerFn({ method: "POST" })
       testMode = r.test_mode;
       gatewayStatus = r.status;
       await supabaseAdmin.from("transactions").update({ external_ref: r.reference,
-        metadata: { ...(tx.metadata ?? {}), gateway: r.gateway ?? "pagar", test_mode: r.test_mode, gateway_status: r.status },
+        metadata: { ...(tx.metadata ?? {}), gateway: r.gateway ?? "paynow", test_mode: r.test_mode, gateway_status: r.status },
         ...(r.test_mode && r.status !== "pending" ? { status: "failed" } : {}),
       }).eq("id", tx.id);
       gatewayPaid = r.paid;
@@ -176,6 +176,12 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
 
     if (tx.metadata?.test_mode && tx.status !== "pending") {
       return { status: "failed", test_mode: true, gateway_status: tx.metadata.gateway_status };
+    }
+    if (tx.metadata?.gateway === "paynow" && tx.status === "pending" && tx.external_ref) {
+      try {
+        const { settlePaynow } = await import("@/lib/paynow.server");
+        tx.status = await settlePaynow(String(tx.external_ref), `poll:${tx.id}`);
+      } catch { /* Keep pending when provider verification is unavailable. */ }
     }
     if (tx.metadata?.gateway === "pagar" && tx.status === "pending" && tx.external_ref) {
       try {

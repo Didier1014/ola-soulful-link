@@ -18,6 +18,7 @@ export const Route = createFileRoute("/api/public/vpay-webhook")({
             .select("id,user_id,net_mzn,status,metadata,external_ref")
             .eq("external_ref", String(ref)).maybeSingle();
           if (!tx) return Response.json({ ok: false, reason: "tx_not_found" });
+          if ((tx.metadata as any)?.gateway === "paynow") return Response.json({ ok: true, ignored: true });
           if (tx.status !== "pending") return Response.json({ ok: true, already: true });
 
           const st = await netshopCheck(String(ref));

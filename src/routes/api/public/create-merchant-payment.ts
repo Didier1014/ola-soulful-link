@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 
 // POST /api/public/create-merchant-payment
 // Headers: x-merchant-api-key: rdx_live_...
@@ -37,6 +38,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           const webhook_url = body?.webhook_url ? String(body.webhook_url) : null;
 
           if (!nome_cliente) { await log(400); return Response.json({ error: "nome_cliente obrigatório" }, { status: 400 }); }
+          if (!z.string().email().max(160).safeParse(customer_email).success) { await log(400); return Response.json({ error: "customer_email obrigatório e válido" }, { status: 400 }); }
           if (!phone || phone.length < 9) { await log(400); return Response.json({ error: "phone inválido" }, { status: 400 }); }
           if (!Number.isFinite(amount) || amount < 50) { await log(400); return Response.json({ error: "amount mínimo 50" }, { status: 400 }); }
 
@@ -97,6 +99,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           const { error: insErr } = await supabaseAdmin.from("transactions").insert({
             user_id: merchant.id,
             customer_name: nome_cliente,
+            customer_email,
             customer_phone: phone,
             method,
             amount_mzn: amount,
@@ -107,7 +110,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
             metadata: {
               source: "merchant_api",
               webhook_url,
-              gateway: charge.gateway ?? "pagar",
+              gateway: charge.gateway ?? "paynow",
               gateway_status: charge.status,
               test_mode: charge.test_mode,
               taxa_gateway,
