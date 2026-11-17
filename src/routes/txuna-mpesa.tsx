@@ -80,7 +80,7 @@ function TxunaCheckout() {
 
   const selectedPlan = PLANS.find((p) => p.id === plan);
   const amount = selectedPlan?.price ?? PLANS[0].price;
-  const ready = name.trim().length >= 3 && /^8[4567]\d{7}$/.test(phone.replace(/\D/g, "")) && !!product?.id;
+  const ready = name.trim().length >= 3 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && /^8[4567]\d{7}$/.test(phone.replace(/\D/g, "")) && !!product?.id;
 
   const m = useMutation({
     mutationFn: async () => {

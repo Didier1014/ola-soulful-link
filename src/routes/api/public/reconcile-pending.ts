@@ -29,6 +29,14 @@ async function run() {
     let paid = 0, failed = 0, still = 0;
 
     for (const tx of pend ?? []) {
+      if ((tx.metadata as any)?.gateway === "paynow" && !(tx.metadata as any)?.test_mode) {
+        try {
+          const { settlePaynow } = await import("@/lib/paynow.server");
+          const status = await settlePaynow(String(tx.external_ref), `reconcile:${tx.id}`);
+          if (status === "paid") paid++; else still++;
+        } catch { still++; }
+        continue;
+      }
       if (!["pagar", "venduspay"].includes((tx.metadata as any)?.gateway) || (tx.metadata as any)?.test_mode) { still++; continue; }
       const st = await netshopCheck(String(tx.external_ref));
       if (st === "paid") {

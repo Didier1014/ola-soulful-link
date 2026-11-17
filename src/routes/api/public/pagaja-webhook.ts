@@ -39,6 +39,7 @@ export const Route = createFileRoute("/api/public/pagaja-webhook")({
           const { data: tx } = await supabaseAdmin.from("transactions")
             .select("id,user_id,net_mzn,status,metadata").eq("external_ref", String(ref)).maybeSingle();
           if (!tx || tx.status !== "pending") return Response.json({ ok: true });
+          if ((tx.metadata as any)?.gateway === "paynow") return Response.json({ ok: true, ignored: true });
 
           if (/fail|cancel|expired|declin/.test(status)) {
             await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id).eq("status", "pending");

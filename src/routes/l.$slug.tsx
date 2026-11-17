@@ -33,7 +33,7 @@ function LinkCheckout() {
 
   const [form, setForm] = useState({ customer_name: "", customer_email: "", customer_phone: "" });
   const operation = useCheckoutOperation("link", slug, !!link?.id, form.customer_name, form.customer_phone);
-  const method = "mpesa" as const;
+  const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [done, setDone] = useState<{ id: string; status: string } | null>(null);
   const trackingRef = useRef<Record<string, string>>({});
 
@@ -131,11 +131,11 @@ function LinkCheckout() {
                 <Input value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} maxLength={120} />
               </div>
               <div className="space-y-2">
-                <Label>Email (opcional)</Label>
+                <Label>Email *</Label>
                 <Input type="email" value={form.customer_email} onChange={(e) => setForm({ ...form, customer_email: e.target.value })} maxLength={160} />
               </div>
               <div className="space-y-2">
-                <Label>Telefone (M-Pesa)</Label>
+                <Label>Telefone ({method === "mpesa" ? "M-Pesa" : "e-Mola"})</Label>
                 <Input value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
                   placeholder="+258 84 000 0000" maxLength={20} />
               </div>
@@ -145,11 +145,8 @@ function LinkCheckout() {
           <Card className="bg-white/5 border-white/10 rounded-2xl">
             <CardContent className="p-6 space-y-3">
               <h2 className="text-sm uppercase tracking-wide text-muted-foreground">Método de pagamento</h2>
-              <div className="grid grid-cols-1 gap-2">
-                <div className="flex items-center justify-center gap-3 rounded-xl border p-5 text-base font-medium border-primary bg-primary/10 text-primary">
-                  <img src="/brands/mpesa.png" alt="M-Pesa" className="w-8 h-8 shrink-0" />
-                  M-Pesa
-                </div>
+              <div className="grid grid-cols-2 gap-2">
+                {(["mpesa", "emola"] as const).map(value => <Button key={value} type="button" variant={method === value ? "default" : "outline"} aria-pressed={method === value} onClick={() => setMethod(value)} className="h-14"><img src={`/brands/${value}.png`} alt="" className="size-8 object-contain" />{value === "mpesa" ? "M-Pesa" : "e-Mola"}</Button>)}
               </div>
             </CardContent>
           </Card>
@@ -168,7 +165,7 @@ function LinkCheckout() {
               </div>
               <Button
                 className="w-full h-16 rounded-xl text-base bg-gradient-to-r from-primary to-primary-glow text-white"
-                disabled={m.isPending || !form.customer_name || !form.customer_phone}
+                disabled={m.isPending || !form.customer_name || !form.customer_phone || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customer_email.trim())}
                 onClick={() => m.mutate()}>
                 {m.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Lock className="h-4 w-4 mr-2" />}
                 Pagar {fmt(Number(link.amount_mzn))}

@@ -27,7 +27,7 @@ export const payLink = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     link_id: z.string().uuid(),
     customer_name: z.string().trim().min(2).max(120),
-    customer_email: z.string().trim().email().max(160).optional().or(z.literal("")).default(""),
+    customer_email: z.string().trim().email("Informe um email válido para pagar").max(160),
     customer_phone: z.string().trim().regex(/^\+?\d{8,15}$/, "Telefone inválido"),
     method: z.enum(["mpesa", "emola"]),
     tracking: z.object({
@@ -81,7 +81,7 @@ export const payLink = createServerFn({ method: "POST" })
       testMode = r.test_mode;
       gatewayStatus = r.status;
       await supabaseAdmin.from("transactions").update({ external_ref: r.reference,
-        metadata: { ...(tx.metadata as Record<string, unknown> ?? {}), gateway: r.gateway ?? "pagar", test_mode: r.test_mode, gateway_status: r.status },
+        metadata: { ...(tx.metadata as Record<string, unknown> ?? {}), gateway: r.gateway ?? "paynow", test_mode: r.test_mode, gateway_status: r.status },
         ...(r.test_mode && r.status !== "pending" ? { status: "failed" } : {}),
       }).eq("id", tx.id);
       await supabaseAdmin.from("payment_links").update({ payments_count: (link.payments_count ?? 0) + 1 }).eq("id", link.id);

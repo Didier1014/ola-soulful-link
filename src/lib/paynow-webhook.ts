@@ -23,7 +23,7 @@ export async function verifyPaynowSignature(raw: string, header: string, secret:
   return crypto.subtle.verify("HMAC", key, bytes, new TextEncoder().encode(`${timestamp}.${raw}`));
 }
 
-export async function handlePaynowWebhook(request: Request, secret: string | undefined) {
+export async function handlePaynowWebhook(request: Request, secret: string | undefined, settle?: (reference: string, event: string) => Promise<string>) {
   const header = request.headers.get("x-pagaja-signature") ?? "";
   // Reject unauthenticated probes before checking server configuration.
   if (!/^t=\d{1,12},v1=[a-fA-F0-9]{64}$/.test(header.trim())) {
@@ -37,8 +37,12 @@ export async function handlePaynowWebhook(request: Request, secret: string | und
   }
   let parsed: unknown;
   try { parsed = JSON.parse(raw); } catch { return new Response("Invalid JSON", { status: 400 }); }
-  if (!paynowEventSchema.safeParse(parsed).success) return new Response("Invalid event", { status: 400 });
-  // Keep provider retries active until PayNow charges and atomic settlement are connected.
-  // Never acknowledge a sale we have not durably processed or credit the legacy ledger.
-  return new Response("PayNow payment integration pending", { status: 503 });
+  const event = paynowEventSchema.safeParse(parsed);
+  if (!event.success) return new Response("Invalid event", { status: 400 });
+  if (!settle) return new Response("Payment handler unavailable", { status: 503 });
+  try {
+    const status = await settle(event.data.data.id, `paynow:${event.data.data.id}`);
+    if (status !== "paid") return new Response("Awaiting verified order", { status: 503 });
+    return Response.json({ ok: true });
+  } catch { return new Response("Payment verification pending", { status: 503 }); }
 }

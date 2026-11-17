@@ -1,8 +1,9 @@
 # PayNow PagAja national provider replacement
 
 - [x] Connect PayNow PagAja securely; authenticated GET /api/v1/products returns HTTP 200 with success true, without creating a charge.
-- [ ] Switch new national M-Pesa/e-Mola charges to PayNow using the supplied complete documentation; wire authenticated order verification, signed callbacks and atomic settlement, preserve pending Pagar/VendusPay reconciliation, 8% fees and international payments.
-- [ ] Verify TEST/LIVE charge behavior and real callback after the payment contract is available; no charge was created.
+- [x] Switch new national M-Pesa/e-Mola charges to the linked PayNow gateway; authenticated paid-order verification, signed callbacks and restricted atomic settlement preserve pending Pagar/VendusPay reconciliation, 8% fees and international payments. Buyer email is required by PayNow; provider POSTs are never automatically retried.
+- [x] Fourteen PayNow/gateway tests and fourteen legacy/fee tests pass; actual generated server health reports PayNow connected. Both checkout methods and email requirement verified in the browser, no runtime errors; saved provider webhook URL is active and preview build OK.
+- [ ] Confirm authorized real PayNow payment and callback after publication; no buyer-authorized charge was created. Requires publication and an actual buyer payment.
 
 # International admin, notifications and custom product
 

@@ -32,4 +32,14 @@ describe("PayNow webhook", () => {
     const request = new Request("https://example.test", { method: "POST", body: raw, headers: { "x-pagaja-signature": await sign(raw) } });
     expect((await handlePaynowWebhook(request, secret)).status).toBe(503);
   });
+  it("acknowledges only after successful verified settlement", async () => {
+    const request = new Request("https://example.test", { method: "POST", body: raw, headers: { "x-pagaja-signature": await sign(raw) } });
+    let reference = "";
+    const response = await handlePaynowWebhook(request, secret, async ref => { reference = ref; return "paid"; });
+    expect(reference).toBe("order-1"); expect(response.status).toBe(200);
+  });
+  it("retries a delivery when the authenticated order is not confirmed", async () => {
+    const request = new Request("https://example.test", { method: "POST", body: raw, headers: { "x-pagaja-signature": await sign(raw) } });
+    expect((await handlePaynowWebhook(request, secret, async () => "pending")).status).toBe(503);
+  });
 });

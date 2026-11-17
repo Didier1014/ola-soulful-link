@@ -85,6 +85,13 @@
       "when": 1794620881428,
       "tag": "0011_international_sale_notification_event",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794886359145,
+      "tag": "0012_paynow_atomic_settlement",
+      "breakpoints": true
     }
   ]
 }
