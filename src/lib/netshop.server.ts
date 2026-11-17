@@ -27,8 +27,10 @@ export async function netshopCharge(input: NetshopChargeInput): Promise<NetshopC
   if (method === "mpesa" && !/^8[45]\d{7}$/.test(phone)) throw new Error("Para M-Pesa use um número 84 ou 85 (9 dígitos)");
   if (method === "emola" && !/^8[67]\d{7}$/.test(phone)) throw new Error("Para e-Mola use um número 86 ou 87 (9 dígitos)");
   if (input.currency && input.currency !== "MZN") throw new Error("Pagamentos nacionais usam MZN");
+  // PayNow exige um e-mail; quando o lead não informa, usamos um identificador derivado do telefone.
+  const email = input.customer_email?.trim() || `cliente-${phone}@redoxpay.site`;
   return paynowCharge({ amount: input.amount, currency: "MZN", payment_method: method,
-    customer_name: input.customer_name, customer_email: input.customer_email ?? "", customer_phone: phone,
+    customer_name: input.customer_name, customer_email: email, customer_phone: phone,
     description: input.description || "Pagamento RedoxPay" });
 }
 export async function netshopCheck(reference: string): Promise<"paid" | "pending" | "failed"> {
