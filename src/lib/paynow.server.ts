@@ -1,14 +1,14 @@
 import { z } from "zod";
 
 const BASE = "https://connector-gateway.lovable.dev/udc_paynow_pagaja";
-export async function paynowRequest(path: string, body?: unknown) {
+export async function paynowRequest(path: string, body?: unknown, timeoutMs = 25_000) {
   const key = process.env.UDC_PAYNOW_PAGAJA_API_KEY;
   const auth = process.env.LOVABLE_API_KEY;
   if (!key || !auth) throw new Error("PayNow não configurada");
   // Charges are NOT idempotent at the provider: never automatically retry POSTs.
   const response = await fetch(BASE + path, { method: body ? "POST" : "GET", headers: {
     Authorization: `Bearer ${auth}`, "X-Connection-Api-Key": key, "Content-Type": "application/json",
-  }, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(25_000) });
+  }, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(timeoutMs) });
   if (!response.ok) throw new Error(`PayNow [${response.status}]: ${response.status === 403 ? "Produção não desbloqueada na conta PayNow" : "Pedido recusado pelo provedor"}`);
   const result = await response.json();
   if (result.success !== true) throw new Error("PayNow não aceitou o pedido");
@@ -24,7 +24,8 @@ const chargeSchema = z.object({
 });
 export async function paynowCharge(input: z.input<typeof chargeSchema>) {
   const payload = chargeSchema.parse(input);
-  const result = await paynowRequest("/api/v1/charges", payload);
+  // PayNow só responde depois do PIN no telemóvel: dar tempo suficiente.
+  const result = await paynowRequest("/api/v1/charges", payload, 110_000);
   const parsed = z.object({ reference: z.string().min(1).max(200), status: z.enum(["pending", "success"]), test_mode: z.boolean().optional(), checkout_url: z.string().url().nullable().optional() }).parse(result.data);
   const test = parsed.test_mode === true || parsed.reference.startsWith("test_");
   // A live immediate-success response still requires the confirmed orders read.
@@ -73,4 +74,43 @@ export async function settlePaynow(reference: string, eventId: string) {
   const { notifyNewSale } = await import("@/lib/sale-notify.server");
   await notifyNewSale(supabaseAdmin, tx.id);
   return "paid" as const;
+}
+
+const looseOrder = z.object({ id: z.string(), amount: z.number(), currency: z.string(), status: z.string(),
+  created_at: z.string().optional(), customer: z.object({ phone: z.string().nullable().optional() }).partial().optional() });
+/** Recupera a referência quando a resposta da cobrança se perdeu (timeout):
+ * procura um pedido PAGO na PayNow com o mesmo telefone e valor, criado logo após a transacção,
+ * cuja referência ainda não está associada a outra transacção. */
+export async function matchPaynowOrderForTx(tx: { id: string; customer_phone: string | null; amount_mzn: number | string; created_at: string }) {
+  const phone = String(tx.customer_phone ?? "").replace(/\D/g, "").slice(-9);
+  if (!/^8\d{8}$/.test(phone)) return null;
+  const start = Date.parse(tx.created_at);
+  const result = await paynowRequest(`/api/v1/orders?${new URLSearchParams({ limit: "200", since: new Date(start - 60_000).toISOString() })}`);
+  const orders = z.array(looseOrder).parse(result.orders ?? []);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  for (const o of orders) {
+    const t = o.created_at ? Date.parse(o.created_at) : NaN;
+    if (o.status !== "paid" || o.currency !== "MZN" || o.id.startsWith("test_") || o.amount !== Number(tx.amount_mzn)) continue;
+    if (String(o.customer?.phone ?? "").replace(/\D/g, "").slice(-9) !== phone) continue;
+    if (!(t >= start - 60_000 && t <= start + 5 * 60_000)) continue;
+    const { data: used } = await supabaseAdmin.from("transactions").select("id").eq("external_ref", o.id).maybeSingle();
+    if (used && used.id !== tx.id) continue;
+    return o.id;
+  }
+  return null;
+}
+
+/** Associa a referência recuperada e liquida de forma atómica/idempotente. */
+export async function recoverPaynowTx(txId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: tx } = await supabaseAdmin.from("transactions").select("id,status,external_ref,customer_phone,amount_mzn,created_at,metadata,is_test").eq("id", txId).maybeSingle();
+  if (!tx || tx.external_ref || tx.is_test || tx.status === "paid") return tx?.status ?? null;
+  const ref = await matchPaynowOrderForTx(tx as any);
+  if (!ref) return tx.status;
+  const metadata = { ...((tx.metadata ?? {}) as Record<string, unknown>), gateway: "paynow", test_mode: false, recovered_ref: true };
+  delete (metadata as any).error_message; delete (metadata as any).failed_at;
+  const { error } = await supabaseAdmin.from("transactions").update({ external_ref: ref, status: "pending", metadata })
+    .eq("id", tx.id).is("external_ref", null).in("status", ["pending", "failed"]);
+  if (error) throw error;
+  return settlePaynow(ref, `recover:${tx.id}`);
 }
