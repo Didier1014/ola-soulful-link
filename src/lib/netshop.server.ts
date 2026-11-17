@@ -1,5 +1,6 @@
-// Compatibility adapter: new payments use Pagar; pending VendusPay references remain reconcilable.
-import { pagarPayment, pagarRequest, paymentState } from "./pagar.server";
+// Compatibility adapter: new payments use PayNow; existing provider references remain reconcilable.
+import { pagarPayment, paymentState } from "./pagar.server";
+import { paynowCharge, paynowRequest } from "./paynow.server";
 import { vendusStatus } from "./venduspay.server";
 export type NetshopMethod = "mpesa" | "emola" | "mkesh" | "card";
 export function normalizePhone(raw: string) {
@@ -17,7 +18,7 @@ export type NetshopChargeInput = {
 };
 export type NetshopChargeResult = {
   reference: string; status: "paid" | "pending" | "failed"; test_mode: boolean; paid: boolean;
-  failed_reason?: string; response_code?: string; checkout_url?: string; gateway?: "venduspay" | "pagar";
+  failed_reason?: string; response_code?: string; checkout_url?: string; gateway?: "venduspay" | "pagar" | "paynow";
 };
 export async function netshopCharge(input: NetshopChargeInput): Promise<NetshopChargeResult> {
   const phone = normalizePhone(input.customer_phone);
@@ -25,22 +26,10 @@ export async function netshopCharge(input: NetshopChargeInput): Promise<NetshopC
   if (method !== "mpesa" && method !== "emola") throw new Error("Pagamentos aceites: M-Pesa e e-Mola");
   if (method === "mpesa" && !/^8[45]\d{7}$/.test(phone)) throw new Error("Para M-Pesa use um número 84 ou 85 (9 dígitos)");
   if (method === "emola" && !/^8[67]\d{7}$/.test(phone)) throw new Error("Para e-Mola use um número 86 ou 87 (9 dígitos)");
-  if (!Number.isInteger(input.amount) || input.amount < 20 || input.amount > 40_000) throw new Error("A Pagar aceita valores inteiros entre 20 e 40 000 MT");
-  if (input.currency && input.currency !== "MZN") throw new Error("A Pagar aceita pagamentos em MZN");
-  const operationKey = input.idempotencyKey || crypto.randomUUID();
-  const result = await pagarRequest("/payments", {
-    reference: operationKey,
-    title: input.description || "Pagamento RedoxPay",
-    description: input.description || "Pagamento RedoxPay",
-    amountMzn: input.amount,
-    method: method.toUpperCase(),
-    payerPhone: phone,
-  }, operationKey);
-  const payment = result.payment;
-  if (!payment?.id || !/^pay_[A-Za-z0-9_-]+$/.test(payment.id) || !["LIVE", "TEST"].includes(payment.environment) || Number(payment.amountMzn) !== input.amount || typeof payment.status !== "string") throw new Error("Resposta inválida da Pagar");
-  const state = paymentState(payment);
-  return { reference: payment.id, status: state.status, test_mode: state.test_mode, paid: state.canCredit,
-    gateway: "pagar", failed_reason: payment.safeMessage || "Pagamento não concluído" };
+  if (input.currency && input.currency !== "MZN") throw new Error("Pagamentos nacionais usam MZN");
+  return paynowCharge({ amount: input.amount, currency: "MZN", payment_method: method,
+    customer_name: input.customer_name, customer_email: input.customer_email ?? "", customer_phone: phone,
+    description: input.description || "Pagamento RedoxPay" });
 }
 export async function netshopCheck(reference: string): Promise<"paid" | "pending" | "failed"> {
   try {
@@ -53,11 +42,11 @@ export async function netshopCheck(reference: string): Promise<"paid" | "pending
 }
 export async function netshopStatus() {
   const t0 = Date.now();
-  const key = process.env.PAGAR_API_KEY;
-  const secret = process.env.PAGAR_SIGNING_SECRET;
-  if (!key || !secret) return { ok: false, configured: false, latency_ms: 0, message: "Pagar não configurada" };
+  const key = process.env.UDC_PAYNOW_PAGAJA_API_KEY;
+  const secret = process.env.LOVABLE_API_KEY;
+  if (!key || !secret) return { ok: false, configured: false, latency_ms: 0, message: "PayNow não configurada" };
   try {
-    const wallet = await pagarRequest("/wallet");
-    return { ok: true, configured: true, environment: wallet.environment ?? wallet.wallet?.environment, latency_ms: Date.now() - t0, message: "Pagar ligada" };
-  } catch { return { ok: false, configured: true, latency_ms: Date.now() - t0, message: "Não foi possível contactar a Pagar" }; }
+    await paynowRequest("/api/v1/products");
+    return { ok: true, configured: true, latency_ms: Date.now() - t0, message: "PayNow ligada" };
+  } catch { return { ok: false, configured: true, latency_ms: Date.now() - t0, message: "Não foi possível contactar a PayNow" }; }
 }
