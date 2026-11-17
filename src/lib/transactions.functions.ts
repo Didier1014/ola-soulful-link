@@ -143,6 +143,13 @@ export const createCheckout = createServerFn({ method: "POST" })
       const errMsg = e instanceof Error ? e.message : "Falha ao iniciar pagamento";
       const { data: cur } = await supabaseAdmin
         .from("transactions").select("external_ref,status").eq("id", tx.id).maybeSingle();
+      // Timeout: a PayNow pode ter enviado o push e o cliente pagar. Fica pendente e é recuperado.
+      if (!cur?.external_ref && /timeout|aborted/i.test(errMsg)) {
+        await supabaseAdmin.from("transactions").update({
+          metadata: { ...(tx.metadata ?? {}), gateway: "paynow", test_mode: false, awaiting_ref: true },
+        }).eq("id", tx.id).eq("status", "pending");
+        return { id: tx.id, status: "pending", test_mode: false, gateway_status: "pending", amount, fee: seller_fee, net: seller_net, delivery_url: undefined, checkout_url: undefined, message: "Confirme o pagamento no telemóvel" };
+      }
       // Só marcar como falhada quando não existe referência no gateway.
       // Com referência, fica pendente e é resolvida por webhook/polling (o cliente pode ter pago).
       if (!cur?.external_ref) {
@@ -176,6 +183,17 @@ export const checkTransactionStatus = createServerFn({ method: "POST" })
 
     if (tx.metadata?.test_mode && tx.status !== "pending") {
       return { status: "failed", test_mode: true, gateway_status: tx.metadata.gateway_status };
+    }
+    if (tx.metadata?.gateway === "paynow" && tx.status === "pending" && !tx.external_ref && !tx.is_test) {
+      try {
+        const { recoverPaynowTx } = await import("@/lib/paynow.server");
+        const st = await recoverPaynowTx(tx.id);
+        if (st) tx.status = st;
+        if (tx.status === "pending" && Date.now() - Date.parse(tx.created_at) > 6 * 60_000) {
+          await supabaseAdmin.from("transactions").update({ status: "failed" }).eq("id", tx.id).eq("status", "pending").is("external_ref", null);
+          tx.status = "failed";
+        }
+      } catch { /* keep pending */ }
     }
     if (tx.metadata?.gateway === "paynow" && tx.status === "pending" && tx.external_ref) {
       try {

@@ -28,6 +28,19 @@ async function run() {
 
     let paid = 0, failed = 0, still = 0;
 
+    // Recuperar cobranças PayNow cuja resposta se perdeu por timeout (sem referência).
+    const { data: lost } = await supabaseAdmin.from("transactions").select("id,metadata")
+      .is("external_ref", null).in("status", ["pending", "failed"]).eq("is_test", false)
+      .gt("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()).limit(50);
+    for (const tx of lost ?? []) {
+      const m = (tx.metadata ?? {}) as any;
+      if (!(m.awaiting_ref || /timeout|aborted/i.test(String(m.error_message ?? "")))) continue;
+      try {
+        const { recoverPaynowTx } = await import("@/lib/paynow.server");
+        if (await recoverPaynowTx(tx.id) === "paid") paid++;
+      } catch { /* retry next run */ }
+    }
+
     for (const tx of pend ?? []) {
       if ((tx.metadata as any)?.gateway === "paynow" && !(tx.metadata as any)?.test_mode) {
         try {
