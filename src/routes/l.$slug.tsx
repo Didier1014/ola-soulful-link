@@ -131,7 +131,7 @@ function LinkCheckout() {
                 <Input value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} maxLength={120} />
               </div>
               <div className="space-y-2">
-                <Label>Email *</Label>
+                <Label>Email (opcional)</Label>
                 <Input type="email" value={form.customer_email} onChange={(e) => setForm({ ...form, customer_email: e.target.value })} maxLength={160} />
               </div>
               <div className="space-y-2">
@@ -165,7 +165,7 @@ function LinkCheckout() {
               </div>
               <Button
                 className="w-full h-16 rounded-xl text-base bg-gradient-to-r from-primary to-primary-glow text-white"
-                disabled={m.isPending || !form.customer_name || !form.customer_phone || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customer_email.trim())}
+                disabled={m.isPending || !form.customer_name || !form.customer_phone || (!!form.customer_email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customer_email.trim()))}
                 onClick={() => m.mutate()}>
                 {m.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Lock className="h-4 w-4 mr-2" />}
                 Pagar {fmt(Number(link.amount_mzn))}

@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/public/create-merchant-payment")({
           const webhook_url = body?.webhook_url ? String(body.webhook_url) : null;
 
           if (!nome_cliente) { await log(400); return Response.json({ error: "nome_cliente obrigatório" }, { status: 400 }); }
-          if (!z.string().email().max(160).safeParse(customer_email).success) { await log(400); return Response.json({ error: "customer_email obrigatório e válido" }, { status: 400 }); }
+          if (customer_email && !z.string().email().max(160).safeParse(customer_email).success) { await log(400); return Response.json({ error: "customer_email inválido" }, { status: 400 }); }
           if (!phone || phone.length < 9) { await log(400); return Response.json({ error: "phone inválido" }, { status: 400 }); }
           if (!Number.isFinite(amount) || amount < 50) { await log(400); return Response.json({ error: "amount mínimo 50" }, { status: 400 }); }
 

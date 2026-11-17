@@ -158,7 +158,8 @@ function CheckoutPage() {
 
   const m = useMutation({
     mutationFn: async () => {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customer_email.trim())) throw new Error("Informe um email válido para pagar");
+      const emailTrim = form.customer_email.trim();
+      if (emailTrim && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) throw new Error("Informe um email válido ou deixe em branco");
       const operationTracking = await operation.attempt();
       const w = window as any;
       if (product?.pixel_id && w.fbq && !pixelFiredRef.current.init) {
@@ -320,7 +321,7 @@ function CheckoutPage() {
   if (resolveCheckoutStyle(product.config?.checkout) !== "normal") return <OfferCheckout variant={resolveCheckoutStyle(product.config?.checkout) === "escale" ? "escale" : "offer"} product={product} price={fmt(total)} language={language} t={t}>
     <form className="space-y-5" onSubmit={event => { event.preventDefault(); m.mutate(); }}>
       <div className="space-y-2"><Label htmlFor="offer-name">{t.name}</Label><Input id="offer-name" autoComplete="name" required minLength={2} maxLength={120} value={form.customer_name} onChange={event => setForm({ ...form, customer_name: event.target.value })} /></div>
-      <div className="space-y-2"><Label htmlFor="offer-email">{t.email} *</Label><Input id="offer-email" type="email" required autoComplete="email" maxLength={160} value={form.customer_email} onChange={event => setForm({ ...form, customer_email: event.target.value })} /></div>
+      <div className="space-y-2"><Label htmlFor="offer-email">{t.email} (opcional)</Label><Input id="offer-email" type="email" autoComplete="email" maxLength={160} value={form.customer_email} onChange={event => setForm({ ...form, customer_email: event.target.value })} /></div>
       <BuyTogether bumps={bumps.map(b => ({ ...b, price: Number(b.price_mzn) }))} selected={selectedBumps} onToggle={(id, value) => setSelectedBumps({ ...selectedBumps, [id]: value })} format={fmt} language={language} />
       <fieldset className="space-y-2"><legend className="text-sm font-medium mb-2">{t.payWith}</legend><div className="grid grid-cols-2 gap-2">{(["mpesa", "emola"] as const).map(value => <Button key={value} type="button" variant={method === value ? "default" : "outline"} aria-pressed={method === value} onClick={() => setMethod(value)} className="h-12"><img src={`/brands/${value}.png`} alt="" className="size-7 object-contain" />{value === "mpesa" ? "M-Pesa" : "e-Mola"}</Button>)}</div></fieldset>
       <div className="space-y-2"><Label htmlFor="offer-phone">{t.number} {method === "mpesa" ? "M-Pesa" : "e-Mola"}</Label><Input id="offer-phone" type="tel" autoComplete="tel" placeholder="+258" required maxLength={15} value={form.customer_phone} onChange={event => setForm({ ...form, customer_phone: event.target.value })} /></div>

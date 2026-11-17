@@ -30,11 +30,19 @@ describe("national PayNow migration", () => {
     await expect(netshopCharge({ amount: 50, customer_name: "Buyer", customer_email: "buyer@example.test", customer_phone: "841234567" })).rejects.toThrow("timeout");
     expect(mock).toHaveBeenCalledTimes(1);
   });
-  it("requires the documented 50 MT minimum and real buyer email", async () => {
-    const mock = vi.fn(); vi.stubGlobal("fetch", mock);
+  it("requires the documented 50 MT minimum and derives a placeholder email when the buyer omits it", async () => {
+    const mock = vi.fn(async (_url, init) => {
+      const body = JSON.parse(init.body);
+      expect(body.customer_email).toBe("cliente-841234567@redoxpay.site");
+      return Response.json({ success: true, data: { reference: "order-2", status: "pending", checkout_url: null } });
+    });
+    vi.stubGlobal("fetch", mock);
     await expect(netshopCharge({ amount: 49, customer_name: "Buyer", customer_email: "buyer@example.test", customer_phone: "841234567" })).rejects.toThrow();
-    await expect(netshopCharge({ amount: 300, customer_name: "Buyer", customer_phone: "841234567" })).rejects.toThrow();
     expect(mock).not.toHaveBeenCalled();
+    credentials();
+    const result = await netshopCharge({ amount: 300, customer_name: "Buyer", customer_phone: "841234567" });
+    expect(result.gateway).toBe("paynow");
+    expect(mock).toHaveBeenCalledTimes(1);
   });
   it("only accepts matching MZN reference and amount, never test orders", () => {
     const tx = { external_ref: "order-1", amount_mzn: 300 };
