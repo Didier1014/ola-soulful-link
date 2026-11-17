@@ -1,5 +1,7 @@
 # Architecture rules
 
+- PayNow has a separate timestamp/raw-body HMAC webhook; until its charges and atomic settlement are connected it returns retryable errors, never acknowledges unprocessed sales or touches existing balances.
+
 - International sale side effects read verified LIVE ledger rows; a unique notification event index gates webhook/poll push duplication, and payloads retain ledger currency without conversion.
 - Offer countdowns use seller-configured minutes and a session-persisted deadline; expiration never resets or changes price/payment authorization.
 - Admin finance reports persisted fees as accounting, never invented processor costs or profit; global admin navigation stays available under every currency.
