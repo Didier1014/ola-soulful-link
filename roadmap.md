@@ -1,7 +1,7 @@
 # PayNow PagAja national provider replacement
 
 - [x] Connect PayNow PagAja securely; authenticated GET /api/v1/products returns HTTP 200 with success true, without creating a charge.
-- [ ] Replace national M-Pesa/e-Mola creation, polling and signed callbacks: blocked on the complete Charges and Webhook sections (the supplied documentation response is truncated); do not guess payloads or switch active Pagar prematurely. Preserve pending-provider reconciliation, 8% seller fees and international payments. PayNow documents producer-account access only, not marketplace operations.
+- [ ] Switch new national M-Pesa/e-Mola charges to PayNow using the supplied complete documentation; wire authenticated order verification, signed callbacks and atomic settlement, preserve pending Pagar/VendusPay reconciliation, 8% fees and international payments.
 - [ ] Verify TEST/LIVE charge behavior and real callback after the payment contract is available; no charge was created.
 
 # International admin, notifications and custom product
