@@ -405,6 +405,7 @@ export type Database = {
           currency: string
           customer_email: string | null
           customer_name: string | null
+          customer_phone: string | null
           fee_minor: number
           id: string
           paid_at: string | null
@@ -423,6 +424,7 @@ export type Database = {
           currency: string
           customer_email?: string | null
           customer_name?: string | null
+          customer_phone?: string | null
           fee_minor: number
           id?: string
           paid_at?: string | null
@@ -441,6 +443,7 @@ export type Database = {
           currency?: string
           customer_email?: string | null
           customer_name?: string | null
+          customer_phone?: string | null
           fee_minor?: number
           id?: string
           paid_at?: string | null
@@ -941,6 +944,33 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_meta_settings: {
+        Row: {
+          id: string
+          pixel_id: string
+          scope_key: string
+          token_ciphertext: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          pixel_id: string
+          scope_key?: string
+          token_ciphertext: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          pixel_id?: string
+          scope_key?: string
+          token_ciphertext?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sms_logs: {
         Row: {
           created_at: string
@@ -1175,11 +1205,59 @@ export type Database = {
         }
         Relationships: []
       }
+      zar_withdrawal_requests: {
+        Row: {
+          amount_minor: number
+          created_at: string
+          currency: string
+          decided_at: string | null
+          destination: string
+          id: string
+          note: string | null
+          status: string
+          transfer_reference: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_minor: number
+          created_at?: string
+          currency?: string
+          decided_at?: string | null
+          destination: string
+          id?: string
+          note?: string | null
+          status?: string
+          transfer_reference?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_minor?: number
+          created_at?: string
+          currency?: string
+          decided_at?: string | null
+          destination?: string
+          id?: string
+          note?: string | null
+          status?: string
+          transfer_reference?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      decide_zar_withdrawal: {
+        Args: {
+          p_id: string
+          p_note: string
+          p_reference: string
+          p_status: string
+        }
+        Returns: undefined
+      }
       expire_stuck_pending_transactions: { Args: never; Returns: number }
       gen_api_key: { Args: never; Returns: string }
       get_checkout_operation: {
@@ -1204,6 +1282,10 @@ export type Database = {
       increment_balance: {
         Args: { _amount: number; _user_id: string }
         Returns: number
+      }
+      request_zar_withdrawal: {
+        Args: { p_amount_minor: number; p_destination: string }
+        Returns: string
       }
       settle_pagar_payment: {
         Args: { p_event_id: string; p_transaction_id: string }

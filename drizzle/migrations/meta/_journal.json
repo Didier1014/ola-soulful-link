@@ -92,6 +92,13 @@
       "when": 1794886359145,
       "tag": "0012_paynow_atomic_settlement",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794949599374,
+      "tag": "0013_seller_meta_clients_zar_requests",
+      "breakpoints": true
     }
   ]
 }

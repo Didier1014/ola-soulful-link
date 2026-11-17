@@ -1,3 +1,10 @@
+# Product Meta settings, clients and ZAR manual withdrawals
+
+- [ ] Add private Meta token configuration to product creation and settings; do not claim synchronization without authorized connection and consent.
+- [ ] Add owner-only international customer contacts under Operation → Clientes, persisting the submitted optional phone separately from anonymous analytics.
+- [ ] Add ZAR manual withdrawal requests and admin decisions with currency-isolated, atomic limits; no inferred provider balance or automatic transfer.
+- [ ] Verify targeted tests and authenticated screens; report any external-service blockers.
+
 # PayNow PagAja national provider replacement
 
 - [x] Connect PayNow PagAja securely; authenticated GET /api/v1/products returns HTTP 200 with success true, without creating a charge.
