@@ -30,6 +30,7 @@ import { formatProductPrice } from "@/lib/checkout-currency";
 import { PUBLIC_BASE_URL, publicCheckoutUrl } from "@/lib/public-url";
 import { useWorkspaceCurrency } from "@/components/workspace-currency";
 import { listInternationalPayments } from "@/lib/international-checkout.functions";
+import { saveSellerMetaSettings } from "@/lib/seller-tools.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/products")({
   head: () => ({ meta: [
@@ -92,6 +93,7 @@ interface Form {
   sms_sender_id: string;
   sms_template: string;
   pixel_id: string;
+  meta_token: string;
   utimify_id: string;
   lawtracker_id: string;
   support_phone: string;
@@ -107,7 +109,7 @@ const emptyForm: Form = {
   digital_file_path: "",
   sms_sender_id: "RedoxPay",
   sms_template: "Olá {nome}, obrigado pela compra de {produto} no valor de {valor}!",
-  pixel_id: "", utimify_id: "", lawtracker_id: "", support_phone: "",
+  pixel_id: "", meta_token: "", utimify_id: "", lawtracker_id: "", support_phone: "",
   config: {},
 };
 
@@ -124,7 +126,7 @@ function fromProduct(p: any): Form {
     digital_file_path: p.digital_file_path || "",
     sms_sender_id: p.sms_sender_id || "RedoxPay",
     sms_template: p.sms_template || "",
-    pixel_id: p.pixel_id || "", utimify_id: p.utimify_id || "",
+    pixel_id: p.pixel_id || "", meta_token: "", utimify_id: p.utimify_id || "",
     lawtracker_id: p.lawtracker_id || "", support_phone: p.support_phone || "",
     config: p.config || {},
   };
@@ -161,16 +163,30 @@ function ProductsPage() {
   function close() { setOpen(false); setEditingId(null); setForm(emptyForm); setStep("type"); }
 
   const createM = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const s = serialize(form);
       if (!s.slug || s.slug.length < 3) throw new Error("Define um slug (mínimo 3 caracteres, ex: meu-produto)");
-      return create({ data: s });
+      if (form.meta_token && (!/^\d{5,30}$/.test(form.pixel_id) || form.meta_token.trim().length < 20)) throw new Error("Preencha um Pixel ID válido e o token Meta completo");
+      const product = await create({ data: s });
+      if (form.meta_token) {
+        try { await saveSellerMetaSettings({ data: { product_id: product.id, pixel_id: form.pixel_id, token: form.meta_token } }); }
+        catch { toast.error("Produto criado, mas o token Meta não foi guardado. Tente novamente ao editar o produto."); }
+      }
+      return product;
     },
     onSuccess: (p) => { toast.success(`Produto criado: /c/${p.slug}`); qc.invalidateQueries({ queryKey: ["products"] }); close(); },
     onError: (e: any) => toast.error(e.message),
   });
   const updateM = useMutation({
-    mutationFn: () => update({ data: { id: editingId!, ...serialize(form) } }),
+    mutationFn: async () => {
+      if (!editingId) throw new Error("Selecione um produto");
+      if (form.meta_token && (!/^\d{5,30}$/.test(form.pixel_id) || form.meta_token.trim().length < 20)) throw new Error("Preencha um Pixel ID válido e o token Meta completo");
+      await update({ data: { id: editingId, ...serialize(form) } });
+      if (form.meta_token) {
+        try { await saveSellerMetaSettings({ data: { product_id: editingId, pixel_id: form.pixel_id, token: form.meta_token } }); }
+        catch { toast.error("Produto actualizado, mas o token Meta não foi guardado. Tente novamente ao editar o produto."); }
+      }
+    },
     onSuccess: () => { toast.success("Produto actualizado"); qc.invalidateQueries({ queryKey: ["products"] }); close(); },
     onError: (e: any) => toast.error(e.message),
   });
@@ -656,6 +672,7 @@ function FormStep({
           </div>
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
             <div className="space-y-2"><Label>Pixel ID (Meta)</Label><Input value={form.pixel_id} onChange={(e) => setForm({ ...form, pixel_id: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Token de API do Facebook</Label><Input type="password" autoComplete="off" value={form.meta_token} onChange={(e) => setForm({ ...form, meta_token: e.target.value })} placeholder={isEditing ? "Novo token (opcional)" : "Token da API de Conversões"} /><p className="text-xs text-muted-foreground">Guardado em privado. Sincronização pendente de ligação autorizada à Meta e consentimento de publicidade.</p></div>
             <div className="space-y-2"><Label>UTMify ID</Label><Input value={form.utimify_id} onChange={(e) => setForm({ ...form, utimify_id: e.target.value })} /></div>
             <div className="space-y-2"><Label>LowTrack Token</Label><Input value={form.lawtracker_id} onChange={(e) => setForm({ ...form, lawtracker_id: e.target.value })} placeholder="Cole aqui o token do LowTrack" /></div>
             <div className="space-y-2"><Label>Telefone Suporte</Label><Input value={form.support_phone} onChange={(e) => setForm({ ...form, support_phone: e.target.value })} placeholder="+258 84..." /></div>

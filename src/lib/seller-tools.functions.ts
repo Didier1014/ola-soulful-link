@@ -2,6 +2,8 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { zarRequestTotals } from './zar-requests';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/integrations/supabase/types';
 
 export const listCheckoutCustomers = createServerFn({method:'GET'})
   .middleware([requireSupabaseAuth])
@@ -62,7 +64,7 @@ export const decideZarWithdrawal = createServerFn({method:'POST'})
   });
 
 const metaScope = z.object({product_id:z.string().uuid().optional()});
-async function checkProductOwner(client: Parameters<typeof zarRequestTotals>[0] | any, userId:string, productId?:string) {
+async function checkProductOwner(client: SupabaseClient<Database>, userId:string, productId?:string) {
   if(!productId) return;
   const {data,error}=await client.from('products').select('id').eq('id',productId).eq('user_id',userId).maybeSingle();
   if(error || !data) throw new Error('Produto não encontrado');

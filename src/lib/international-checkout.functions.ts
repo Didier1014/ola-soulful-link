@@ -30,7 +30,7 @@ export const initializeInternationalCheckout = createServerFn({ method: "POST" }
       const { data: session } = await supabaseAdmin.from("checkout_sessions").select("id").eq("id", data.operation_session_id).eq("user_id", product.user_id).eq("product_id", product.id).eq("token_hash", await capabilityHash(data.operation_token)).maybeSingle();
       checkoutSessionId = session?.id ?? null;
     }
-    const { error: insertError } = await supabaseAdmin.from("international_payments").insert({ user_id: product.user_id, product_id: product.id, reference, capability_hash: await capabilityHash(capability), currency: "ZAR", amount_minor: amounts.amount_minor, fee_minor: amounts.fee_minor, customer_name: data.name, customer_email: data.email, checkout_session_id: checkoutSessionId });
+    const { error: insertError } = await supabaseAdmin.from("international_payments").insert({ user_id: product.user_id, product_id: product.id, reference, capability_hash: await capabilityHash(capability), currency: "ZAR", amount_minor: amounts.amount_minor, fee_minor: amounts.fee_minor, customer_name: data.name, customer_email: data.email, customer_phone: data.phone || null, checkout_session_id: checkoutSessionId });
     if (insertError) throw new Error(insertError.message);
     const origin = new URL(getRequest().url).origin;
     let initialized;

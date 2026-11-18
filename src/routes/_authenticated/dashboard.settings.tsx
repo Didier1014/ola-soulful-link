@@ -17,9 +17,11 @@ import { checkApiStatus } from "@/lib/transactions.functions";
 import { updateUserPreferences, sendTestNotification, type Currency } from "@/lib/notifications.functions";
 import { PushToggle } from "@/components/push-setup";
 import { PushReactivateBanner } from "@/components/push-reactivate-banner";
+import { SellerMetaSettings, sellerMetaQuery } from "@/components/seller-meta-settings";
 import { Activity, CheckCircle2, XCircle, Zap, RefreshCw, Copy, Bell, Play, Palette, Volume2, Smartphone } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/settings")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(sellerMetaQuery()),
   head: () => pageHead('Configurações', 'Consulte configurações na Redox Pay com segurança.'),
   component: SettingsPage,
 });
@@ -113,6 +115,7 @@ function SettingsPage() {
         <p className="text-sm text-muted-foreground">Gerir integrações, notificações e preferências.</p>
       </div>
 
+      <SellerMetaSettings />
       {/* Gateway */}
       <Card className="relative overflow-hidden rounded-2xl p-5 bg-card/40 border border-white/5">
         <div aria-hidden className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-primary/15 blur-3xl" />

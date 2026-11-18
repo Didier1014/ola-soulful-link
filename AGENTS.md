@@ -6,7 +6,7 @@
 - Offer countdowns use seller-configured minutes and a session-persisted deadline; expiration never resets or changes price/payment authorization.
 - Admin finance reports persisted fees as accounting, never invented processor costs or profit; global admin navigation stays available under every currency.
 
-- Checkout style is stored in product config independently of currency/provider; opted-in offer checkouts share a scoped presentation shell and reuse existing payment/capability flows so changing style cannot change financial behavior. Optional international buyer phone goes only to payment metadata, never anonymous analytics.
+- Checkout style is stored in product config independently of currency/provider; opted-in offer checkouts share a scoped presentation shell and reuse existing payment/capability flows so changing style cannot change financial behavior. Optional international phone is persisted for owner-only customer records and payment metadata, never anonymous analytics.
 
 - All SMS callers share the legacy SMS adapter routed through the linked MozeSMS gateway connection; credentials remain server-only and the approved sender is enforced centrally to avoid rejected custom senders.
 - Post-payment SMS templates are account-wide in integration_settings.mozesms; saving and delivery consult protected user_roles, with default fallback after privilege revocation, so product legacy fields cannot override authorized settings.
@@ -31,3 +31,4 @@
 - External funnel analytics use a public domain-scoped installation identifier and hashed session capabilities; owner-only reports link to same-owner checkout sessions, never infer sales from browser events, and do not collect form contents.
 - Checkout language preferences live in product config and are resolved independently of prices and ledger currencies; visitor country uses edge geolocation, stores only a two-letter country, and falls back to browser language only in automatic mode.
 - Dashboard cash-flow filters share the workspace currency and calendar-period helper; outgoing values use paid national withdrawals only, while unavailable international settlement outflows remain unknown, never inferred from accounting fees.
+- ZAR manual requests use locked LIVE-ledger limits, not provider balances; admin paid decisions require a transfer reference. Meta tokens are encrypted server-only, never product config; sending stays off pending authorized transport and consent.

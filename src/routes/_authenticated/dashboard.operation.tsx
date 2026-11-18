@@ -9,10 +9,12 @@ import { useState } from "react";
 import { FunnelOperation, funnelsQuery } from "@/components/funnel-operation";
 import { useWorkspaceCurrency } from "@/components/workspace-currency";
 import type { WorkspaceCurrency } from "@/lib/workspace-currency";
+import { CheckoutCustomers, customersQuery } from "@/components/checkout-customers";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const operationQuery = (hours = 24, resource?: string, currency: WorkspaceCurrency = "MZN") => queryOptions({ queryKey: ["operation", hours, resource, currency], queryFn: () => getOperation({ data: { hours: hours as 24 | 168 | 720, resource, currency } }), refetchInterval: 30000 });
 export const Route = createFileRoute("/_authenticated/dashboard/operation")({
-  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(operationQuery()), context.queryClient.ensureQueryData(funnelsQuery())]),
+  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData(operationQuery()), context.queryClient.ensureQueryData(funnelsQuery()), context.queryClient.ensureQueryData(customersQuery())]),
   head: () => ({ meta: [
     { title: "Operação — Funis e checkouts | Redox Pay" },
     { name: "description", content: "Acompanhe visitas, páginas, quiz, VSL, origens dos leads e pagamentos da sua operação na Redox Pay." },
@@ -54,6 +56,9 @@ function OperationPage() {
       <div><p className="text-xs text-muted-foreground flex items-center gap-2"><Activity className="size-4 text-primary-glow" /> CONTROLO DA OPERAÇÃO</p><h1 className="text-3xl font-semibold mt-2">Operação</h1><p className="text-xs text-muted-foreground mt-2">{new Date(data.updated_at).toLocaleString("pt-MZ", { timeZone: "Africa/Maputo" })} · Hora de Moçambique</p></div>
       <div className="flex gap-2 items-center"><span className="flex items-center gap-2 text-xs text-success mr-2"><Radio className="size-4" />{count(t.active)} ativos · 5 min</span><Button variant="outline" size="icon" title="Atualizar operação" aria-label="Atualizar operação" onClick={() => refetch()}><RefreshCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} /></Button><Button variant="outline" size="icon" title="Exportar atividade recente" aria-label="Exportar atividade recente" onClick={exportCsv}><Download className="size-4" /></Button></div>
     </header>
+    <Tabs defaultValue="monitor"><TabsList><TabsTrigger value="monitor"><Activity className="size-4"/>Monitoramento</TabsTrigger><TabsTrigger value="clients"><Users className="size-4"/>Clientes</TabsTrigger></TabsList>
+    <TabsContent value="clients" className="mt-6"><CheckoutCustomers /></TabsContent>
+    <TabsContent value="monitor" className="space-y-8 mt-6">
     <div className="flex flex-wrap gap-3">
       <Select value={String(hours)} onValueChange={v => setHours(Number(v))}><SelectTrigger className="w-40" aria-label="Período"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="24">Últimas 24 horas</SelectItem><SelectItem value="168">Últimos 7 dias</SelectItem><SelectItem value="720">Últimos 30 dias</SelectItem></SelectContent></Select>
       <Select value={resource} onValueChange={setResource}><SelectTrigger className="w-64 max-w-full" aria-label="Checkout"><SelectValue placeholder="Todos os checkouts" /></SelectTrigger><SelectContent><SelectItem value="all">Todos os checkouts</SelectItem>{all.resources.map(r => <SelectItem key={r.resource_id} value={r.resource_id}>{r.resource_name}</SelectItem>)}</SelectContent></Select>
@@ -74,5 +79,6 @@ function OperationPage() {
     <section className="border-t border-border pt-6"><h2 className="font-semibold mb-5 flex items-center gap-2"><Globe className="size-4 text-primary-glow" />País dos visitantes</h2><div className="flex flex-wrap gap-x-8 gap-y-3">{data.countries.map(country => <div key={country.code} className="flex items-center gap-4 text-sm"><span className="text-muted-foreground">{country.code === "unknown" ? "Não identificado" : new Intl.DisplayNames(["pt"], { type: "region" }).of(country.code)}</span><strong className="tabular-nums">{count(country.leads)}</strong></div>)}{!data.countries.length && <p className="text-sm text-muted-foreground">Nenhuma visita neste período.</p>}</div></section>
     <section className="border-t border-border pt-6"><h2 className="font-semibold mb-5">Atividade recente</h2><div className="overflow-x-auto"><table className="w-full text-sm min-w-[660px]"><thead><tr className="text-xs text-muted-foreground border-b border-border">{["Lead", "Checkout", "Origem / campanha", "Dispositivo", "Etapa", "Última atividade"].map(label => <th key={label} className="text-left py-3 pr-4 font-normal">{label}</th>)}</tr></thead><tbody>{data.recent.map(r => <tr key={r.id} className="border-b border-border"><td className="py-4 pr-4 font-mono text-xs text-muted-foreground">{r.id.slice(0, 8)}</td><td className="pr-4 max-w-48 break-words">{r.resource_name}</td><td className="pr-4 max-w-48 break-words">{r.source}{r.campaign && <p className="text-xs text-muted-foreground mt-1">{r.campaign}</p>}</td><td className="pr-4 text-xs text-muted-foreground">{r.device === "mobile" ? "Telemóvel" : r.device === "tablet" ? "Tablet" : "Computador"}</td><td className={`pr-4 text-xs ${r.stage === "paid" ? "text-success" : ["failed", "error"].includes(r.stage) ? "text-destructive" : "text-foreground"}`}>{stageLabels[r.stage]}</td><td className="text-xs text-muted-foreground">{new Date(r.last_seen_at).toLocaleTimeString("pt-MZ", { timeZone: "Africa/Maputo", hour: "2-digit", minute: "2-digit" })}</td></tr>)}</tbody></table></div>{!data.recent.length && <p className="text-sm text-muted-foreground py-8">Nenhuma atividade registada.</p>}<p className="text-xs text-muted-foreground mt-5">Leads anónimos · Sem guardar o conteúdo dos campos · Pagamentos de teste excluídos das vendas</p></section>
     <FunnelOperation hours={hours} />
+    </TabsContent></Tabs>
   </div>;
 }

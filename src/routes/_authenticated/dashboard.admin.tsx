@@ -28,8 +28,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useWorkspaceCurrency } from "@/components/workspace-currency";
 import { formatProductPrice } from "@/lib/checkout-currency";
 import { InternationalFinance } from "@/components/international-finance";
+import { ZarWithdrawals, zarRequestsQuery } from "@/components/zar-withdrawals";
 
 export const Route = createFileRoute("/_authenticated/dashboard/admin")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(zarRequestsQuery(true)),
   head: () => pageHead('Administração', 'Consulte administração na Redox Pay com segurança.'), component: AdminPage });
 
 const fmt = (n: number) => new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(n);
@@ -436,6 +438,7 @@ function AdminPage() {
 
         {tab === "withdrawals" && (
           <>
+            {currency === 'ZAR' ? <ZarWithdrawals admin /> : <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <Kpi label="Pendentes" value={String(pendingCount)} icon={Clock} warn />
               <Kpi label="Total acumulado" value={fmtMT((wds.data ?? []).filter((w: any) => w.status === 'pending').reduce((a: number, w: any) => a + Number(w.amount_mzn || 0), 0))} icon={Wallet} />
@@ -489,6 +492,7 @@ function AdminPage() {
                 {!wds.data?.length && <p className="p-8 text-center text-sm text-muted-foreground">Nenhum saque.</p>}
               </div>
             </Card>
+            </>}
           </>
         )}
 

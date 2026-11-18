@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { pageHead } from "@/lib/page-head";
-import { NationalOnly } from "@/components/workspace-currency";
+import { NationalOnly, useWorkspaceCurrency } from "@/components/workspace-currency";
+import { ZarWithdrawals, zarRequestsQuery } from "@/components/zar-withdrawals";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,9 +17,15 @@ import { useEffect, useMemo, useState } from "react";
 import { Wallet, Clock, CheckCircle2, XCircle, Loader2, History } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/withdrawals")({
-  head: () => pageHead('Saques em MT', 'Consulte saques em mt na Redox Pay com segurança.'),
-  component: () => <NationalOnly label="Saques"><WdPage /></NationalOnly>,
+  loader: ({ context }) => context.queryClient.ensureQueryData(zarRequestsQuery()),
+  head: () => pageHead('Saques MT e ZAR', 'Consulte saques nacionais e solicite transferências manuais em ZAR na Redox Pay.'),
+  component: WithdrawalsPage,
 });
+
+function WithdrawalsPage() {
+  const { currency } = useWorkspaceCurrency();
+  return currency === 'ZAR' ? <ZarWithdrawals /> : <NationalOnly label="Saques"><WdPage /></NationalOnly>;
+}
 
 const fmt = (n: number) => `${new Intl.NumberFormat("pt-MZ", { maximumFractionDigits: 0 }).format(n)} MT`;
 
@@ -45,10 +52,11 @@ function WdPage() {
   // Realtime: refresh on any withdrawal change
   useEffect(() => {
     let ch: any;
+    let cancelled = false;
     (async () => {
       const { data } = await supabase.auth.getUser();
       const uid = data?.user?.id;
-      if (!uid) return;
+      if (!uid || cancelled) return;
       ch = supabase.channel(`user:${uid}:withdrawals`, { config: { private: true } })
         .on("postgres_changes", { event: "*", schema: "public", table: "withdrawals", filter: `user_id=eq.${uid}` }, () => {
           qc.invalidateQueries({ queryKey: ["my-withdrawals"] });
@@ -56,7 +64,7 @@ function WdPage() {
         })
         .subscribe();
     })();
-    return () => { if (ch) supabase.removeChannel(ch); };
+    return () => { cancelled = true; if (ch) supabase.removeChannel(ch); };
   }, [qc]);
 
   const pendingTotal = useMemo(
