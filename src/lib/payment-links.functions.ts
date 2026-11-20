@@ -1,3 +1,4 @@
+import { nationalEmailSchema } from "./national-email";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -27,7 +28,7 @@ export const payLink = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     link_id: z.string().uuid(),
     customer_name: z.string().trim().min(2).max(120),
-    customer_email: z.string().trim().email("Informe um email válido para pagar").max(160).optional().or(z.literal("")),
+    customer_email: nationalEmailSchema,
     customer_phone: z.string().trim().regex(/^\+?\d{8,15}$/, "Telefone inválido"),
     method: z.enum(["mpesa", "emola"]),
     tracking: z.object({

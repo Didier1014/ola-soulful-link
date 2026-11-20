@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { CheckCircle2, Loader2, Lock, Smartphone, Zap, AlertCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { validNationalEmail } from "@/lib/national-email";
 import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
 
 export const Route = createFileRoute("/l/$slug")({ component: LinkCheckout, head: () => ({ meta: [
@@ -31,7 +32,7 @@ function LinkCheckout() {
     retry: false,
   });
 
-  const [form, setForm] = useState({ customer_name: "", customer_phone: "" });
+  const [form, setForm] = useState({ customer_name: "", customer_email: "", customer_phone: "" });
   const operation = useCheckoutOperation("link", slug, !!link?.id, form.customer_name, form.customer_phone);
   const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [done, setDone] = useState<{ id: string; status: string } | null>(null);
@@ -131,6 +132,10 @@ function LinkCheckout() {
                 <Input value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} maxLength={120} />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="buyer-email">E-mail *</Label>
+                <Input id="buyer-email" type="email" autoComplete="email" required maxLength={160} value={form.customer_email} onChange={e => setForm({ ...form, customer_email: e.target.value })} />
+              </div>
+              <div className="space-y-2">
                 <Label>Telefone ({method === "mpesa" ? "M-Pesa" : "e-Mola"})</Label>
                 <Input value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
                   placeholder="+258 84 000 0000" maxLength={20} />
@@ -161,7 +166,7 @@ function LinkCheckout() {
               </div>
               <Button
                 className="w-full h-16 rounded-xl text-base bg-gradient-to-r from-primary to-primary-glow text-white"
-                disabled={m.isPending || !form.customer_name || !form.customer_phone}
+                disabled={m.isPending || !form.customer_name || !form.customer_phone || !validNationalEmail(form.customer_email)}
                 onClick={() => m.mutate()}>
                 {m.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Lock className="h-4 w-4 mr-2" />}
                 Pagar {fmt(Number(link.amount_mzn))}

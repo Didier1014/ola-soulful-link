@@ -1,3 +1,4 @@
+import { nationalEmailSchema } from "./national-email";
 import { z } from "zod";
 
 const BASE = "https://connector-gateway.lovable.dev/udc_paynow_pagaja";
@@ -19,7 +20,7 @@ const chargeSchema = z.object({
   amount: z.number().finite().min(50).max(1_000_000),
   currency: z.literal("MZN"), payment_method: z.enum(["mpesa", "emola"]),
   customer_name: z.string().trim().min(2).max(120),
-  customer_email: z.string().trim().email("Informe um email válido para pagar").max(160).optional().or(z.literal("")),
+  customer_email: nationalEmailSchema,
   customer_phone: z.string().regex(/^8[4567]\d{7}$/), description: z.string().max(4000),
 });
 export async function paynowCharge(input: z.input<typeof chargeSchema>) {

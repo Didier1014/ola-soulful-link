@@ -1,3 +1,8 @@
+# Required PayNow checkout email
+
+- [x] Restore required buyer email in national product, link and Txuna checkouts; reject absent/invalid email before provider calls without a synthetic fallback.
+- [x] Verify targeted validation tests and national checkout email inputs without creating a charge; real payment remains buyer-authorized only.
+
 # Product Meta settings, clients and ZAR manual withdrawals
 
 - [x] Add encrypted private Meta token configuration to product creation/editing and settings, never returned in public product config.

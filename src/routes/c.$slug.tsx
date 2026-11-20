@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Lock, ShieldCheck, AlertTriangle, Smartphone } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { validNationalEmail } from "@/lib/national-email";
 import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
 import { useCheckoutLanguage } from "@/hooks/use-checkout-language";
 import { InternationalCheckout } from "@/components/international-checkout";
@@ -90,7 +91,7 @@ function CheckoutPage() {
   }, [product?.id]);
 
 
-  const [form, setForm] = useState({ customer_name: "", customer_phone: "" });
+  const [form, setForm] = useState({ customer_name: "", customer_email: "", customer_phone: "" });
   const operation = useCheckoutOperation("product", slug, !!product?.id, form.customer_name, form.customer_phone);
   const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [selectedBumps, setSelectedBumps] = useState<Record<string, boolean>>({});
@@ -320,6 +321,7 @@ function CheckoutPage() {
     <form className="space-y-5" onSubmit={event => { event.preventDefault(); m.mutate(); }}>
       <div className="space-y-2"><Label htmlFor="offer-name">{t.name}</Label><Input id="offer-name" autoComplete="name" required minLength={2} maxLength={120} value={form.customer_name} onChange={event => setForm({ ...form, customer_name: event.target.value })} /></div>
 
+      <div className="space-y-2"><Label htmlFor="offer-email">{t.email} *</Label><Input id="offer-email" type="email" autoComplete="email" required maxLength={160} value={form.customer_email} onChange={event => setForm({ ...form, customer_email: event.target.value })} /></div>
       <BuyTogether bumps={bumps.map(b => ({ ...b, price: Number(b.price_mzn) }))} selected={selectedBumps} onToggle={(id, value) => setSelectedBumps({ ...selectedBumps, [id]: value })} format={fmt} language={language} />
       <fieldset className="space-y-2"><legend className="text-sm font-medium mb-2">{t.payWith}</legend><div className="grid grid-cols-2 gap-2">{(["mpesa", "emola"] as const).map(value => <Button key={value} type="button" variant={method === value ? "default" : "outline"} aria-pressed={method === value} onClick={() => setMethod(value)} className="h-12"><img src={`/brands/${value}.png`} alt="" className="size-7 object-contain" />{value === "mpesa" ? "M-Pesa" : "e-Mola"}</Button>)}</div></fieldset>
       <div className="space-y-2"><Label htmlFor="offer-phone">{t.number} {method === "mpesa" ? "M-Pesa" : "e-Mola"}</Label><Input id="offer-phone" type="tel" autoComplete="tel" placeholder="+258" required maxLength={15} value={form.customer_phone} onChange={event => setForm({ ...form, customer_phone: event.target.value })} /></div>
@@ -439,6 +441,11 @@ function CheckoutPage() {
             </div>
 
             <div className="space-y-1.5">
+              <Label htmlFor="buyer-email">{t.email} *</Label>
+              <Input id="buyer-email" type="email" autoComplete="email" required maxLength={160} placeholder="nome@exemplo.com" value={form.customer_email} onChange={e => setForm({ ...form, customer_email: e.target.value })} />
+            </div>
+
+            <div className="space-y-1.5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">{t.payWith}</p>
               <div className="grid grid-cols-2 gap-2">
                 {([
@@ -517,7 +524,7 @@ function CheckoutPage() {
                 </button>
               </div>
             ) : (
-              <button onClick={() => m.mutate()} disabled={m.isPending || modal?.status === "pending" || !form.customer_name || !form.customer_phone}
+              <button onClick={() => m.mutate()} disabled={m.isPending || modal?.status === "pending" || !form.customer_name || !form.customer_phone || !validNationalEmail(form.customer_email)}
                 className="w-full py-5 rounded-xl text-base font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{
                   background: methodGradient,

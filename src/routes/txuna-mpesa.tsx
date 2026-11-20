@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { validNationalEmail } from "@/lib/national-email";
 import { useCheckoutOperation } from "@/hooks/use-checkout-operation";
 
 export const Route = createFileRoute("/txuna-mpesa")({
@@ -67,6 +68,7 @@ function TxunaCheckout() {
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [method, setMethod] = useState<"mpesa" | "emola">("mpesa");
   const [testResult, setTestResult] = useState<string | null>(null);
   const [plan, setPlan] = useState<"6" | "12">("6");
@@ -79,7 +81,7 @@ function TxunaCheckout() {
 
   const selectedPlan = PLANS.find((p) => p.id === plan);
   const amount = selectedPlan?.price ?? PLANS[0].price;
-  const ready = name.trim().length >= 3 && /^8[4567]\d{7}$/.test(phone.replace(/\D/g, "")) && !!product?.id;
+  const ready = validNationalEmail(email) && name.trim().length >= 3 && /^8[4567]\d{7}$/.test(phone.replace(/\D/g, "")) && !!product?.id;
 
   const m = useMutation({
     mutationFn: async () => {
@@ -89,6 +91,7 @@ function TxunaCheckout() {
           product_id: product?.id ?? "",
           amount_mzn: amount,
           customer_name: name.trim(),
+          customer_email: email.trim(),
           customer_phone: phone, method,
           tracking: { src: `txuna-${plan}m`, ...operationTracking },
         },
@@ -225,6 +228,11 @@ function TxunaCheckout() {
             placeholder="Ex: Maria Silva"
             className="tx-field h-12 w-full rounded-full border border-[var(--tx-line)] px-4 text-[16px] outline-none transition-colors focus:border-[var(--tx-red)] sm:h-16 sm:px-6 sm:text-lg"
           />
+        </section>
+
+        <section className="tx-card space-y-3 px-4 py-5 sm:px-8 sm:py-7">
+          <Label htmlFor="payer-email">E-mail *</Label>
+          <Input id="payer-email" type="email" autoComplete="email" required maxLength={160} value={email} onChange={e => setEmail(e.target.value)} placeholder="nome@exemplo.com" className="h-12" />
         </section>
 
         {/* Método + Planos */}

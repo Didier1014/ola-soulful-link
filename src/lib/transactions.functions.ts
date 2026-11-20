@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { nationalEmailSchema } from "./national-email";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -26,7 +27,7 @@ const checkoutSchema = z.object({
   product_id: z.string().uuid().optional(),
   amount_mzn: z.number().min(50, "Valor mínimo é 50 MT").max(1_000_000).optional(),
   customer_name: z.string().trim().min(2).max(120),
-  customer_email: z.string().trim().email("Informe um email válido para pagar").max(160).optional().or(z.literal("")),
+  customer_email: nationalEmailSchema,
   customer_phone: z.string().trim().regex(/^\+?\d{8,15}$/, "Telefone inválido"),
   method: z.enum(["mpesa", "emola", "card"]).optional().default("mpesa"),
   tracking: z.object({
