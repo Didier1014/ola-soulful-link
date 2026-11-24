@@ -17,7 +17,7 @@ describe("Paystack account-wide split", () => {
     }
     expect(fetchMock).toHaveBeenCalledTimes(2);
     for (const [, options] of fetchMock.mock.calls) {
-      expect(JSON.parse(options.body)).toEqual({ amount: "30000", currency: "ZAR", split_code: "SPL_73WGtTcz2N" });
+      expect(JSON.parse(options.body)).toEqual({ amount: "30000", currency: "ZAR", split_code: "SPL_fO36PDxvUk" });
       expect(options.headers.Authorization).toBe('Bearer test-provider-key');
       expect(options.headers).not.toHaveProperty('X-Connection-Api-Key');
     }

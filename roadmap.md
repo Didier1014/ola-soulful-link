@@ -1,3 +1,10 @@
+# Restore previous Paystack account
+
+- [x] Restore previous publishable key and global split with the securely re-entered provider secret shared by API requests and callback validation; national payments stay unchanged.
+- [x] Read-only authentication and lookup of the previous split accepted by Paystack; no charge created.
+- [x] Twelve payment/signature/currency tests pass; front-matue renders R 599.00 and the pay button with no runtime errors; preview build OK.
+- [ ] Confirm an actual payment and signed callback: requires publication and buyer authorization; no real charge created.
+
 # Required PayNow checkout email
 
 - [x] Restore required buyer email in national product, link and Txuna checkouts; reject absent/invalid email before provider calls without a synthetic fallback.

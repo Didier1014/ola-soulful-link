@@ -1,12 +1,12 @@
 export async function paystackRequest(path: string, body?: Record<string, unknown>) {
-  // Builder explicitly selected this saved provider secret for the new account.
+  // Builder restored the previous account through the saved provider secret.
   // Both API requests and webhook signatures use the same server-only value.
   const key = process.env["STRIPE_LIVE_API_KEY"];
   if (!key) throw new Error("Paystack ainda não está configurada");
   // Enforce the account-wide settlement destination for every new payment.
   // Provider allocation follows this split; accounting fees do not override it.
   const requestBody = body && path === "/transaction/initialize"
-    ? { ...body, split_code: "SPL_73WGtTcz2N" }
+    ? { ...body, split_code: "SPL_fO36PDxvUk" }
     : body;
   const response = await fetch(`https://api.paystack.co${path}`, {
     method: body ? "POST" : "GET",
